@@ -823,6 +823,16 @@
     const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (parent) parent.appendChild(e); return e; };
     const header = document.querySelector('.site-header');
     if (!header || header.querySelector('.lesson-menu')) return;
+    // work-in-progress note above the header and a suggestion link next to the theme toggle
+    const wip = el('div', 'wip-banner');
+    wip.innerHTML = '<strong>Work in progress</strong> – simulations and texts are still being added and checked.';
+    header.parentNode.insertBefore(wip, header);
+    const sug = el('a', 'suggest-link');
+    sug.href = 'https://github.com/feecUmel/microfabrication_widgets/issues/new';
+    sug.target = '_blank'; sug.rel = 'noopener';
+    sug.innerHTML = '<span class="suggest-long">Missing content? </span>Add a suggestion';
+    const tgl = header.querySelector('[data-mfw-theme-toggle]');
+    header.insertBefore(sug, tgl || null);
     const m = location.pathname.replace(/\\/g, '/').match(/\/widgets\/([^/]+)\/(?:index\.html)?$/);
     const slug = m ? m[1] : null, root = m ? '../../' : '';
     const href = p => `${root}widgets/${p.slug}/index.html`;

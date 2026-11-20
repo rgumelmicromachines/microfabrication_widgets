@@ -15,7 +15,8 @@
        (H. Seidel et al., J. Electrochem. Soc. 137 (1990) 3612, as quoted by Williams & Muller, J. MEMS 5 (1996) 256).
        (100):(111) ≈ 100:1 at 20 °C falling to 30:1 at 100 °C (Seidel) → ~40 used at 80 °C.
      TMAH 25 wt %, 80 °C: Si(100) ≈ 0.55 µm/min, Ea ≈ 0.6 eV (0.5–0.7), (100):(111) 10–35 → 20,
-       SiO2 ~4 orders of magnitude slower than Si, Ea ≈ 0.9 eV (O. Tabata, Sensors and Materials 13 (2001) 271).
+       SiO2 0.23 nm/min at 22 wt %, 90 °C (Tabata Table 2) → ≈ 0.1 nm/min at 80 °C with Ea ≈ 0.9 eV
+       (O. Tabata, Sensors and Materials 13 (2001) 271).
      Isotropic wet (126 HNO3 : 60 H2O : 5 NH4F, room temperature): Si 0.15 µm/min, thermal SiO2 8.7 nm/min,
        photoresist usable (Williams et al. 2003). HNA mixtures with more HF can be orders of magnitude faster.
      Bosch DRIE (STS ASE): Si 1.5–2.4 µm/min, resist ≈ 33 nm/min, thermal SiO2 ≈ 24 nm/min (Williams et al. 2003);
@@ -24,7 +25,7 @@
     koh: { name: 'KOH 30 wt %', kind: 'aniso', Tref: 80, R100: 1.1, Ea: 0.59, ratio111: 40,
       mask: { si3n4: { r: 0, Ea: 0 }, sio2: { r: 7.7, Ea: 0.84 }, resist: null } },
     tmah: { name: 'TMAH 25 wt %', kind: 'aniso', Tref: 80, R100: 0.55, Ea: 0.6, ratio111: 20,
-      mask: { si3n4: { r: 0, Ea: 0 }, sio2: { r: 0.06, Ea: 0.9 }, resist: null } },
+      mask: { si3n4: { r: 0, Ea: 0 }, sio2: { r: 0.1, Ea: 0.9 }, resist: null } },
     iso: { name: 'Isotropic wet (HNA type)', kind: 'iso', Tref: 25, R100: 0.15, Ea: 0,
       mask: { si3n4: undefined, sio2: { r: 8.7, Ea: 0 }, resist: { r: 0, Ea: 0 } } },
     drie: { name: 'Bosch DRIE', kind: 'drie', Tref: 20, R100: 2.0, Ea: 0,

@@ -187,7 +187,10 @@ check('speedFor inverts thickness', SP.thickness(SP.speedFor(1.5, 20, 90), 20, 9
 check('page task 1: 2.5 µm with 25 %, k 90 (rpm)', SP.speedFor(2.5, 25, 90), 5063, 1e-3);
 check('page task 2: 1.2 µm with 20 % needs (rpm)', SP.speedFor(1.2, 20, 90), 9000, 1e-9);
 check('page task 2: solids for 1.2 µm at 4000 rpm (%)', 20 * Math.sqrt(1.2 / 1.8), 16.33, 1e-3);
-check('page task 3: edge bead of 1.8 µm, 30× (µm)', SP.state({ rpm: 4000, p: 20, k: 90 }).bead[1], 54, 1e-12);
+check('page task 3: edge bead ≈ film thickness (µm)', SP.state({ rpm: 4000, p: 20, k: 90 }).bead, 1.8, 1e-12);
+{ const bmin = (s, d) => LI.proximityLimit(0.365, s, d);           // same formula as the lithography lesson
+  check('page task 3: b_min hard contact, i-line, 1.8 µm resist (µm)', bmin(0, 1.8), 0.86, 0.005);
+  check('page task 3: b_min on a 1.8 µm edge bead (µm)', bmin(1.8, 1.8), 1.49, 0.005); }
 check('tour: soft bake 1.8 µm → 1.35 µm', SP.state({ rpm: 4000, p: 20, k: 90 }).tBaked, 1.35, 1e-12);
 { // the animated recipe: phase times, ramps, speed profile, time-lapse mapping, warnings
   const D = { rpm: 4000, spinTime: 60, spreadRpm: 500, spreadTime: 8, accel: 2000, ebr: true, ebrRpm: 1000, ebrTime: 5, dryRpm: 2000, dryTime: 15 };

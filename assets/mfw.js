@@ -919,10 +919,44 @@
       const src = e.getAttribute('data-src') || e.textContent;
       e.setAttribute('data-src', src); e.setAttribute('data-done', '1');
       if (window.katex) {
-        try { window.katex.render(src, e, { throwOnError: false, displayMode: e.classList.contains('tex-display') }); return; } catch (err) { /* fall back */ }
+        const display = e.classList.contains('tex-display');
+        try { window.katex.render(src, e, { throwOnError: false, displayMode: display }); if (display) fitDisplay(e); return; } catch (err) { /* fall back */ }
       }
       e.textContent = texToText(src);
     }));
+  }
+  /** Split a LaTeX string at top-level (brace depth 0) occurrences of a separator. */
+  function splitTop(src, sep) {
+    const out = []; let depth = 0, start = 0;
+    for (let i = 0; i < src.length; i++) {
+      const ch = src[i];
+      if (ch === '\\' && src.startsWith(sep, i) && depth === 0 && !/[a-zA-Z]/.test(src[i + sep.length] || '')) { out.push(src.slice(start, i)); start = i + sep.length; i += sep.length - 1; continue; }
+      if (ch === '\\') { i++; continue; }
+      if (ch === '{') depth++; else if (ch === '}') depth--;
+    }
+    out.push(src.slice(start));
+    return out.map(s => s.trim()).filter(Boolean);
+  }
+  /** A display equation wider than its card: first break it into lines at its top-level \qquad gaps,
+      then shrink it (down to 75 %); only what still does not fit keeps the horizontal scroll bar. */
+  function fitDisplay(e) {
+    const src = e.getAttribute('data-src');
+    if (!src || !window.katex || !e.clientWidth) return;
+    const render = s => window.katex.render(s, e, { throwOnError: false, displayMode: true });
+    e.style.fontSize = '';
+    render(src);
+    const over = () => e.scrollWidth > e.clientWidth + 1;
+    if (!over()) return;
+    const parts = splitTop(src, '\\qquad');
+    if (parts.length > 1) render(`\\begin{gathered}${parts.join('\\\\[0.35em]')}\\end{gathered}`);
+    if (over()) e.style.fontSize = `${Math.max(0.75, e.clientWidth / e.scrollWidth) * 100}%`;
+  }
+  if (isBrowser) {
+    let fitTimer = null;
+    const refit = () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => document.querySelectorAll('.tex-display[data-done]').forEach(fitDisplay), 150); };
+    window.addEventListener('resize', refit);
+    document.addEventListener('toggle', refit, true);                 // equations inside <details> get a width when opened
+    window.addEventListener('load', () => { refit(); if (document.fonts) document.fonts.ready.then(refit); });   // KaTeX fonts change the widths
   }
 
   const reduceMotion = () => isBrowser && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

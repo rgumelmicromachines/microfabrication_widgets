@@ -16,8 +16,8 @@
   function erfcinv(y) { let lo = -7, hi = 7; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (erfc(m) > y) lo = m; else hi = m; } return (lo + hi) / 2; }
 
   /* Intrinsic diffusivities (n = p = n_i): sum of the charge-state components,
-     Plummer, Deal & Griffin, Silicon VLSI Technology (2000), ch. 7, Table 7-5 (values as in the authors' Stanford
-     EE212 notes). [D0 cm²/s, Ea eV]. Fair's older set gives D_B within 6 % of this at 1100 °C. */
+     Plummer, Deal & Griffin, Silicon VLSI Technology (2000), ch. 7, Table 7-5 (values as reproduced in the
+     authors' own course handouts). [D0 cm²/s, Ea eV]. Fair's older set gives D_B within 6 % of this at 1100 °C. */
   const DIFF = {
     B: [[0.05, 3.5], [0.95, 3.5]],                          // D0, D+
     P: [[3.85, 3.66], [4.44, 4.00], [44.2, 4.37]],          // D0, D-, D=

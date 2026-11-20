@@ -43,7 +43,7 @@
         <tr><td>Wet H₂O</td><td>3.86 × 10²</td><td>0.78</td><td>1.63 × 10⁸</td><td>2.05</td></tr>
       </table>
       <p class="note">* for (111) Si; divide C₂ by 1.68 for (100) Si. The oxide grows 46 % into the silicon: <span class="tex">x_{Si} = 0.46\,x_{ox}</span> (1 µm of Si becomes 2.17 µm of SiO₂; textbooks quote 0.44–0.46 depending on the assumed oxide density).</p>
-      <p class="note">The original measurements of Deal &amp; Grove (1965) were made on (111) Si; at 1200 °C they give <span class="tex">B/A = 1.12\ \mathrm{\mu m/h}</span> in dry O₂ and 14.4 µm/h in wet O₂ (water at 95 °C, 640 Torr H₂O), with activation energies 1.24 eV (dry) and 0.71 eV (wet) for <span class="tex">B</span> and 2.0 eV / 1.96 eV for <span class="tex">B/A</span>. The table above is the later fit used by Plummer et al.; its H₂O row describes steam at about 1 atm, which grows somewhat faster.</p>
+      <p class="note">The original measurements of Deal &amp; Grove (1965) were made on (111) Si; at 1200 °C they give <span class="tex">B/A = 1.12\ \mathrm{\mu m/h}</span> in dry O₂ and 14.4 µm/h in wet O₂ (water at 95 °C, 640 Torr H₂O), with activation energies 1.24 eV (dry) and 0.71 eV (wet) for <span class="tex">B</span> and 2.0 eV / 1.96 eV for <span class="tex">B/A</span>. The table above is the later fit used by Plummer et al.; its H₂O row agrees with Deal &amp; Grove’s 640-Torr wet data within about 15 %.</p>
     </article>
 
     <article class="card tasks">
@@ -63,8 +63,8 @@
     <article class="card">
       <h2>Model &amp; limitations</h2>
       <ul>
-        <li>Rate constants are for 1 atm dry O₂ and for steam (the H₂O row of Plummer's Table 6-2, which reproduces Deal &amp; Grove's 640-torr data) in the range ~800–1200 °C. Pressure, chlorine addition and heavy substrate doping change them. Real furnaces differ by tens of per cent – always calibrate.</li>
-        <li>Dry O₂: the model is shifted by τ corresponding to a 25 nm starting oxide (Deal &amp; Grove's own convention). Below that the curve is not physical, and below ~950 °C the convention overestimates dry growth compared with furnace charts (≈ 1.5× at 900 °C, ≥ 2× at 800–850 °C and for short times).</li>
+        <li>Rate constants are for 1 atm dry O₂ and for steam (the H₂O row of Plummer's Table 6-2, which agrees with Deal &amp; Grove's 640-torr data within about 15 %) in the range ~800–1200 °C. Pressure, chlorine addition and heavy substrate doping change them. Real furnaces differ by tens of per cent – always calibrate.</li>
+        <li>Dry O₂: the model is shifted by τ corresponding to a 25 nm starting oxide (the textbook convention of Plummer et al.; Deal &amp; Grove themselves adopted 23 nm). Below that the curve is not physical, and below ~950 °C the convention overestimates dry growth compared with measured furnace charts (e.g. the EPFL CMI oxidation charts: ≈ 1.5× at 900 °C, ≥ 2× at 800–850 °C and for short times).</li>
         <li>The cross-section is drawn to scale with an automatic zoom (0.1, 1 or 10 µm full height); the scale bar shows the current zoom.</li>
         <li>The oxide colour is computed from thin-film interference at normal incidence in daylight; real colours depend on the light source, viewing angle and your display.</li>
       </ul>
@@ -76,15 +76,15 @@
         <li>B. E. Deal, A. S. Grove, “General relationship for the thermal oxidation of silicon”, <i>J. Appl. Phys.</i> 36 (1965) 3770–3778.</li>
         <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 6 (Table 6-2).</li>
         <li>I. H. Malitson, “Interspecimen comparison of the refractive index of fused silica”, <i>J. Opt. Soc. Am.</i> 55 (1965) 1205.</li>
-        <li>M. A. Green, “Self-consistent optical parameters of intrinsic silicon at 300 K”, <i>Sol. Energy Mater. Sol. Cells</i> 92 (2008) 1305.</li>
+        <li>M. A. Green, “Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients”, <i>Sol. Energy Mater. Sol. Cells</i> 92 (2008) 1305.</li>
         <li>W. A. Pliskin, E. E. Conrad, “Nondestructive determination of thickness and refractive index of transparent films”, <i>IBM J. Res. Dev.</i> 8 (1964) 43 (oxide colour chart).</li>
       </ul>
     </article>
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=8ba1ab6aee"></script>
-<script src="model.js?v=53e906c691"></script>
-<script src="widget.js?v=d3557d67d3"></script>
+<script src="../../assets/mfw.js?v=c6857e2126"></script>
+<script src="model.js?v=a686c7dca6"></script>
+<script src="widget.js?v=496af4a168"></script>
 </body>
 </html>

@@ -57,7 +57,7 @@
         <li>An i-line stepper has NA = 0.5 and σ = 0.5. What is the smallest half-pitch it can image at all? What k₁ does that correspond to?
           <details><summary>Answer</summary><span class="tex">p_{min} = 0.365/(0.5\cdot1.5) = 0.487\ \mathrm{\mu m}</span>, half-pitch 0.243 µm, <span class="tex">k_1 = 0.243\cdot0.5/0.365 = 0.33</span>. Below it the image is perfectly flat.</details></li>
         <li>Set projection, ArF, NA = 0.85, half-pitch 120 nm. Increase the defocus until the lines no longer print. Compare with <span class="tex">\pm\lambda/(2NA^2)</span>.
-          <details><summary>Answer</summary><span class="tex">\lambda/(2NA^2) = 0.193/(2\cdot0.7225) \approx 0.13\ \mathrm{\mu m}</span>. In the simulation (dose 2.5) the printed width is 106 nm in focus, −5 % at 0.10 µm and −12 % at 0.13 µm; nothing prints from about 0.20 µm. A ±10 % width budget therefore gives about ±0.12 µm – close to the estimate.</details></li>
+          <details><summary>Answer</summary><span class="tex">\lambda/(2NA^2) = 0.193/(2\cdot0.7225) \approx 0.13\ \mathrm{\mu m}</span>. In the simulation (dose 2.5) the printed width is 106 nm in focus, −5 % at 0.10 µm and −11 % at 0.13 µm; nothing prints from about 0.20 µm. A ±10 % width budget therefore gives about ±0.12 µm – close to the estimate.</details></li>
         <li>In projection mode, change the dose. Why does the printed space width change although the mask does not?
           <details><summary>Answer</summary>The aerial image has sloped edges. A higher dose lowers the threshold <span class="tex">E_0/E</span>, so the resist clears further into the slope and the space widens. The steeper the edge (higher contrast), the less sensitive the width is to dose.</details></li>
       </ol>
@@ -70,7 +70,7 @@
         <li>Projection imaging uses Abbe's method: the image is the average over points of a circular source of radius σ·NA. Dimensions are given at the wafer.</li>
         <li>Proximity printing propagates the field through air over <span class="tex">s + d/2</span> (the middle of the resist), averaged over the illumination cone. Refraction and absorption in the resist, standing waves and the substrate reflection are ignored.</li>
         <li>The resist is a sharp threshold: positive resist clears wherever the dose exceeds the dose-to-clear <span class="tex">E_0</span>. Real resists have finite contrast, so the walls are sloped.</li>
-        <li>Defocus is applied with the vacuum wavelength; inside a resist of refractive index <span class="tex">n</span> the effective defocus is roughly <span class="tex">n</span> times smaller.</li>
+        <li>Defocus is applied with the vacuum wavelength; inside a resist of refractive index <span class="tex">n</span> the depth of focus is roughly <span class="tex">n</span> times larger (a depth in the resist acts like about 1/n of that distance in air).</li>
         <li>Illumination is monochromatic. For an ideal periodic grating, proximity printing shows the Talbot effect: the image contrast drops and recovers (partly reversed) with the gap, with a period of <span class="tex">2p^2/\lambda</span>. Broadband mercury light and finite mask patterns weaken this in practice.</li>
         <li>The illumination half-angle of real mask aligners is typically a few degrees and is set by the exposure optics.</li>
       </ul>
@@ -88,8 +88,8 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=8ba1ab6aee"></script>
+<script src="../../assets/mfw.js?v=c6857e2126"></script>
 <script src="model.js?v=694ee77c66"></script>
-<script src="widget.js?v=b3ab148dcf"></script>
+<script src="widget.js?v=5485a84c3d"></script>
 </body>
 </html>

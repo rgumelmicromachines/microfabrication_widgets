@@ -9,7 +9,7 @@
 
   /* Deal–Grove rate constants, Plummer, Deal & Griffin, Silicon VLSI Technology (2000), Table 6-2,
      for (111) Si; for (100) Si the linear-rate prefactor C2 is divided by 1.68.
-     Dry: 1 atm O2. Wet: H2O row of Table 6-2 (labelled 1 atm there; it reproduces Deal & Grove's 640-torr steam data). */
+     Dry: 1 atm O2. Wet: H2O row of Table 6-2 (labelled 1 atm there; it agrees with Deal & Grove's 640-torr wet data within ~15 %). */
   const DG = {
     dry: { C1: 7.72e2, E1: 1.23, C2: 6.23e6, E2: 2.0, xi: 0.025 },   // xi: Deal–Grove initial-regime offset for dry O2
     wet: { C1: 3.86e2, E1: 0.78, C2: 1.63e8, E2: 2.05, xi: 0 },
@@ -32,7 +32,7 @@
   const thickness = (r, t, tau) => (r.A / 2) * (Math.sqrt(1 + (t + tau) / (r.A * r.A / (4 * r.B))) - 1);
   /** Time (h) to grow from the state described by τ to thickness x (µm). Negative = already thicker. */
   const timeTo = (r, x, tau) => (x * x + r.A * x) / r.B - tau;
-  /** Effective starting thickness: Deal–Grove dry O2 uses max(x0, 25 nm) to absorb the fast initial regime. */
+  /** Effective starting thickness: dry O2 uses max(x0, 25 nm) (textbook convention; Deal & Grove adopted 23 nm) to absorb the fast initial regime. */
   const startThickness = (ambient, x0) => Math.max(x0, DG[ambient].xi);
 
   /* ---------------------------------------------------------- interference colour of SiO2 on Si */

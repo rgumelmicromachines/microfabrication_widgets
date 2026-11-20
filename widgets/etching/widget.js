@@ -90,12 +90,12 @@
         if (v.depth > 0) {
           const xd = Math.min(sx(v.top) + 0.35, X1 - 0.1), yd = Math.max(sy(-v.depth), Yb + 0.05), ym = (ys + yd) / 2;
           p.dim(xd, ys, xd, yd, '');
-          p.place(um(v.depth), [[xd + 0.12, ym, 'left'], [xd - 0.12, ym, 'right'], [xd + 0.12, ys - 0.25, 'left'], [xd - 0.12, ys - 0.25, 'right']],
+          p.place(um(v.depth), [[xd + 0.12, ym, 'left'], [xd - 0.12, ym, 'right'], [xd + 0.12, ys - 0.25, 'left'], [xd - 0.12, ys - 0.25, 'right'], [xd - 0.12, yd + 0.3, 'right'], [sx(0), ym, 'center']],
             { size: 0.22, color: C.greyA, within: view, key: 'depth' });
           p.dim(sx(-v.W / 2), ys + 0.95, sx(v.W / 2), ys + 0.95, `W = ${um(v.W)}`, { size: 0.22 });
           if (v.undercut * k > 0.06) {
             const xu = sx(-v.top);
-            p.place(`undercut ${um(v.undercut)}`, [[xu - 0.1, ys - 0.3, 'right'], [xu - 0.1, ys - 0.62, 'right'], [X0 + 0.1, ys - 0.3, 'left'], [X0 + 0.1, ys - 0.62, 'left']],
+            p.place(`undercut ${um(v.undercut)}`, [[xu - 0.1, ys - 0.3, 'right'], [xu - 0.1, ys - 0.62, 'right'], [X0 + 0.1, ys - 0.3, 'left'], [X0 + 0.1, ys - 0.62, 'left'], [xu + 0.15, ys - 0.3, 'left'], [xu + 0.15, ys - 0.62, 'left']],
               { size: 0.2, color: C.gold, within: view, key: 'undercut' });
           }
         }
@@ -104,7 +104,7 @@
         if (v.kind === 'aniso' && v.depth * k > 0.5) {
           const x0 = sx(-v.top), y0 = ys, dk = v.depth * k, run = dk / Math.tan(E.ANGLE);
           p.arc(x0, y0, 0.7, -54.74, 0, { color: C.yellow, width: 2.5 });
-          p.place('54.74°', [[x0 + 0.8, y0 - 0.3, 'left'], [x0 + 0.8, y0 - 0.58, 'left'], [x0 + 0.45, y0 - 0.95, 'left']], { size: 0.22, color: C.yellow, within: view, key: 'ang' });
+          p.place('54.74°', [[x0 + 0.8, y0 - 0.3, 'left'], [x0 + 0.8, y0 - 0.58, 'left'], [x0 + 0.45, y0 - 0.95, 'left'], [x0 - 0.15, y0 - 0.3, 'right'], [x0 + 1.1, y0 - 0.95, 'left']], { size: 0.22, color: C.yellow, within: view, key: 'ang' });
           p.place('{111} sidewall', [0.5, 0.38, 0.62, 0.75, 0.25].map(f => [x0 + run * f - 0.17, y0 - dk * f, 'right']),
             { size: 0.2, color: C.yellow, bg: true, within: view, key: 'wall' });
         }
@@ -131,7 +131,7 @@
         : v.kind === 'aniso' && v.tClose < tmax && v.dClose < ymax ? { d: v.dClose, t: v.tClose, s: 'V-groove closed' } : null;
       if (flat) {
         const Yf = ax.Y(flat.d), Xr = ax.X(tmax) - 0.05;
-        ax.place(flat.s, [[Xr, Yf - 0.14, 'right', 'top'], [ax.X(flat.t) - 0.1, Yf + 0.12, 'right', 'bottom'], [Xr, Yf + 0.14, 'right', 'bottom'], [ax.X(Math.min(tmax, flat.t + 0.5 * (tmax - flat.t))), Yf - 0.14, 'center', 'top']],
+        ax.place(flat.s, [[Xr, Yf - 0.14, 'right', 'top'], [ax.X(flat.t) - 0.1, Yf + 0.12, 'right', 'bottom'], [Xr, Yf + 0.14, 'right', 'bottom'], [ax.X(Math.min(tmax, flat.t + 0.5 * (tmax - flat.t))), Yf - 0.14, 'center', 'top'], [Xr, Yf + 0.5, 'right', 'bottom'], [Xr, Yf - 0.5, 'right', 'top'], [ax.X(flat.t) + 0.15, Yf - 0.08, 'left', 'top']],
           { color: C.muted, size: 0.18, key: 'flat' });
       }
       p.text(E.ETCH[v.etch].name, 3.55 + 3.25 / 2, 2.62, { size: 0.24, align: 'center', color: C.greyA });
@@ -165,7 +165,7 @@
       { name: 'Isotropic etching', caption: 'Isotropic: undercut = depth, rounded profile', set: { etch: 'iso', mask: 'sio2', tm: 1000, t: 60 }, duration: 1.5,
         text: v => `An isotropic etch of the HNA type attacks every direction equally: HNO₃ oxidises the silicon and a fluoride dissolves the oxide (HF in classic HNA = HF + HNO₃ + acetic acid; NH₄F in the recipe used here). The cavity becomes rounded and the mask is undercut by as much as the depth (${um(v.undercut)}). Useful for releasing structures and rounding corners, useless for narrow deep features.` },
       { name: 'Deep reactive ion etching', caption: 'Bosch DRIE: vertical walls, any crystal orientation', set: { etch: 'drie', mask: 'resist', tm: 2000, W: 20, t: 40, rate: 2 }, duration: 2,
-        text: v => `The Bosch process repeats three short steps: C₄F₈ deposits a protective polymer, ion bombardment removes it from the bottom only, and SF₆ etches the exposed silicon. The walls stay vertical, with small "scallops" (exaggerated here). Depth ${um(v.depth)} in a ${um(v.W)} window – aspect ratio ${fmt.sig(v.depth / v.W, 2)}:1, independent of crystal orientation. Photoresist works as a mask (selectivity ~60:1). Explore the rest in <b>Explore</b>.` },
+        text: v => `The Bosch process alternates two short steps: C₄F₈ deposits a protective polymer everywhere; then, in the SF₆ step, ion bombardment first clears the polymer from the bottom only and fluorine etches the exposed silicon (Laermer &amp; Schilp). The walls stay vertical, with small "scallops" (exaggerated here). Depth ${um(v.depth)} in a ${um(v.W)} window – aspect ratio ${fmt.sig(v.depth / v.W, 2)}:1, independent of crystal orientation. Photoresist works as a mask (selectivity ~60:1). Explore the rest in <b>Explore</b>.` },
     ],
   });
 

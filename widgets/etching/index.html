@@ -45,7 +45,7 @@
         <tr><td>HNA type: HNO₃/H₂O/NH₄F, RT</td><td>0.15 µm/min</td><td>8.7 nm/min</td><td>–</td><td>usable</td></tr>
         <tr><td>Bosch DRIE</td><td>1.5–2.4 µm/min*</td><td>≈ 24 nm/min</td><td>–</td><td>≈ 33 nm/min</td></tr>
       </table>
-      <p class="note">Williams, Gupta &amp; Wasilik (2003); TMAH after Tabata (2001). * 2003 tool; current DRIE tools etch 5–20 µm/min.</p>
+      <p class="note">Williams, Gupta &amp; Wasilik (2003); TMAH after Tabata (2001). * rates of the 2003 tool; newer DRIE tools and recipes are considerably faster – use the rate of your own tool.</p>
     </article>
 
     <article class="card tasks">
@@ -56,7 +56,7 @@
         <li>How thick must a thermal oxide mask be for the etch in task 1?
           <details><summary>Answer</summary>5.5 h × 7.7 nm/min ≈ 2.5 µm – impractical; that is why LPCVD nitride is used.</details></li>
         <li>In Explore mode, compare a 20 µm window etched 40 min in KOH and in DRIE. Why can KOH not make an 80 µm deep trench in a 20 µm window?
-          <details><summary>Answer</summary>KOH self-terminates at <span class="tex">20/\sqrt{2} \approx 14\ \mathrm{\mu m}</span>. DRIE etches vertically regardless of crystal planes.</details></li>
+          <details><summary>Answer</summary>KOH self-terminates at <span class="tex">20/\sqrt{2} \approx 14\ \mathrm{\mu m}</span> (≈ 15–16 µm in the model, because the {111} walls also recede slowly). DRIE etches vertically regardless of crystal planes.</details></li>
       </ol>
     </article>
 
@@ -65,7 +65,7 @@
       <ul>
         <li>2-D cross-section of a long window whose edges are aligned to &lt;110&gt;. Misalignment, convex corners (which are strongly undercut in KOH) and the ends of the window are not modelled.</li>
         <li>{111} planes etch at <span class="tex">R_{100}/40</span> (KOH) or <span class="tex">R_{100}/20</span> (TMAH). Published (100):(111) ratios span roughly 30 to 400 for KOH depending on concentration and temperature (Seidel: ~100 at 20 °C, ~30 at 100 °C) and 10–35 for TMAH, so the undercut shown here is on the high side.</li>
-        <li>Heavily boron-doped silicon (above roughly 10¹⁹–2×10¹⁹ cm⁻³) is practically not etched by KOH – the etch stop used to make thin membranes (Seidel et al. 1990, part II). Doping is not modelled here.</li>
+        <li>Heavy boron doping stops KOH etching: above about 2×10¹⁹ cm⁻³ the rate falls roughly as the fourth power of the boron concentration, and a practical etch stop needs ≳ 5×10¹⁹–10²⁰ cm⁻³; the stop is weaker in concentrated KOH (Seidel et al. 1990, part II). It is used to make thin membranes. Doping is not modelled here.</li>
         <li>Rates are constant in time: no loading effect, no aspect-ratio-dependent etching (ARDE) in DRIE, no hydrogen-bubble roughness. The temperature dependence uses one activation energy per material.</li>
         <li>When the mask is consumed the drawing stops changing – in reality the whole surface would then be attacked.</li>
         <li>DRIE scallops and the mask thickness are drawn larger than real for visibility.</li>
@@ -77,7 +77,7 @@
       <ul>
         <li>K. R. Williams, K. Gupta, M. Wasilik, “Etch rates for micromachining processing – Part II”, <i>J. Microelectromech. Syst.</i> 12 (2003) 761–778.</li>
         <li>K. R. Williams, R. S. Muller, “Etch rates for micromachining processing”, <i>J. Microelectromech. Syst.</i> 5 (1996) 256–269.</li>
-        <li>H. Seidel, L. Csepregi, A. Heuberger, H. Baumgärtel, “Anisotropic etching of crystalline silicon in alkaline solutions”, <i>J. Electrochem. Soc.</i> 137 (1990) 3612; part II (influence of dopants), 3626.</li>
+        <li>H. Seidel, L. Csepregi, A. Heuberger, H. Baumgärtel, “Anisotropic etching of crystalline silicon in alkaline solutions. I. Orientation dependence and behavior of passivation layers”, <i>J. Electrochem. Soc.</i> 137 (1990) 3612; “II. Influence of dopants”, ibid. 3626.</li>
         <li>O. Tabata, “Anisotropic etching of Si in TMAH solutions”, <i>Sensors and Materials</i> 13 (2001) 271.</li>
         <li>M. J. Madou, <i>Fundamentals of Microfabrication and Nanotechnology</i>, CRC Press 2011.</li>
       </ul>
@@ -85,8 +85,8 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=8ba1ab6aee"></script>
-<script src="model.js?v=c5a1a60f0f"></script>
-<script src="widget.js?v=8c89eba286"></script>
+<script src="../../assets/mfw.js?v=c6857e2126"></script>
+<script src="model.js?v=c17e748611"></script>
+<script src="widget.js?v=2e8dc5e20a"></script>
 </body>
 </html>

@@ -14,7 +14,7 @@
     loop: true,                                                          // the plasma particles move all the time
     alt: v => `Reactive ion etching of ${nmS(v.hf)} SiO₂ through a ${nmS(v.W)} resist window: vertical rate ${v.Rv} nm/min, lateral ${fmt.num(v.Rl, 0)} nm/min (anisotropy ${fmt.num(v.A, 2)}). After ${minS(v.t)}: depth ${nmS(v.depth)}, undercut ${nmS(v.U)}, bias ${nmS(v.B)}; end point at ${minS(v.tc)}.`,
     source: 'Geometric etch-front model: a directional (ion-driven) vertical rate R_v plus an isotropic (radical-driven) rate R_l; anisotropy A = 1 − R_l/R_v, bias B = d_f − d_m = 2·R_l·t, complete isotropic etching gives B = 2h_f (J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 10). End point: normal-incidence reflectance of a He–Ne laser (632.8 nm) from the remaining SiO₂ on Si, thin-film interference with the optical constants of I. H. Malitson (1965) and M. A. Green (2008); one fringe per λ/2n = 217 nm. Etch rates and selectivities are free parameters with illustrative defaults – real values depend on gas, pressure, power and tool. The reactor drawing and the particle motion are schematic.',
-    freeText: v => `Explore – set the two rate components and the etch time. With A = ${fmt.num(v.A, 2)} the line widens by ${nmS(v.B)} after ${minS(v.t)}. Press <b>▶ Run etch</b> on the picture to watch the whole etch.`,
+    freeText: v => `Explore – set the two rate components and the etch time. With A = ${fmt.num(v.A, 2)} the opening widens by ${nmS(v.B)} after ${minS(v.t)}. Press <b>▶ Run etch</b> on the picture to watch the whole etch.`,
 
     params: {
       Rv: { value: 100, min: 20, max: 300, step: 5, label: 'Vertical (ion-driven) etch rate <i>R</i>_v', unit: 'nm/min', digits: 0 },
@@ -160,7 +160,7 @@
       <tr><td>end point t<sub>c</sub> = h<sub>f</sub>/R<sub>v</sub></td><td>${minS(v.tc)}</td></tr>
       <tr><td>overetch</td><td>${v.over > 0 ? `${fmt.num(v.overPct, 0)} % (${minS(v.over)})` : '– (film not cleared yet)'}</td></tr>
       <tr><td>undercut U per side</td><td>${nmS(v.U)}</td></tr>
-      <tr><td>bias B = d<sub>f</sub> − d<sub>m</sub> = 2U</td><td><b>${nmS(v.B)}</b> → line ${nmS(v.cd)}</td></tr>
+      <tr><td>bias B = d<sub>f</sub> − d<sub>m</sub> = 2U</td><td><b>${nmS(v.B)}</b> → opening ${nmS(v.cd)}</td></tr>
       <tr><td>Si recess during overetch</td><td>${nmS(v.recess)}</td></tr>
       <tr><td>resist left</td><td>${v.resist > 0 ? nmS(v.resist) : 'none'}</td></tr>
       <tr><td>interference: one fringe per</td><td>${fmt.num(v.period, 0)} nm = ${minS(v.periodT)} (${fmt.num(v.fringes, 1)} fringes in total)</td></tr>${warn}</table>`;
@@ -168,13 +168,13 @@
 
     steps: [
       { name: 'Reactive ion etching', caption: 'Ions accelerated through the sheath + reactive radicals', set: { Rv: 100, Rl: 15, t: 0, hf: 1000, W: 2000, Ssi: 15, Sr: 4, hr: 1500 }, duration: 0.5,
-        text: 'In a reactive ion etcher the RF-driven electrode under the wafer charges negatively, and a dark <b>sheath</b> forms above it. Positive ions from the plasma are accelerated straight down across the sheath and hit the wafer vertically; neutral <b>radicals</b> (e.g. F, CF<sub>x</sub> from a fluorocarbon gas) arrive from all directions. Ions drive vertical etching, radicals etch chemically in every direction.' },
+        text: 'In a reactive ion etcher the RF-driven electrode under the wafer charges negatively, and a dark <b>sheath</b> forms above it. Positive ions from the plasma are accelerated straight down across the sheath and hit the wafer vertically; neutral <b>radicals</b> (e.g. F, CF<sub>x</sub> from a fluorocarbon gas) arrive from all directions. Ions drive vertical etching, radicals etch chemically in every direction. (How fast radicals alone attack a film depends on the material: SiO₂ in fluorocarbon plasmas hardly etches without ions, Si and polymers do – so the lateral rate here is a free parameter.)' },
       { name: 'Anisotropic etch', caption: 'Only ion-driven etching: vertical walls, B = 0', set: { Rl: 0, t: 10 }, show: ['bias'], duration: 3,
         text: v => `With no chemical (lateral) component the etch goes straight down: anisotropy A = 1 − R<sub>l</sub>/R<sub>v</sub> = ${fmt.num(v.A, 2)}, vertical walls, and the opening in the film is exactly as wide as in the mask – bias B = d<sub>f</sub> − d<sub>m</sub> = 0.` },
       { name: 'Chemical component', caption: v => `R_l = ${fmt.num(v.Rl, 0)} nm/min: the walls recede – bias ${nmS(v.B)}`, set: { Rl: 30, t: 10 }, duration: 2,
-        text: v => `Radicals also attack the sidewalls. With R<sub>l</sub> = ${fmt.num(v.Rl, 0)} nm/min the anisotropy drops to A = ${fmt.num(v.A, 2)}: every side is undercut by U = R<sub>l</sub>·t = ${nmS(v.U)}, so the line is ${nmS(v.B)} wider than the mask (B = 2U). Undercut is the reason why fine lines need highly anisotropic etching.` },
+        text: v => `Radicals also attack the sidewalls. With R<sub>l</sub> = ${fmt.num(v.Rl, 0)} nm/min the anisotropy drops to A = ${fmt.num(v.A, 2)}: every side is undercut by U = R<sub>l</sub>·t = ${nmS(v.U)}, so the etched opening is ${nmS(v.B)} wider than the mask opening (B = 2U); a masked line would come out narrower by the same amount. Undercut is the reason why fine features need highly anisotropic etching.` },
       { name: 'Isotropic limit', caption: 'R_l = R_v: complete isotropic etching, B = 2h_f', set: { Rl: 100, t: 10 }, duration: 2,
-        text: v => `If the lateral rate equals the vertical one (A = 0), the etch is isotropic like a wet etch: at the end point the undercut equals the film thickness and B = 2·h<sub>f</sub> = ${nmS(v.B)}. For a ${nmS(v.W)} opening this almost doubles the line width.` },
+        text: v => `If the lateral rate equals the vertical one (A = 0), the etch is isotropic like a wet etch: at the end point the undercut equals the film thickness and B = 2·h<sub>f</sub> = ${nmS(v.B)}. For a ${nmS(v.W)} opening this makes the etched opening ${fmt.sig((v.W + v.B) / v.W, 2)}× as wide as the mask opening.` },
       { name: 'End point: laser interferometry', caption: 'One fringe per λ/2n ≈ 217 nm of oxide removed', set: { Rl: 15, t: 10 }, show: ['signal'], duration: 3,
         text: v => `A He–Ne laser (632.8 nm) shines vertically on an open area. Light reflected from the oxide surface and from the oxide/Si interface interferes, so the signal oscillates as the oxide gets thinner – one full fringe per λ/(2n) = ${fmt.num(v.period, 0)} nm, i.e. every ${minS(v.periodT)} here (${fmt.num(v.fringes, 1)} fringes for ${nmS(v.hf)}). When the oxide is gone the oscillation stops: the <b>end point</b> at ${minS(v.tc)}.` },
       { name: 'Overetch', caption: v => `${fmt.num(v.overPct, 0)} % overetch: Si recess ${nmS(v.recess)}, more undercut`, set: { t: 13 }, duration: 2,

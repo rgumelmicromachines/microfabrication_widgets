@@ -12,8 +12,8 @@
   MFW.widget('#app', {
     title: 'Thermal oxidation of silicon',
     alt: v => `Deal–Grove oxidation, ${AMB[v.amb]} at ${fmt.num(v.T, 0)} °C on (${v.ori}) silicon: after ${fmt.hours(v.t)} the oxide is ${thk(v.x)} thick, consuming ${thk(v.xsi)} of silicon.`,
-    source: 'Deal–Grove model (B. E. Deal, A. S. Grove, J. Appl. Phys. 36 (1965) 3770) with the rate constants of J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i> (2000), Table 6-2: dry O₂ at 1 atm, wet = H₂O steam (row “H₂O”, reproducing Deal &amp; Grove’s 640-torr data); (100) Si: linear-rate prefactor divided by 1.68. Dry oxidation uses the Deal–Grove convention of a 25 nm starting offset that absorbs the fast initial regime, so thicknesses below ~25 nm are not modelled and dry growth below ~950 °C is overestimated (≈ 1.5× at 900 °C, more at lower temperature and short times). Oxide colour: normal-incidence thin-film interference (SiO₂ index: Malitson 1965; Si n, k: Green 2008), CIE 1931 observer, daylight; screen colours are approximate.',
-    freeText: 'Explore – try to grow 100 nm of gate-quality dry oxide and 1 µm of field oxide. Which ambient and temperature would you choose, and how long does it take?',
+    source: 'Deal–Grove model (B. E. Deal, A. S. Grove, J. Appl. Phys. 36 (1965) 3770) with the rate constants of J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i> (2000), Table 6-2: dry O₂ at 1 atm, wet = H₂O steam (row “H₂O”, which agrees with Deal &amp; Grove’s 640-torr wet data within ≈ 15 %); (100) Si: linear-rate prefactor divided by 1.68. Dry oxidation uses the textbook convention (Plummer et al.) of a 25 nm starting offset – Deal &amp; Grove themselves adopted 23 nm – that absorbs the fast initial regime, so thicknesses below ~25 nm are not modelled and dry growth below ~950 °C is overestimated compared with measured furnace charts (e.g. EPFL CMI: ≈ 1.5× at 900 °C, more at lower temperature and short times). Oxide colour: normal-incidence thin-film interference (SiO₂ index: Malitson 1965; Si n, k: Green 2008), CIE 1931 observer, daylight; screen colours are approximate.',
+    freeText: 'Explore – try to grow 100 nm of dense dry oxide and 1 µm of thick (field or masking) oxide. Which ambient and temperature would you choose, and how long does it take?',
 
     params: {
       amb: { value: 'dry', label: 'Ambient', options: { dry: 'Dry O₂ (1 atm)', wet: 'Wet – H₂O steam' } },
@@ -105,7 +105,7 @@
         { label: `target ${thk(v.target)}`, color: C.gold, dash: DASH_TGT, alpha: p.vis('target') },
       ], { corner: 'br', size: 0.19 });
       if (p.vis('target') > 0.01 && v.tTarget > 0 && v.tTarget <= 100) {
-        p.alpha(p.vis('target'), () => ax.place(`t = ${fmt.hours(v.tTarget)}`, ax.around(Math.max(v.tTarget, 1 / 60), v.target, 0.12).concat(ax.around(Math.max(v.tTarget, 1 / 60), v.target, 0.32)), { color: C.gold, size: 0.21, key: 'ttarget' }));
+        p.alpha(p.vis('target'), () => ax.place(`t = ${fmt.hours(v.tTarget)}`, ax.around(Math.max(v.tTarget, 1 / 60), v.target, 0.12).concat(ax.around(Math.max(v.tTarget, 1 / 60), v.target, 0.32), ax.around(Math.max(v.tTarget, 1 / 60), v.target, 0.6), [[ax.x + 0.12, ax.Y(v.target) + 0.12, 'left', 'bottom'], [ax.x + 0.12, ax.Y(v.target) - 0.12, 'left', 'top']]), { color: C.gold, size: 0.21, key: 'ttarget' }));
       }
     },
 
@@ -125,7 +125,7 @@
       { name: 'Dry oxidation', caption: 'Si + O₂ → SiO₂ at the Si/SiO₂ interface', set: { amb: 'dry', ori: '100', T: 1000, t: 1, x0: 0 }, duration: 2,
         text: v => `One hour in dry O₂ at 1000 °C grows ${thk(v.x)} of oxide on a (100) wafer. Oxygen must diffuse <b>through</b> the existing oxide and reacts at the Si/SiO₂ interface, so the oxide grows into the silicon: 46 % of its thickness lies below the original surface.` },
       { name: 'Two rate limits', caption: 'Thin: reaction-limited · thick: diffusion-limited', show: ['limits'],
-        text: 'For thin oxides the interface reaction limits growth: x ≈ (B/A)(t+τ) (teal). For thick oxides diffusion through the oxide limits growth: x ≈ √(B(t+τ)) (purple). Once t ≫ τ these become straight lines of slope 1 and ½ on the log–log axes. The Deal–Grove curve (yellow) follows the lower of the two; they cross at x = A, where both terms of the equation are equal.' },
+        text: 'For thin oxides the interface reaction limits growth: x ≈ (B/A)(t+τ) (teal). For thick oxides diffusion through the oxide limits growth: x ≈ √(B(t+τ)) (purple). Once t ≫ τ these become straight lines of slope 1 and ½ on the log–log axes. The Deal–Grove curve (yellow) follows the lower of the two; the two limits cross at x = A (at t + τ = A²/B), where the real curve is still only at 0.62 A.' },
       { name: 'Long oxidation', caption: 'The curve bends towards the parabolic limit', set: { t: 30 }, duration: 3,
         text: v => `After 30 h the oxide is ${thk(v.x)} – thirty times longer than before but only ${fmt.sig(v.x / OX.thickness(v, 1, v.tau), 2)}× thicker. Growth slows because every oxygen molecule has to cross an ever thicker oxide.` },
       { name: 'Wet oxidation', caption: 'H₂O: B is ~30× larger than for O₂ at 1000 °C', set: { amb: 'wet', t: 1 }, show: ['compare'], duration: 2,

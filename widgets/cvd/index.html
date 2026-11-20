@@ -67,7 +67,7 @@
         <li>Stagnant-film model: one precursor, a first-order surface reaction and no gas-phase reactions. The rate constants are those of SiCl₄ + H₂ epitaxy; other precursors (SiH₄, SiH₂Cl₂, TEOS …) have their own <span class="tex">k_0</span> and <span class="tex">E_a</span>.</li>
         <li><span class="tex">h_G</span> is a free parameter and is taken as independent of temperature, as in Grove’s figure. In reality <span class="tex">D_G</span> grows with temperature, so the transport-limited rate rises slightly with <span class="tex">T</span>; here it even falls slightly, because <span class="tex">C_T = p/kT</span> decreases.</li>
         <li>The rate is proportional to <span class="tex">Y</span> only for dilute precursors. For SiCl₄ the measured rate peaks near <span class="tex">Y \approx 0.1</span> and turns into etching above <span class="tex">Y \approx 0.28</span> (HCl from the reaction etches Si; Theuerer 1961). Typical industrial growth uses <span class="tex">Y \approx 0.01</span>.</li>
-        <li>Pressure is fixed at 1 atm (APCVD / atmospheric epitaxy). At low pressure (LPCVD) <span class="tex">D_G \propto 1/p</span> makes <span class="tex">h_G</span> much larger, so LPCVD stays reaction-limited.</li>
+        <li>Pressure is fixed at 1 atm (APCVD / atmospheric epitaxy). At low pressure (LPCVD) <span class="tex">D_G \propto 1/p</span>; the boundary layer also thickens (<span class="tex">\delta \propto 1/\sqrt{\mathrm{Re}} \propto p^{-1/2}</span>), so net <span class="tex">h_G \propto p^{-1/2}</span> still grows strongly as the pressure drops – LPCVD stays reaction-limited.</li>
         <li>The cross-section is schematic: the drawn boundary-layer thickness only indicates <span class="tex">\delta = D_G/h_G</span> qualitatively, and the concentration profile is the linear stagnant-film profile.</li>
       </ul>
     </article>
@@ -83,7 +83,7 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=8ba1ab6aee"></script>
+<script src="../../assets/mfw.js?v=c6857e2126"></script>
 <script src="model.js?v=97e7c71749"></script>
 <script src="widget.js?v=0de0670a02"></script>
 </body>

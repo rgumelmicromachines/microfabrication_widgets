@@ -5,7 +5,6 @@
   const S = MFW_SPIN;
   const um = x => (x < 1 ? `${fmt.sig(x * 1000, 3)} nm` : `${fmt.sig(x, 3)} µm`);
   const rpmS = r => `${fmt.num(r, 0)} rpm`;
-  const still = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const nowMs = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   // ------------------------------------------------------------ the coating recipe (process time in s)
@@ -54,15 +53,22 @@
   const ebrDone = tp => M.clamp((tp - T.ebrOn) / 2, 0, 1);       // fraction of the edge bead dissolved
   const hash = k => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 
-  // ------------------------------------------------------------ process clock (restarts when a parameter changes)
-  let clock0 = nowMs();
-  const restart = () => { clock0 = nowMs(); };
-  const processTime = anim => {
+  // ------------------------------------------------------------ process clock: always starts on page load; Restart / Pause buttons
+  // on the stage; a parameter change restarts the run. The animation is the content of the page, so it plays even with
+  // prefers-reduced-motion – the Pause button stops it (WCAG 2.2.2).
+  let clock0 = nowMs(), pausedAt = null, syncButtons = () => {};
+  const restart = () => { clock0 = nowMs(); pausedAt = null; syncButtons(); };
+  const togglePause = () => {
+    if (pausedAt === null) pausedAt = nowMs();
+    else { clock0 += nowMs() - pausedAt; pausedAt = null; }
+    syncButtons();
+  };
+  const processTime = () => {
     if (typeof window !== 'undefined' && typeof window.MFW_SPIN_TP === 'number') return window.MFW_SPIN_TP;   // dev: freeze the clock
-    return anim ? (((nowMs() - clock0) / 1000) * ACCEL) % T.end : T.end - 0.01;
+    return ((((pausedAt === null ? nowMs() : pausedAt) - clock0) / 1000) * ACCEL) % T.end;
   };
 
-  MFW.widget('#app', {
+  const widget = MFW.widget('#app', {
     title: 'Spin coating of photoresist',
     loop: true,                                                     // redraw every frame (cheap); the clock stops when animation is off
     alt: v => `Spin coating at ${rpmS(v.rpm)} with ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}: final resist thickness ${um(v.t)} (${um(v.tBaked)} after soft bake).`,
@@ -74,7 +80,6 @@
       rpm: { value: 4000, min: 1000, max: 8000, step: 50, label: 'Final spin speed', format: rpmS },
       p: { value: 20, min: 10, max: 35, step: 0.5, label: 'Solids content of the resist <i>p</i>', unit: '%', digits: 1 },
       k: { value: 90, min: 80, max: 100, step: 1, label: 'Spinner constant <i>k</i>', digits: 0 },
-      anim: { value: !still, label: 'Animate the coating run (off: show the finished film)' },
     },
     layers: { window: false, bake: false, bead: false, band: false },
     explore: { show: ['window', 'bake', 'bead', 'band'] },
@@ -86,7 +91,7 @@
     ],
 
     draw(p, v, w) {
-      const run = v.anim, tp = processTime(run), rpmNow = rpmAt(tp, v.rpm);
+      const run = true, tp = processTime(), rpmNow = rpmAt(tp, v.rpm);
       // ======================================================== animated coater (oblique view, schematic)
       const cx = -3.5, cy = -0.55, Rx = 2.75, Ry = 0.8, Lx0 = -7.0, Lx1 = 0.0;
       const ang = 2 * Math.PI * (run ? rpmIntegral(tp, v.rpm) / VIS_RPM / ACCEL : 0.15);
@@ -200,7 +205,7 @@
       p.text(gLabel, gx, gy + 0.3, { size: 0.2, color: tp >= T.spin1 ? C.yellow : C.text, bold: tp >= T.spin1 });
       p.box(gx, gy - 0.08, gx + gw, gy + 0.08, { fill: C.grid, stroke: null });
       p.box(gx, gy - 0.08, gx + gw * M.clamp(frac, 0, 1), gy + 0.08, { fill: MAT.resist.stroke, stroke: null });
-      p.text(run ? 'schematic, not to scale · rotation 50× slower' : 'schematic, not to scale', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
+      p.text('schematic, not to scale · rotation 50× slower', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
       p.layer('bead', () => {
         if (tp >= T.ebrOn + 2) p.place('edge cleared by EBR', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.blue, key: 'bead' });
         else if (tp >= T.spin0 + 3) p.place('edge bead: up to 20–30 × t', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.text, key: 'bead' });
@@ -263,4 +268,21 @@
         text: v => `Resist piles up at the wafer edge into a ridge, the edge bead – up to 20–30 times thicker than the film (${um(v.bead[0])} … ${um(v.bead[1])} here). It would keep the mask away from the resist in contact printing, so it is dissolved right after coating: the wafer turns slowly while a nozzle sprays solvent onto the outer few millimetres (EBR, watch the end of the run), then it spins dry. Now switch to <b>Explore</b> and change the speed – the run starts again.` },
     ],
   });
+
+  // ------------------------------------------------------------ Restart / Pause buttons on the stage (top left, above the animation)
+  if (widget && widget.stage && typeof document !== 'undefined') {
+    const bar = document.createElement('div');
+    bar.className = 'mfw-stagebar';
+    const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title); b.addEventListener('click', fn); bar.appendChild(b); return b; };
+    mk('↻ Restart', 'Restart the coating run', () => { restart(); widget.dirty = true; });
+    const pb = mk('❚❚ Pause', 'Pause the coating run', () => { togglePause(); widget.dirty = true; });
+    syncButtons = () => {
+      const paused = pausedAt !== null;
+      pb.textContent = paused ? '▶ Play' : '❚❚ Pause';
+      pb.title = paused ? 'Continue the coating run' : 'Pause the coating run';
+      pb.setAttribute('aria-label', pb.title);
+      pb.setAttribute('aria-pressed', String(paused));
+    };
+    widget.stage.appendChild(bar);
+  }
 }());

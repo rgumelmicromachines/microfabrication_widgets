@@ -8,7 +8,7 @@
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
-<link rel="stylesheet" href="assets/mfw.css?v=6502a1168d">
+<link rel="stylesheet" href="assets/mfw.css?v=fb92859c18">
 <style>
   .thumb-si { fill: #3A3F4B; } .thumb-ox { fill: #1F4E66; } .thumb-res { fill: #4B3A5C; }
   :root[data-theme="light"] .thumb-si { fill: #C7CBD3; } :root[data-theme="light"] .thumb-ox { fill: #BFDDEC; } :root[data-theme="light"] .thumb-res { fill: #D9C7EA; }
@@ -88,6 +88,15 @@
       <div><h2>Etching silicon</h2><p>Anisotropic KOH/TMAH with 54.74° walls, isotropic etching, Bosch DRIE; mask selectivity and undercut.</p></div>
       <div class="tile-meta"><span>Etching</span><span class="go">Open →</span></div>
     </a>
+    <a class="tile" href="widgets/dryetch/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="0" y="120" width="140" height="60" class="thumb-si"/><rect x="0" y="80" width="140" height="40" class="thumb-ox"/>
+        <path d="M45 80 L45 120 L95 120 L95 80Z" fill="var(--stage)"/><rect x="0" y="62" width="45" height="18" class="thumb-res"/><rect x="95" y="62" width="45" height="18" class="thumb-res"/>
+        <path d="M60 10v40M70 10v40M80 10v40" class="thumb-line2"/><path d="M170 160h135M170 160V20" class="thumb-axis"/>
+        <path d="M172 60 C182 20 192 120 202 60 S222 20 232 60 S252 120 262 70 L300 70" class="thumb-line"/></svg></span>
+      <div><h2>Dry etching</h2><p>Reactive ion etching: ions and radicals, anisotropy and bias, overetch, selectivity and end-point detection by laser interferometry.</p></div>
+      <div class="tile-meta"><span>Etching</span><span class="go">Open →</span></div>
+    </a>
   </div>
 
   <h2 class="section-title">How to use the pages</h2>
@@ -107,6 +116,6 @@
 
   <footer class="footer">Microfabrication Interactive · open teaching material. Every model cites its sources and lists its limitations.</footer>
 </main>
-<script src="assets/mfw.js?v=6a4e0d341e"></script>
+<script src="assets/mfw.js?v=26e4227b47"></script>
 </body>
 </html>

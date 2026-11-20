@@ -814,6 +814,7 @@
     { slug: 'oxidation', topic: 'Oxidation', title: 'Thermal oxidation' },
     { slug: 'cvd', topic: 'Thin-film deposition', title: 'CVD growth rate' },
     { slug: 'etching', topic: 'Etching', title: 'Etching silicon' },
+    { slug: 'dryetch', topic: 'Etching', title: 'Dry etching' },
   ];
   PAGES.forEach((p, i) => { p.no = i + 1; });
   const escH = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');

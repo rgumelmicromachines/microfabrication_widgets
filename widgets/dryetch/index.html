@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dry etching · Microfabrication Interactive</title>
+<meta name="description" content="Interactive reactive ion etching of SiO₂: ions and radicals, anisotropy, bias and undercut, overetch, selectivity and end-point detection by laser interferometry.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=fb92859c18">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Etching</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Etching · plasma</p>
+      <h1>Dry etching: anisotropy, bias and end point</h1>
+    </div>
+    <p class="lede">Ions etch straight down, radicals etch in every direction. How wide does the line come out – and how do you know when to stop?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key relations</h2>
+      <h3>Anisotropy and bias</h3>
+      <p>With a vertical (ion-driven) etch rate <span class="tex">R_v</span> and a lateral (chemical) rate <span class="tex">R_l</span>:</p>
+      <div class="tex-display">A = 1 - \frac{R_l}{R_v}, \qquad U = R_l\,t, \qquad B \equiv d_f - d_m = 2U</div>
+      <p>Complete anisotropic etching: <span class="tex">A = 1,\ B = 0</span>. Complete isotropic etching: <span class="tex">A = 0</span> and, at the end point, <span class="tex">B = 2h_f</span>.</p>
+      <h3>End point and overetch</h3>
+      <div class="tex-display">t_c = \frac{h_f}{R_v}, \qquad \text{overetch} = \frac{t - t_c}{t_c}, \qquad \text{Si recess} = \frac{R_v}{S_{\mathrm{SiO_2:Si}}}\,(t - t_c)</div>
+      <h3>Laser interferometry</h3>
+      <p>The beam reflected from the film surface and from the film/substrate interface interferes; each removed thickness</p>
+      <div class="tex-display">\Delta d = \frac{\lambda}{2n} = \frac{632.8\ \mathrm{nm}}{2\cdot 1.457} = 217\ \mathrm{nm}</div>
+      <p>gives one full fringe (SiO₂ at the He–Ne wavelength). The fringe period in time, <span class="tex">\Delta t = \Delta d / R_v</span>, measures the etch rate in situ; the end of the oscillation marks the end point.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>500 nm SiO₂, <span class="tex">R_v = 50</span> nm/min, <span class="tex">R_l = 5</span> nm/min, mask opening 1 µm, 12 min etch, selectivity SiO₂ : Si = 20. When is the end point, how much overetch is that, and what are the bias and the Si recess?
+          <details><summary>Answer</summary><span class="tex">t_c = 500/50 = 10\ \mathrm{min}</span>, overetch 20 %. <span class="tex">U = 5\cdot 12 = 60\ \mathrm{nm}</span>, <span class="tex">B = 120\ \mathrm{nm}</span>, line 1.12 µm. Recess <span class="tex">50/20 \cdot 2 = 5\ \mathrm{nm}</span>. Check it in Explore mode.</details></li>
+        <li>You count the fringes of the laser signal while etching 800 nm of oxide. How many do you see, and what is the etch rate if one fringe takes 2.2 min?
+          <details><summary>Answer</summary><span class="tex">N = 2nh_f/\lambda = 2\cdot1.457\cdot800/632.8 \approx 3.7</span> fringes. <span class="tex">R_v = 217\ \mathrm{nm} / 2.2\ \mathrm{min} \approx 99\ \mathrm{nm/min}</span>.</details></li>
+        <li>Why does a longer overetch widen the line even when the substrate is barely etched?
+          <details><summary>Answer</summary>The lateral (chemical) component keeps attacking the sidewalls of the film for as long as the plasma is on: <span class="tex">U = R_l t</span> grows with the total time, not only until the end point.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Geometric etch-front model: a constant directional rate plus a constant isotropic rate. Real profiles also show tapering by sidewall passivation, bowing, trenching at the foot, faceting of the mask and microloading; none of these are modelled.</li>
+        <li>Etch rates and selectivities are free parameters. The defaults are illustrative values for oxide etching in a fluorocarbon RIE; real values depend on gas mixture, pressure, power and tool and must be measured.</li>
+        <li>The resist erodes only vertically and uniformly; a lost mask is reported but the subsequent attack of the film is not drawn.</li>
+        <li>End-point signal: ideal normal-incidence reflectance of a flat SiO₂ layer on Si (no roughness, no beam divergence, no change of the optical constants during etching). Real signals are noisier and their amplitude varies.</li>
+        <li>The reactor and the particle motion are schematic; the cross-section of the feature is to scale.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 10 (etching: anisotropy, bias, selectivity, plasma and RIE).</li>
+        <li>I. H. Malitson, “Interspecimen comparison of the refractive index of fused silica”, <i>J. Opt. Soc. Am.</i> 55 (1965) 1205.</li>
+        <li>M. A. Green, “Self-consistent optical parameters of intrinsic silicon at 300 K”, <i>Sol. Energy Mater. Sol. Cells</i> 92 (2008) 1305.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=26e4227b47"></script>
+<script src="../oxidation/model.js?v=53e906c691"></script>
+<script src="model.js?v=4c66e4c583"></script>
+<script src="widget.js?v=babe36fae2"></script>
+</body>
+</html>

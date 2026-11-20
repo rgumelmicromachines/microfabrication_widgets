@@ -18,7 +18,7 @@ tests/stability.js            browser: drags every slider, reports any layout mo
 tests/contact-sheet.js        browser: renders many states on one canvas for visual review
 ```
 
-Pages: `segregation`, `spincoating`, `lithography`, `diffusion`, `oxidation`, `cvd`, `etching`. The page list for the lesson menu (order and topic) is `PAGES` in `assets/mfw.js`.
+Pages: `segregation`, `spincoating`, `lithography`, `diffusion`, `oxidation`, `cvd`, `etching`, `dryetch`. The page list for the lesson menu (order and topic) is `PAGES` in `assets/mfw.js`.
 
 ## Run locally
 

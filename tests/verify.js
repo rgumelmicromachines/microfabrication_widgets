@@ -207,5 +207,30 @@ check('tour: soft bake 1.8 µm → 1.35 µm', SP.state({ rpm: 4000, p: 20, k: 90
   n++; const okW = !R.warn && SP.recipe({ ...D, rpm: 1500 }).warn; if (!okW) fails++;
   console.log(`${okW ? 'ok  ' : 'FAIL'}  recipe: warning only when the spin-dry or rinse speed is not below the coating speed`); }
 
+// ------------------------------------------------------------------ dry etching
+const DE = W('dryetch');
+section('Dry etching (geometric etch front, laser-interferometric end point)');
+{ const o = { hf: 1000, Rv: 100, Rl: 15, W: 2000, t: 12, Ssi: 15, Sr: 4, hr: 1500 };
+  const s = DE.state(o);
+  check('end point t_c = h_f/R_v (min)', s.tc, 10, 1e-12);
+  check('undercut U = R_l·t (nm)', s.U, 180, 1e-12);
+  check('bias B = d_f − d_m = 2U (nm)', s.cd - o.W, 2 * s.U, 1e-12);
+  check('anisotropy A = 1 − R_l/R_v', s.A, 0.85, 1e-12);
+  check('Si recess = R_v/S · overetch time (nm)', s.recess, 100 / 15 * 2, 1e-12);
+  check('resist left = h_r − R_v t/S_r (nm)', s.resist, 1500 - 1200 / 4, 1e-12);
+  const iso = DE.state({ ...o, Rl: 100, t: 10 });
+  check('complete isotropic etch at the end point: B = 2h_f (nm)', iso.B, 2000, 1e-12);
+  check('complete isotropic etch: A = 0', iso.A, 0, 0, 1e-12);
+  const an = DE.state({ ...o, Rl: 0, t: 10 });
+  check('complete anisotropic etch: B = 0', an.B, 0, 0, 1e-12);
+  check('anisotropic etch: vertical wall (edge at top = edge at bottom)', an.edge(0), an.edge(999), 1e-12);
+  check('isotropic etch: rounded wall – at the film bottom the edge is back at the mask edge', iso.edge(1000), o.W / 2, 1e-9);
+  check('bare Si reflectance at 632.8 nm (Green 2008: n = 3.88, k = 0.016)', DE.reflectance(0), ((3.877 - 1) ** 2 + 0.0163 ** 2) / ((3.877 + 1) ** 2 + 0.0163 ** 2), 1e-3);
+  check('one fringe per λ/2n: R(d + λ/2n) = R(d)', DE.reflectance(400 + s.period), DE.reflectance(400), 1e-9);
+  check('fringe period for SiO₂ at 632.8 nm (nm)', s.period, 217.2, 1e-3);
+  check('page task 1: bias (nm)', DE.state({ hf: 500, Rv: 50, Rl: 5, W: 1000, t: 12, Ssi: 20, Sr: 3, hr: 1000 }).B, 120, 1e-12);
+  check('page task 1: Si recess (nm)', DE.state({ hf: 500, Rv: 50, Rl: 5, W: 1000, t: 12, Ssi: 20, Sr: 3, hr: 1000 }).recess, 5, 1e-12);
+  check('page task 2: fringes in 800 nm', DE.state({ ...o, hf: 800 }).fringes, 3.68, 0.01); }
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

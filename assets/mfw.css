@@ -154,6 +154,7 @@ kbd { border: 1px solid var(--line-strong); border-bottom-width: 2px; border-rad
 .mfw-group[open] > summary { margin-bottom: 10px; }
 .mfw-group-body { grid-template-columns: 1fr; }
 .mfw-stagebar { position: absolute; left: 1.4%; top: 2.2%; display: flex; gap: 6px; z-index: 2; }
+.mfw-stagebar-right { left: auto; right: 1.4%; }
 .mfw .mfw-stagebar button { font-size: max(12px, calc(var(--u) * 0.24)); padding: 0.25em 0.7em; border-radius: 999px; background: color-mix(in srgb, var(--surface-2) 85%, transparent); }
 .mfw .mfw-stagebar button[aria-pressed="true"] { border-color: var(--accent-line); color: var(--accent); }
 .mfw-error { position: absolute; inset: auto 0 0 0; background: #3a0d0d; color: #ffb3b3; font: 13px/1.4 monospace; padding: 6px 10px; white-space: pre-wrap; }

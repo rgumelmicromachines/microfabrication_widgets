@@ -8,7 +8,7 @@
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
-<link rel="stylesheet" href="../../assets/mfw.css?v=25fa82a5ca">
+<link rel="stylesheet" href="../../assets/mfw.css?v=6502a1168d">
 </head>
 <body>
 <header class="site-header">
@@ -63,7 +63,7 @@
         <li>The robust part is the scaling with speed, <span class="tex">t \propto w^{-1/2}</span>, which holds for low- and medium-viscosity resists. Thick, viscous resists (e.g. SU-8) follow a steeper law, closer to <span class="tex">w^{-1}</span>.</li>
         <li>The absolute thickness depends on everything lumped into <span class="tex">k</span> – spin time, acceleration, solvent, exhaust, temperature and humidity. Use a measured spin curve for your resist and spinner.</li>
         <li>The soft-bake shrinkage (up to ~25 %) and the edge-bead height (up to 20–30 × t) are typical upper values; the drawing of the edge bead is not to scale.</li>
-        <li>The coating run is a schematic animation of a typical recipe (dispense at rest, 8 s spread at 500 rpm, ramp to the final speed, 60 s spin, edge bead removal with a solvent jet at about 1000 rpm, then 15 s spin dry at about 2000 rpm – both below the coating speed so the film does not thin further). It is a time-lapse – real time while dispensing, 2× while spreading, 8× during the long spin, 3× for edge bead removal, 4× for the spin dry – and the rotation is drawn 50× slower than at 4000 rpm. The thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution for a liquid film, h ∝ 1/√(1 + t/τ) with τ ∝ 1/ω² (fast at first, then slower), followed by drying; the final thickness comes from the spin curve.</li>
+        <li>The coating run is a schematic animation of the recipe set in the panel (all speeds, times, the acceleration and the edge bead removal can be changed under <i>Spin recipe</i>); the default is a typical recipe (dispense at rest, 8 s spread at 500 rpm, ramp to the final speed, 60 s spin, edge bead removal with a solvent jet at about 1000 rpm, then 15 s spin dry at about 2000 rpm – both below the coating speed so the film does not thin further). It is a time-lapse – real time while dispensing, 2× while spreading, 8× during the long spin, 3× for edge bead removal, 4× for the spin dry – and the rotation is drawn 50× slower than at 4000 rpm. The thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution for a liquid film, h ∝ 1/√(1 + t/τ) with τ ∝ 1/ω² (fast at first, then slower), followed by drying; the final thickness comes from the spin curve.</li>
       </ul>
     </article>
 
@@ -79,8 +79,8 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=c76bd3d09b"></script>
-<script src="model.js?v=112e8e0e1b"></script>
-<script src="widget.js?v=98a314e4aa"></script>
+<script src="../../assets/mfw.js?v=6a4e0d341e"></script>
+<script src="model.js?v=34817fb57f"></script>
+<script src="widget.js?v=5deb2cfc15"></script>
 </body>
 </html>

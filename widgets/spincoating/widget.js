@@ -1,56 +1,46 @@
-/* Spin coating of photoresist: an animated coating run (dispense → spread → spin-up → spin-off → stop)
-   and the spin curve t = k·p²/√w. Topic: lithography. */
+/* Spin coating of photoresist: an animated, configurable coating run (dispense → spread → spin-up → coating spin →
+   edge bead removal → spin dry → stop) and the spin curve t = k·p²/√w. Topic: lithography. */
 (function () {
   const { C, M, fmt, MAT, mix } = MFW;
   const S = MFW_SPIN;
   const um = x => (x < 1 ? `${fmt.sig(x * 1000, 3)} nm` : `${fmt.sig(x, 3)} µm`);
   const rpmS = r => `${fmt.num(r, 0)} rpm`;
+  const secS = x => `${fmt.num(x, x % 1 ? 1 : 0)} s`;
   const nowMs = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
-
-  // ------------------------------------------------------------ the coating recipe (process time in s)
-  // dispense at rest, spread 8 s at 500 rpm, ramp to the final speed, spin 60 s, slow down for edge bead removal (EBR),
-  // solvent jet at the edge, then spin dry for 15 s at a speed below the coating speed (so the film does not thin further), stop
-  const T = { disp: 3, spread0: 3.5, spread1: 11.5, spin0: 12.5, spin1: 72.5, ebr0: 73.5, ebrOn: 74, ebrOff: 79, dry0: 80, dry1: 95, stop: 96.5, end: 100 };
-  const SPREAD = 500;
-  const ebrRpm = rpm => Math.min(1000, 0.5 * rpm);                // solvent rinse: slow
-  const dryRpm = rpm => Math.min(2000, 0.75 * rpm);               // spin dry: faster than the rinse, always below the coating speed
   const VIS_RPM = 3000;                                  // drawn rotation: rpm/3000 rev/s = 50× slower than real at 4000 rpm
-  // the animation is a time-lapse with a different speed in each phase (process seconds per animation second)
-  const LAPSE = [[0, 1], [T.disp, 2], [T.spin0, 8], [T.spin1, 3], [T.dry0, 4], [T.stop, 1.5], [T.end, 1.5]];
-  const SEG = LAPSE.slice(0, -1).map(([p0, sp], i) => ({ p0, p1: LAPSE[i + 1][0], sp }));
-  let acc = 0;
-  SEG.forEach(s => { s.d0 = acc; acc += (s.p1 - s.p0) / s.sp; s.d1 = acc; });
-  const DISPLAY = acc;                                   // length of one run on screen (s)
-  const procAt = d => { const s = SEG.find(g => d < g.d1) || SEG[SEG.length - 1]; return Math.min(s.p1, s.p0 + (d - s.d0) * s.sp); };
-  const dispAt = tp => { const s = SEG.find(g => tp < g.p1) || SEG[SEG.length - 1]; return s.d0 + (Math.min(tp, s.p1) - s.p0) / s.sp; };
-  const lapseAt = tp => (SEG.find(g => tp < g.p1) || SEG[SEG.length - 1]).sp;
-  const profile = rpm => [[0, 0], [T.disp, 0], [T.spread0, SPREAD], [T.spread1, SPREAD], [T.spin0, rpm], [T.spin1, rpm],
-    [T.ebr0, ebrRpm(rpm)], [T.ebrOff, ebrRpm(rpm)], [T.dry0, dryRpm(rpm)], [T.dry1, dryRpm(rpm)], [T.stop, 0], [T.end, 0]];
-  function rpmAt(tp, rpm) {
-    const pts = profile(rpm);
-    for (let i = 1; i < pts.length; i++) if (tp <= pts[i][0]) { const [a, ya] = pts[i - 1], [b, yb] = pts[i]; return ya + (yb - ya) * (tp - a) / (b - a); }
-    return 0;
-  }
-  const STAGES = [
-    [T.disp, '1  Dispense – resist is dropped on the resting wafer'],
-    [T.spread1, '2  Spread at 500 rpm – the puddle covers the wafer'],
-    [T.spin0, '3  Spin-up to the final speed'],
-    [T.spin1, '4  Spin-off – excess resist flies off, solvent evaporates'],
-    [T.ebrOff, '5  Edge bead removal – a solvent jet at the wafer edge'],
-    [T.stop, '6  Spin dry below the coating speed – the solvent dries off'],
-    [Infinity, '7  Stop – dry film with a clean edge'],
-  ];
-  const stageOf = tp => STAGES.find(s => tp < s[0])[1];
-  // film thinning during the spin (schematic): Emslie–Bonner–Peck-like 1/√(1 + t/τ) with τ ∝ 1/ω²
-  // (1 = liquid film after spreading, 0 = dry film; the second factor lets the film reach its final value at the end of the spin)
-  const thinning = (tp, rpm) => {
-    if (tp < T.spread1) return 1;
-    const tau = 5 * (4000 / rpm) ** 2, s = tp - T.spread1;
-    const u = Math.min(1, s / (T.spin1 - T.spread1));
-    return (1 - u) ** 0.15 / Math.sqrt(1 + s / tau);
-  };
-  const ebrDone = tp => M.clamp((tp - T.ebrOn) / 2, 0, 1);       // fraction of the edge bead dissolved
   const hash = k => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const RECIPE_KEYS = ['rpm', 'spinTime', 'spreadRpm', 'spreadTime', 'accel', 'ebr', 'ebrRpm', 'ebrTime', 'dryRpm', 'dryTime'];
+  const DEFAULTS = { rpm: 4000, spinTime: 60, spreadRpm: 500, spreadTime: 8, accel: 2000, ebr: true, ebrRpm: 1000, ebrTime: 5, dryRpm: 2000, dryTime: 15 };
+
+  // ------------------------------------------------------------ the recipe of the current parameters (memoised)
+  let rKey = null, R = null;
+  function recipeOf(v) {
+    const key = RECIPE_KEYS.map(k => v[k]).join('|');
+    if (key === rKey) return R;
+    rKey = key;
+    R = S.recipe(v);
+    const T = R.T;
+    R.stages = [
+      [T.disp, 'Dispense – resist is dropped on the resting wafer'],
+      ...(R.hasSpread ? [[T.spread1, `Spread at ${rpmS(v.spreadRpm)} – the puddle covers the wafer`]] : []),
+      [T.spin0, `Spin-up to ${rpmS(v.rpm)}`],
+      [T.spin1, 'Coating spin – excess resist flies off, solvent evaporates'],
+      ...(R.ebr ? [[T.ebrOff, 'Edge bead removal – a solvent jet at the wafer edge'],
+        [T.stop, `Spin dry at ${rpmS(v.dryRpm)} – the solvent dries off`]] : []),
+      [Infinity, R.ebr ? 'Stop – dry film with a clean edge' : 'Stop – dry film; the edge bead remains (no EBR)'],
+    ].map(([t, txt], i) => [t, `${i + 1}  ${txt}`]);                // numbered in the order of this recipe
+    R.stageOf = tp => R.stages.find(s => tp < s[0])[1];
+    // film thinning during the coating spin (schematic): Emslie–Bonner–Peck-like 1/√(1 + t/τ) with τ ∝ 1/ω²;
+    // 1 = liquid film after spreading, 0 = dry film at the end of the coating spin
+    R.thinning = tp => {
+      if (tp < T.wetEnd) return 1;
+      const tau = 5 * (4000 / v.rpm) ** 2, s = tp - T.wetEnd;
+      const u = Math.min(1, s / Math.max(1e-6, T.spin1 - T.wetEnd));
+      return (1 - u) ** 0.15 / Math.sqrt(1 + s / tau);
+    };
+    R.ebrDone = tp => (R.ebr ? M.clamp((tp - T.ebrOn) / Math.min(2, v.ebrTime), 0, 1) : 0);   // fraction of the edge bead dissolved
+    return R;
+  }
 
   // ------------------------------------------------------------ animation clock: always starts on page load; Restart / Pause buttons
   // on the stage; a parameter change restarts the run. The animation is the content of the page, so it plays even with
@@ -64,26 +54,36 @@
     syncButtons();
   };
   /** Animation time d (s since the start of this run, wraps around) and the matching process time tp. */
-  const clock = () => {
+  const clock = Rc => {
     if (typeof window !== 'undefined' && typeof window.MFW_SPIN_TP === 'number') {               // dev: freeze at a process time
-      const tp = Math.min(window.MFW_SPIN_TP, T.end - 1e-6); return { d: dispAt(tp), tp };
+      const tp = Math.min(window.MFW_SPIN_TP, Rc.T.end - 1e-6); return { d: Rc.dispAt(tp), tp };
     }
-    const d = ((((pausedAt === null ? nowMs() : pausedAt) - clock0) / 1000) % DISPLAY + DISPLAY) % DISPLAY;
-    return { d, tp: procAt(d) };
+    const D = Rc.display, d = ((((pausedAt === null ? nowMs() : pausedAt) - clock0) / 1000) % D + D) % D;
+    return { d, tp: Rc.procAt(d) };
   };
 
   const widget = MFW.widget('#app', {
     title: 'Spin coating of photoresist',
     loop: true,                                                     // redraw every frame (cheap); the clock stops when animation is off
     alt: v => `Spin coating at ${rpmS(v.rpm)} with ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}: final resist thickness ${um(v.t)} (${um(v.tBaked)} after soft bake).`,
-    source: 'Final thickness from the empirical spin curve t = k·p²/√w (t in Å, k = spinner constant 80–100, p = solids content in %, w = rpm/1000), the typical 3000–6000 rpm and 1–2 µm, the ~25 % thinning in the soft bake and the edge bead of up to 20–30× the film thickness as quoted in microfabrication course notes (e.g. Wake Forest University, NAN 242, “Photolithography”). The units of t are not printed with the rule; Å is the only choice consistent with the typical values. Spin-speed exponent ½: DTU Nanolab, Litho Tool Package – Spin coating. The animation is schematic: the recipe (dispense, 8 s spread at 500 rpm, 60 s spin, edge bead removal with a solvent jet at about 1000 rpm, 15 s spin dry at about 2000 rpm, both kept below the coating speed) is a typical one, shown as a time-lapse (1× to 8× depending on the phase), the rotation is slowed down 50×, and the thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution (fast at first, then slower), not its numbers.',
-    freeText: v => `Explore – the coating run restarts whenever you change a parameter. With ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}, a 1.5 µm film needs about ${rpmS(Math.round(S.speedFor(1.5, v.p, v.k) / 10) * 10)}.`,
+    source: 'Final thickness from the empirical spin curve t = k·p²/√w (t in Å, k = spinner constant 80–100, p = solids content in %, w = rpm/1000), the typical 3000–6000 rpm and 1–2 µm, the ~25 % thinning in the soft bake and the edge bead of up to 20–30× the film thickness as quoted in microfabrication course notes (e.g. Wake Forest University, NAN 242, “Photolithography”). The units of t are not printed with the rule; Å is the only choice consistent with the typical values. Spin-speed exponent ½: DTU Nanolab, Litho Tool Package – Spin coating. The animation is schematic. The recipe is configurable; its default (dispense, 8 s spread at 500 rpm, 60 s spin, edge bead removal with a solvent jet at about 1000 rpm, 15 s spin dry at about 2000 rpm, both below the coating speed, ramps at 2000 rpm/s) is a typical one, shown as a time-lapse whose speed depends on the phase; the rotation is slowed down 50×, and the thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution (fast at first, then slower), not its numbers.',
+    freeText: v => `Explore – the coating run restarts whenever you change a parameter; open <b>Spin recipe</b> below to set every speed and time. With ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}, a 1.5 µm film needs about ${rpmS(Math.round(S.speedFor(1.5, v.p, v.k) / 10) * 10)}.`,
     onInput: () => restart(),
 
     params: {
-      rpm: { value: 4000, min: 1000, max: 8000, step: 50, label: 'Final spin speed', format: rpmS },
+      rpm: { value: DEFAULTS.rpm, min: 1000, max: 8000, step: 50, label: 'Coating (final) spin speed', format: rpmS },
       p: { value: 20, min: 10, max: 35, step: 0.5, label: 'Solids content of the resist <i>p</i>', unit: '%', digits: 1 },
       k: { value: 90, min: 80, max: 100, step: 1, label: 'Spinner constant <i>k</i>', digits: 0 },
+      // the rest of the recipe – in a collapsible section of the panel
+      spinTime: { value: DEFAULTS.spinTime, min: 10, max: 120, step: 5, label: 'Coating time at the final speed', format: secS, group: 'Spin recipe – speeds, times, EBR' },
+      spreadRpm: { value: DEFAULTS.spreadRpm, min: 0, max: 1500, step: 50, label: 'Spread speed (0 = no spread step)', format: r => (r ? rpmS(r) : 'off'), group: 'Spin recipe – speeds, times, EBR' },
+      spreadTime: { value: DEFAULTS.spreadTime, min: 0, max: 20, step: 0.5, label: 'Spread time (unused when the spread speed is 0)', format: secS, group: 'Spin recipe – speeds, times, EBR' },
+      accel: { value: DEFAULTS.accel, min: 500, max: 10000, step: 100, label: 'Acceleration (ramps)', format: a => `${fmt.num(a, 0)} rpm/s`, group: 'Spin recipe – speeds, times, EBR' },
+      ebr: { value: DEFAULTS.ebr, label: 'Edge bead removal (solvent rinse) and spin dry', group: 'Spin recipe – speeds, times, EBR' },
+      ebrRpm: { value: DEFAULTS.ebrRpm, min: 200, max: 3000, step: 50, label: 'EBR rinse speed', format: rpmS, group: 'Spin recipe – speeds, times, EBR', when: v => v.ebr },
+      ebrTime: { value: DEFAULTS.ebrTime, min: 2, max: 20, step: 0.5, label: 'EBR rinse time', format: secS, group: 'Spin recipe – speeds, times, EBR', when: v => v.ebr },
+      dryRpm: { value: DEFAULTS.dryRpm, min: 500, max: 5000, step: 50, label: 'Spin-dry speed (keep below the coating speed)', format: rpmS, group: 'Spin recipe – speeds, times, EBR', when: v => v.ebr },
+      dryTime: { value: DEFAULTS.dryTime, min: 5, max: 60, step: 1, label: 'Spin-dry time', format: secS, group: 'Spin recipe – speeds, times, EBR', when: v => v.ebr },
     },
     layers: { window: false, bake: false, bead: false, band: false },
     explore: { show: ['window', 'bake', 'bead', 'band'] },
@@ -95,7 +95,7 @@
     ],
 
     draw(p, v, w) {
-      const { d, tp } = clock(), rpmNow = rpmAt(tp, v.rpm);
+      const R = recipeOf(v), T = R.T, { d, tp } = clock(R), rpmNow = R.rpmAt(tp);
       // ======================================================== animated coater (oblique view, schematic)
       const cx = -3.5, cy = -0.55, Rx = 2.75, Ry = 0.8, Lx0 = -7.0, Lx1 = 0.0;
       if (lastD !== null && d >= lastD) angle += 2 * Math.PI * rpmNow / VIS_RPM * (d - lastD);   // rpm/3000 rev per animation second
@@ -104,9 +104,9 @@
       const P = (u, q, h = 0) => [cx + u * Rx, cy + q * Ry + h];        // wafer plane (u, q in units of the radius) → scene
       const ell = (r, h, n = 72) => M.linspace(0, 2 * Math.PI, n).map(a => P(r * Math.cos(a), r * Math.sin(a), h));
       // stage title and clock
-      p.text(stageOf(tp), Lx0 + 0.1, 2.75, { size: 0.23, color: C.text, bold: true });
+      p.text(R.stageOf(tp), Lx0 + 0.1, 2.75, { size: 0.23, color: C.text, bold: true });
       p.text(`process time ${fmt.num(tp, 1)} s · ${rpmS(Math.round(rpmNow / 10) * 10)}`, Lx0 + 0.1, 2.4, { size: 0.21, color: C.yellow });
-      p.text(`time-lapse ×${fmt.num(lapseAt(tp), lapseAt(tp) % 1 ? 1 : 0)}`, Lx1 - 0.2, 2.4, { size: 0.21, align: 'right', color: C.muted });
+      p.text(`time-lapse ×${fmt.num(R.lapseAt(tp), R.lapseAt(tp) % 1 ? 1 : 0)}`, Lx1 - 0.2, 2.4, { size: 0.21, align: 'right', color: C.muted });
       // chuck, shaft and motor
       p.box(cx - 0.55, cy - 1.55, cx + 0.55, cy - 0.12, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
       p.ellipse(cx, cy - 1.55, 0.55, 0.16, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
@@ -125,14 +125,14 @@
       }
       // resist: a low dome while it is a puddle, a flat film once it covers the wafer (height exaggerated)
       const vol = M.clamp(tp / T.disp, 0, 1);
-      const spreadU = M.clamp((tp - T.disp) / (T.spread1 - T.disp - 1), 0, 1);
-      const ebr = ebrDone(tp);
+      const spreadU = M.clamp((tp - T.disp) / (T.spreadEnd - T.disp), 0, 1);
+      const ebr = R.ebrDone(tp);
       const rr = tp < T.disp ? 0.3 * Math.sqrt(vol) : (0.3 + 0.67 * (1 - (1 - spreadU) ** 2)) - 0.07 * ebr;   // EBR clears the outer rim
-      const f = thinning(tp, v.rpm);                                           // 1 → 0 during the spin
+      const f = R.thinning(tp);                                           // 1 → 0 during the spin
       const hFinal = 0.025 + 0.04 * M.clamp(v.t / 4, 0, 1);                   // drawn thickness of the dry film
       const hStart = 0.06;
-      const h = tp < T.disp ? 0.02 + 0.06 * vol : tp < T.spread1 ? 0.08 - (0.08 - hStart) * spreadU : hFinal + (hStart - hFinal) * f;
-      const topScale = tp < T.spread1 ? 0.88 + 0.11 * spreadU : 0.995;           // slightly smaller top → rounded edge
+      const h = tp < T.disp ? 0.02 + 0.06 * vol : tp < T.wetEnd ? 0.08 - (0.08 - hStart) * spreadU : hFinal + (hStart - hFinal) * f;
+      const topScale = tp < T.wetEnd ? 0.88 + 0.11 * spreadU : 0.995;           // slightly smaller top → rounded edge
       if (vol > 0) {
         const top = ell(rr * topScale, h), base = ell(rr, 0);
         p.polygon(FRONT(base).concat(FRONT(top).reverse()), { fill: mix(MAT.resist.fill, MAT.resist.stroke, 0.45), stroke: null });
@@ -171,15 +171,16 @@
       {
         const dt = 0.02, life = 0.8;
         for (let k = Math.floor((d - life) / dt); k <= Math.floor(d / dt); k++) {
-          const born = k * dt, age = d - born, bp = procAt(Math.max(0, born));      // birth in animation time → process time
-          if (born < 0 || bp < T.spread0 || bp > T.spin1 || age < 0 || age > life) continue;
-          const f0 = thinning(bp, v.rpm), rate = bp < T.spread1 ? 0.06 + 0.12 * (bp - T.spread0) / (T.spread1 - T.spread0) : 0.08 + 0.9 * f0 * f0;
+          const born = k * dt, age = d - born, bp = R.procAt(Math.max(0, born));    // birth in animation time → process time
+          const rpmB = R.rpmAt(bp);
+          if (born < 0 || rpmB < 50 || bp < T.disp || bp > T.spin1 || age < 0 || age > life) continue;
+          const f0 = R.thinning(bp), rate = bp < T.wetEnd ? 0.1 * Math.min(1, rpmB / 500) : 0.08 + 0.9 * f0 * f0;
           if (hash(k) > rate) continue;
-          fling(born, 2 * Math.PI * hash(k + 0.5), MAT.resist.stroke, life, 0.5 + 2.7 * rpmAt(bp, v.rpm) / 8000);
+          fling(born, 2 * Math.PI * hash(k + 0.5), MAT.resist.stroke, life, 0.5 + 2.7 * rpmB / 8000);
         }
       }
       // EBR: a second nozzle moves over the wafer edge and sprays solvent while the wafer turns slowly
-      const nozIn = M.clamp((tp - T.spin1) / 1.0, 0, 1) * M.clamp((T.dry0 + 0.5 - tp) / 1.0, 0, 1);
+      const nozIn = R.ebr ? M.clamp((tp - (T.ebrOn - 1)) / 1.0, 0, 1) * M.clamp((T.dry0 + 0.5 - tp) / 1.0, 0, 1) : 0;
       if (nozIn > 0) {
         const phE = -0.45, [Xe, Ye] = P(0.955 * Math.cos(phE), 0.955 * Math.sin(phE), h);
         const off = (1 - nozIn) * 1.6, nx = Xe + 0.05 + off, top = Ye + 0.55;
@@ -199,7 +200,7 @@
             const dt = 0.03, life = 0.6;
             for (let k = Math.floor((d - life) / dt); k <= Math.floor(d / dt); k++) {
               const born = k * dt;
-              if (born < 0 || procAt(born) < T.ebrOn || d - born > life || d < born) continue;
+              if (born < 0 || R.procAt(born) < T.ebrOn || d - born > life || d < born) continue;
               if (hash(k + 7.3) > 0.7) continue;
               fling(born, phE + 0.3 * (hash(k + 1.7) - 0.3), C.blue, life, 0.9);
             }
@@ -207,28 +208,30 @@
         }
       }
       // spin dry: the wet rim left by the rinse dries off, the last solvent is flung away
-      const wet = tp < T.ebrOn ? 0 : tp < T.ebrOff ? 1 : M.clamp(1 - (tp - T.ebrOff) / (T.dry0 + 6 - T.ebrOff), 0, 1);
+      const wet = !R.ebr || tp < T.ebrOn ? 0 : tp < T.ebrOff ? 1 : M.clamp(1 - (tp - T.ebrOff) / (T.dry0 + 6 - T.ebrOff), 0, 1);
       if (wet > 0.01) {
         p.path(ell(0.955, 0.004), { color: C.blue, width: 3, alpha: 0.55 * wet, closed: true, noOcc: true });
         const dt = 0.025, life = 0.6;
         for (let k = Math.floor((d - life) / dt); k <= Math.floor(d / dt); k++) {
-          const born = k * dt, bp = procAt(Math.max(0, born));
+          const born = k * dt, bp = R.procAt(Math.max(0, born));
           if (born < 0 || bp < T.ebrOff || bp > T.dry0 + 3 || d - born > life || d < born) continue;
           if (hash(k + 3.1) > 0.5) continue;
-          fling(born, 2 * Math.PI * hash(k + 9.7), C.blue, life, 0.6 + 2.7 * rpmAt(bp, v.rpm) / 8000);
+          fling(born, 2 * Math.PI * hash(k + 9.7), C.blue, life, 0.6 + 2.7 * R.rpmAt(bp) / 8000);
         }
       }
       // film-thickness gauge (under the stage title)
       const gx = Lx0 + 0.1, gy = 1.62, gw = 2.3;
-      const frac = tp < T.disp ? vol : tp < T.spread1 ? 1 : hFinal / 0.15 + (1 - hFinal / 0.15) * f;
-      const gLabel = tp >= T.stop ? `film: dry, ${um(v.t)}, clean edge` : tp >= T.ebrOff ? `film: ${um(v.t)}, edge drying` : tp >= T.ebrOn + 2 ? 'film: dry – edge rinsed' : tp >= T.ebrOn ? 'film: dry – EBR clears the edge' : tp >= T.spin1 ? `film: dry, ${um(v.t)}`
-        : tp >= T.spread1 ? 'film: liquid, thinning…' : tp >= T.disp ? 'film: liquid, spreading' : 'film: puddle';
+      const frac = tp < T.disp ? vol : tp < T.wetEnd ? 1 : hFinal / 0.15 + (1 - hFinal / 0.15) * f;
+      const gLabel = !R.ebr ? (tp >= T.spin1 ? `film: dry, ${um(v.t)}` : tp >= T.wetEnd ? 'film: liquid, thinning…' : tp >= T.disp ? 'film: liquid, spreading' : 'film: puddle')
+        : tp >= T.stop ? `film: dry, ${um(v.t)}, clean edge` : tp >= T.ebrOff ? `film: ${um(v.t)}, edge drying` : tp >= T.ebrOn + 2 ? 'film: dry – edge rinsed'
+          : tp >= T.ebrOn ? 'film: dry – EBR clears the edge' : tp >= T.spin1 ? `film: dry, ${um(v.t)}`
+            : tp >= T.wetEnd ? 'film: liquid, thinning…' : tp >= T.disp ? 'film: liquid, spreading' : 'film: puddle';
       p.text(gLabel, gx, gy + 0.3, { size: 0.2, color: tp >= T.spin1 ? C.yellow : C.text, bold: tp >= T.spin1 });
       p.box(gx, gy - 0.08, gx + gw, gy + 0.08, { fill: C.grid, stroke: null });
       p.box(gx, gy - 0.08, gx + gw * M.clamp(frac, 0, 1), gy + 0.08, { fill: MAT.resist.stroke, stroke: null });
       p.text('schematic, not to scale · rotation 50× slower', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
       p.layer('bead', () => {
-        if (tp >= T.ebrOn + 2) p.place('edge cleared by EBR', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.blue, key: 'bead' });
+        if (R.ebr && tp >= T.ebrOn + 2) p.place('edge cleared by EBR', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.blue, key: 'bead' });
         else if (tp >= T.spin0 + 3) p.place('edge bead: up to 20–30 × t', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.text, key: 'bead' });
       });
 
@@ -236,7 +239,7 @@
       const a1 = p.axes({ x: 1.0, y: 0.55, w: 5.7, h: 1.95, xr: [0, T.end], yr: [0, 9000], grid: true, size: 0.19, nticks: 5,
         yticks: [0, 4000, 8000], yfmt: y => (y ? `${y / 1000}k` : '0'), xlabel: '', ylabel: 'rpm', ylabelOffset: 0.6 }).draw();
       p.text('process time (s)', a1.x + a1.w, a1.y - 0.42, { size: 0.19, align: 'right', color: C.muted });
-      a1.plot(x => rpmAt(x, v.rpm), { color: C.blue, width: 3, samples: 300 });
+      a1.curve(R.pts.map(q => q[0]), R.pts.map(q => q[1]), { color: C.blue, width: 3 });
       a1.vline(tp, { color: C.yellow, width: 2, dash: null });
       a1.dot(tp, rpmNow, { r: 0.08 });
       p.text('spin recipe', a1.x + 0.1, a1.y + a1.h + 0.18, { size: 0.2, color: C.greyA });
@@ -265,16 +268,24 @@
       ], { corner: 'tr', size: 0.17 });
     },
 
-    readout: v => `<table>
+    readout: v => {
+      const Rr = recipeOf(v), parts = ['dispense 3 s'];
+      if (Rr.hasSpread) parts.push(`${rpmS(v.spreadRpm)} ${secS(v.spreadTime)}`);
+      parts.push(`<b>${rpmS(v.rpm)} ${secS(v.spinTime)}</b>`);
+      if (v.ebr) parts.push(`EBR ${rpmS(v.ebrRpm)} ${secS(v.ebrTime)}`, `dry ${rpmS(v.dryRpm)} ${secS(v.dryTime)}`);
+      const warn = Rr.warn ? `<tr><td colspan="2" class="warn">EBR or spin-dry speed is not below the coating speed – the film would get thinner again (not modelled).</td></tr>` : '';
+      return `<table>
+      <tr><td colspan="2">recipe: ${parts.join(' → ')} · total ${secS(Math.round(Rr.T.stop))}</td></tr>${warn}
       <tr><td>final thickness t = k·p²/√w</td><td><b class="hl">${um(v.t)}</b> (${fmt.num(v.tA, 0)} Å)</td></tr>
       <tr><td>range for k = 80 … 100</td><td>${um(v.tLo)} … ${um(v.tHi)}</td></tr>
       <tr><td>after soft bake (≈ −25 %)</td><td>${um(v.tBaked)}</td></tr>
       <tr><td>at double the speed</td><td>${um(v.t / Math.SQRT2)} (÷ √2)</td></tr>
-      <tr><td>edge bead, up to</td><td>${um(v.bead[0])} … ${um(v.bead[1])}</td></tr></table>`,
+      <tr><td>edge bead, up to</td><td>${um(v.bead[0])} … ${um(v.bead[1])}${v.ebr ? ' (removed by EBR)' : ''}</td></tr></table>`;
+    },
 
     steps: [
-      { name: 'A coating run', caption: 'Dispense, spread, spin up, spin off, edge bead removal, stop', set: { rpm: 4000, p: 20, k: 90 }, duration: 0.5, enter: () => restart(), hold: 26,
-        text: v => `Watch one run of the spin coater. A puddle of resist is dropped on the wafer, which is held by a vacuum chuck. A short spin at about 500 rpm spreads it over the whole wafer, then the chuck accelerates to the final speed – here ${rpmS(v.rpm)} – typically for 30–60 s (60 s in this run). Most of the resist flies off into the bowl; what stays dries into a film of ${um(v.t)}. At the end the wafer slows down, a second nozzle rinses the edge with solvent (edge bead removal), and the wafer spins for a while longer to dry it – at a speed below the coating speed, so the film itself does not get any thinner.` },
+      { name: 'A coating run', caption: 'Dispense, spread, spin up, spin off, edge bead removal, stop', set: { ...DEFAULTS, p: 20, k: 90 }, duration: 0.5, enter: () => restart(), hold: 26,
+        text: v => `Watch one run of the spin coater. A puddle of resist is dropped on the wafer, which is held by a vacuum chuck. A short spin at about 500 rpm spreads it over the whole wafer, then the chuck accelerates to the final speed – here ${rpmS(v.rpm)} – typically for 30–60 s (${secS(v.spinTime)} in this run). Most of the resist flies off into the bowl; what stays dries into a film of ${um(v.t)}. At the end the wafer slows down, a second nozzle rinses the edge with solvent (edge bead removal), and the wafer spins for a while longer to dry it – at a speed below the coating speed, so the film itself does not get any thinner.` },
       { name: 'Thinning during the spin', caption: 'Fast at first, then the solvent evaporation takes over', enter: () => restart(), hold: 26,
         text: 'At the start of the high-speed spin the liquid layer is thick and thins quickly – centrifugal flow throws the excess off the edge. As it gets thinner the flow slows down, and evaporation of the solvent raises the viscosity until the film no longer moves. Most of the thinning happens in the first seconds of the high-speed spin; later the film mainly dries.' },
       { name: 'Faster spin, thinner film', caption: 't ∝ 1/√w: twice the speed gives √2 thinner, not half', set: { rpm: 8000 }, duration: 1, enter: () => restart(),

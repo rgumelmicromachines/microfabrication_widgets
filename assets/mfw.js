@@ -1138,15 +1138,27 @@
       const params = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
       if (params.length) {
         this.paramBox = el('div', 'mfw-params', this.panel);
+        // parameters with d.group go into a collapsible <details> section (opened with d.groupOpen)
+        const groups = {};
+        const box = d => {
+          if (!d.group) return this.paramBox;
+          if (!groups[d.group]) {
+            const det = el('details', 'mfw-group', this.paramBox);
+            el('summary', null, det).innerHTML = richToHTML(d.group);
+            if (d.groupOpen) det.open = true;
+            groups[d.group] = el('div', 'mfw-params mfw-group-body', det);
+          }
+          return groups[d.group];
+        };
         for (const [name, d] of params) {
           let lab, inp, val = null, tag = null;
           if (typeof d.value === 'boolean') {
-            lab = el('label', 'mfw-check', this.paramBox);
+            lab = el('label', 'mfw-check', box(d));
             inp = el('input', null, lab); inp.type = 'checkbox'; inp.checked = d.value;
             el('span', null, lab).innerHTML = richToHTML(d.label || name);
             inp.addEventListener('change', () => this._userInput(name, inp.checked));
           } else if (d.options) {
-            lab = el('label', 'mfw-param', this.paramBox);
+            lab = el('label', 'mfw-param', box(d));
             const head = el('span', 'mfw-param-head', lab);
             el('span', null, head).innerHTML = richToHTML(d.label || name);
             tag = el('span', 'mfw-lock', head, S.locked);
@@ -1155,7 +1167,7 @@
             inp.value = d.value;
             inp.addEventListener('change', () => this._userInput(name, inp.value));
           } else {
-            lab = el('label', 'mfw-param', this.paramBox);
+            lab = el('label', 'mfw-param', box(d));
             const head = el('span', 'mfw-param-head', lab);
             const nameEl = el('span', null, head);
             nameEl.innerHTML = richToHTML(d.label || name);

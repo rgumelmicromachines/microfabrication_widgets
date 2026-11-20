@@ -189,6 +189,23 @@ check('page task 2: 1.2 µm with 20 % needs (rpm)', SP.speedFor(1.2, 20, 90), 90
 check('page task 2: solids for 1.2 µm at 4000 rpm (%)', 20 * Math.sqrt(1.2 / 1.8), 16.33, 1e-3);
 check('page task 3: edge bead of 1.8 µm, 30× (µm)', SP.state({ rpm: 4000, p: 20, k: 90 }).bead[1], 54, 1e-12);
 check('tour: soft bake 1.8 µm → 1.35 µm', SP.state({ rpm: 4000, p: 20, k: 90 }).tBaked, 1.35, 1e-12);
+{ // the animated recipe: phase times, ramps, speed profile, time-lapse mapping, warnings
+  const D = { rpm: 4000, spinTime: 60, spreadRpm: 500, spreadTime: 8, accel: 2000, ebr: true, ebrRpm: 1000, ebrTime: 5, dryRpm: 2000, dryTime: 15 };
+  const R = SP.recipe(D), T = R.T;
+  check('recipe: coating spin lasts spinTime', T.spin1 - T.spin0, 60, 1e-12);
+  check('recipe: ramp 500 → 4000 rpm at 2000 rpm/s takes 1.75 s', T.spin0 - T.spread1, 1.75, 1e-12);
+  check('recipe: speed in the middle of the spin', R.rpmAt((T.spin0 + T.spin1) / 2), 4000, 1e-12);
+  check('recipe: speed during the rinse', R.rpmAt((T.ebrOn + T.ebrOff) / 2), 1000, 1e-12);
+  check('recipe: speed during the spin dry', R.rpmAt((T.dry0 + T.dry1) / 2), 2000, 1e-12);
+  check('recipe: spin dry lasts dryTime', T.dry1 - T.dry0, 15, 1e-12);
+  let e = 0; for (let i = 0; i <= 400; i++) { const tp = T.end * i / 400; e = Math.max(e, Math.abs(R.procAt(R.dispAt(tp)) - tp)); }
+  check('recipe: display ↔ process time mapping is consistent (max error, s)', e, 0, 0, 1e-9);
+  check('recipe: the 60 s spin is shown 8× faster', R.lapseAt((T.spin0 + T.spin1) / 2), 8, 1e-12);
+  const N = SP.recipe({ ...D, spreadRpm: 0, ebr: false });
+  check('recipe without spread: spin-up starts right after dispensing', N.T.spin0 - N.T.disp, 2, 1e-12);
+  check('recipe without EBR: no rinse phase', N.T.dry1 - N.T.spin1, 0, 0, 1e-12);
+  n++; const okW = !R.warn && SP.recipe({ ...D, rpm: 1500 }).warn; if (!okW) fails++;
+  console.log(`${okW ? 'ok  ' : 'FAIL'}  recipe: warning only when the spin-dry or rinse speed is not below the coating speed`); }
 
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

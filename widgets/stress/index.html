@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Film stress and wafer bow · Microfabrication Interactive</title>
+<meta name="description" content="Interactive thin-film stress: intrinsic and thermal-mismatch stress, the Stoney equation, wafer curvature and bow, and how film stress is measured.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=b33a3eb4b5">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Thin films</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Thin films · mechanics</p>
+      <h1>Film stress and wafer bow</h1>
+    </div>
+    <p class="lede">A film a few hundred nanometres thick can bend a half-millimetre wafer by tens of micrometres. Where does the stress come from, how big is the bow – and how do you measure it?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Total stress = intrinsic (growth) stress + thermal-mismatch stress from cooling down from the deposition temperature (tension positive):</p>
+      <div class="tex-display">\sigma = \sigma_{int} + \sigma_{th}, \qquad \sigma_{th} = \frac{E_f}{1-\nu_f}\,(\alpha_s - \alpha_f)\,\Delta T, \quad \Delta T = T - T_{dep}</div>
+      <p>Stoney equation for a film of thickness <span class="tex">h_f</span> on a much thicker substrate (<span class="tex">h_s</span>, biaxial modulus <span class="tex">M_s = E_s/(1-\nu_s)</span>), and the bow of a wafer of radius <span class="tex">r</span>:</p>
+      <div class="tex-display">\frac{1}{R} = \frac{6\,\sigma\,h_f}{M_s\,h_s^2}, \qquad \delta = \frac{r^2}{2R}</div>
+      <table>
+        <tr><th>Quantity</th><th>Value</th><th>Source</th></tr>
+        <tr><td><span class="tex">M_s</span>, Si(100)</td><td>180 GPa, isotropic in the plane</td><td>Brantley 1973</td></tr>
+        <tr><td><span class="tex">\alpha_{Si}</span></td><td>2.6 ppm/K at 25 °C, 4.4 ppm/K at 1000 °C</td><td>Okada &amp; Tokumaru 1984</td></tr>
+        <tr><td>thermal SiO₂</td><td>−310 MPa (after 1200 °C)</td><td>Jaccodine &amp; Schlegel 1966</td></tr>
+        <tr><td>LPCVD Si₃N₄, 750 °C</td><td>≈ +1 GPa</td><td>Ohring, Table 4-3</td></tr>
+        <tr><td>Si-rich LPCVD SiNₓ</td><td>≈ +150 MPa</td><td>Sekimoto et al. 1981</td></tr>
+        <tr><td>evaporated Al / Au / Cr</td><td>−74 / +260 / +850 MPa</td><td>Ohring, Table 9-2</td></tr>
+      </table>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>200 nm of LPCVD nitride with +1 GPa on a 100 mm wafer (525 µm). Radius of curvature and bow?
+          <details><summary>Answer</summary><span class="tex">1/R = 6\cdot10^9\cdot0.2\times10^{-6}/(180\times10^9\cdot(525\times10^{-6})^2) = 0.0242\ \mathrm{m^{-1}}</span>, <span class="tex">R \approx 41\ \mathrm{m}</span>; <span class="tex">\delta = 0.05^2/(2\cdot41) \approx 30\ \mu\mathrm{m}</span>, concave.</details></li>
+        <li>After depositing 500 nm of a film on a 150 mm wafer (675 µm) the laser scan shows a convex curvature with <span class="tex">R = 40\ \mathrm{m}</span> (the wafer was flat before). What is the film stress?
+          <details><summary>Answer</summary><span class="tex">\sigma = M_s h_s^2/(6 h_f R) = 180\times10^9\cdot(675\times10^{-6})^2/(6\cdot0.5\times10^{-6}\cdot40) \approx 680\ \mathrm{MPa}</span>, compressive (convex). The film's own elastic constants are not needed.</details></li>
+        <li>An Al film (E = 70.3 GPa, ν = 0.345, α = 23.1 ppm/K) is stress-free at 400 °C. What thermal stress does it reach at 25 °C if it stays elastic? The mean α of Si between 25 and 400 °C is 3.45 ppm/K.
+          <details><summary>Answer</summary><span class="tex">\sigma_{th} = \frac{70.3}{0.655}\,\mathrm{GPa}\cdot(3.45 - 23.1)\times10^{-6}\cdot(25 - 400) \approx +790\ \mathrm{MPa}</span>, tensile – far above what a thin Al film withstands, so in reality it yields plastically. That is why metal stress depends on the whole thermal history.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Stoney equation: thin film (<span class="tex">h_f \ll h_s</span>), uniform equal-biaxial stress, small deflection, isotropic in-plane substrate stiffness (true for Si(100), not for Si(111) or other cuts).</li>
+        <li>Thermal stress is purely elastic: no plastic yield, creep or viscous flow, so metal films after hot steps and oxides at very high temperatures are overestimated. The deposition temperature is taken as the stress-free reference for the thermal part.</li>
+        <li>Film data are bulk values: fused quartz for thermal SiO₂, bulk silicon-nitride ceramic for the expansion of nitride films, bulk metals. Real film properties differ, so the split into intrinsic and thermal stress for the nitrides (default intrinsic = measured total − computed thermal) is approximate. For thermal SiO₂ the computed thermal stress (−366 MPa from 1200 °C) is close to the measured −310 MPa, so <span class="tex">\sigma_{int} = 0</span> is used.</li>
+        <li>Intrinsic stress depends strongly on the process (temperature, pressure, gas ratios, ion bombardment) – the defaults are single literature values, not tool data.</li>
+        <li>The bow is drawn exaggerated; the laser beams of the measurement sketch are schematic.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>G. G. Stoney, “The tension of metallic films deposited by electrolysis”, <i>Proc. R. Soc. Lond. A</i> 82 (1909) 172.</li>
+        <li>M. Ohring, <i>The Materials Science of Thin Films</i>, Academic Press 1992, ch. 9 (eqs. 9-13 to 9-19, Table 9-2) and ch. 4 (Table 4-3).</li>
+        <li>L. B. Freund, S. Suresh, <i>Thin Film Materials: Stress, Defect Formation and Surface Evolution</i>, Cambridge University Press 2003, ch. 2.</li>
+        <li>W. A. Brantley, “Calculated elastic constants for stress problems associated with semiconductor devices”, <i>J. Appl. Phys.</i> 44 (1973) 534.</li>
+        <li>A. George, “Elastic constants and moduli of diamond cubic Si”, in R. Hull (ed.), <i>Properties of Crystalline Silicon</i>, INSPEC 1999, 98.</li>
+        <li>Y. Okada, Y. Tokumaru, “Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K”, <i>J. Appl. Phys.</i> 56 (1984) 314.</li>
+        <li>R. J. Jaccodine, W. A. Schlegel, “Measurement of strains at Si–SiO₂ interface”, <i>J. Appl. Phys.</i> 37 (1966) 2429.</li>
+        <li>J. J. Vlassak, W. D. Nix, “A new bulge test technique for the determination of Young’s modulus and Poisson’s ratio of thin films”, <i>J. Mater. Res.</i> 7 (1992) 3242.</li>
+        <li>K. Sekimoto et al., “Silicon nitride single-layer X-ray mask”, <i>Jpn. J. Appl. Phys.</i> 20 (1981) L669.</li>
+        <li>D. W. Hoffman, J. A. Thornton, “The compressive stress transition in Al, V, Zr, Nb and W metal films sputtered at low working pressures”, <i>Thin Solid Films</i> 45 (1977) 387.</li>
+        <li>G. W. C. Kaye, T. H. Laby, <i>Tables of Physical and Chemical Constants</i>, 16th ed., Longman 1995 (elastic constants and expansion of bulk materials).</li>
+        <li>SEMI M1, <i>Specification for Polished Single Crystal Silicon Wafers</i> (wafer thicknesses).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=77795f4908"></script>
+<script src="model.js?v=999020cdea"></script>
+<script src="widget.js?v=769c77b66d"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
-<link rel="stylesheet" href="assets/mfw.css?v=c4a0af64de">
+<link rel="stylesheet" href="assets/mfw.css?v=b33a3eb4b5">
 <style>
   .thumb-si { fill: #3A3F4B; } .thumb-ox { fill: #1F4E66; } .thumb-res { fill: #4B3A5C; }
   :root[data-theme="light"] .thumb-si { fill: #C7CBD3; } :root[data-theme="light"] .thumb-ox { fill: #BFDDEC; } :root[data-theme="light"] .thumb-res { fill: #D9C7EA; }
@@ -66,6 +66,14 @@
       <div><h2>Diffusion &amp; junction depth</h2><p>Predeposition and drive-in of boron or phosphorus: erfc and Gaussian profiles, junction depth, sheet resistance.</p></div>
       <div class="tile-meta"><span>Doping</span><span class="go">Open →</span></div>
     </a>
+    <a class="tile" href="widgets/implant/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <path d="M40 10v35M70 10v35M100 10v35" class="thumb-line2"/><rect x="20" y="55" width="110" height="115" class="thumb-si"/>
+        <rect x="20" y="85" width="110" height="30" fill="currentColor" opacity=".35"/><path d="M170 160h135M170 160V20" class="thumb-axis"/>
+        <path d="M172 150 C200 140 215 40 235 40 S265 140 300 155" class="thumb-line"/><path d="M170 120h135" class="thumb-axis" stroke-dasharray="4 4"/></svg></span>
+      <div><h2>Ion implantation</h2><p>Range and straggle, dose and peak concentration, junction depth, masking thickness and beam time.</p></div>
+      <div class="tile-meta"><span>Doping</span><span class="go">Open →</span></div>
+    </a>
     <a class="tile" href="widgets/oxidation/index.html">
       <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
         <circle cx="80" cy="90" r="55" fill="#6870b4"/><path d="M150 150h150M150 150V20" class="thumb-axis"/>
@@ -79,6 +87,22 @@
         <path d="M30 52h270" class="thumb-axis" stroke-dasharray="4 4"/><path d="M40 62 C120 66 160 80 200 105 S260 140 290 152" class="thumb-line"/></svg></span>
       <div><h2>CVD growth rate</h2><p>Grove model: when does the surface reaction limit growth, and when the gas flow? Boundary layer, temperature and the regime boundary.</p></div>
       <div class="tile-meta"><span>Thin-film deposition</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/pvd/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="40" y="20" width="100" height="8" class="thumb-si"/><path d="M90 160 L42 30M90 160 L66 30M90 160 L90 30M90 160 L114 30M90 160 L138 30" class="thumb-line2"/>
+        <rect x="78" y="160" width="24" height="10" class="thumb-axis"/><path d="M170 160h135M170 160V20" class="thumb-axis"/>
+        <path d="M175 110 C205 60 225 50 238 50 S270 60 300 110" class="thumb-line"/></svg></span>
+      <div><h2>Evaporation &amp; sputtering</h2><p>Line-of-sight deposition: thickness uniformity, mean free path versus pressure, shadowing and lift-off.</p></div>
+      <div class="tile-meta"><span>Thin-film deposition</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/stress/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <path d="M20 60 Q75 105 130 60" fill="none" stroke="currentColor" stroke-width="14" opacity=".35"/><path d="M20 52 Q75 97 130 52" class="thumb-line2"/>
+        <path d="M170 160h135M170 160V20" class="thumb-axis"/><path d="M170 120h135" class="thumb-axis" stroke-dasharray="4 4"/>
+        <path d="M178 60 C220 66 260 80 290 95" class="thumb-line"/></svg></span>
+      <div><h2>Film stress &amp; wafer bow</h2><p>Intrinsic and thermal-mismatch stress, the Stoney equation, wafer curvature and how stress is measured.</p></div>
+      <div class="tile-meta"><span>Thin films</span><span class="go">Open →</span></div>
     </a>
     <a class="tile" href="widgets/etching/index.html">
       <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
@@ -116,6 +140,6 @@
 
   <footer class="footer">Microfabrication Interactive · open teaching material. Every model cites its sources and lists its limitations.</footer>
 </main>
-<script src="assets/mfw.js?v=c6857e2126"></script>
+<script src="assets/mfw.js?v=77795f4908"></script>
 </body>
 </html>

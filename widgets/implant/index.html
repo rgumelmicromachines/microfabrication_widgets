@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ion implantation · Microfabrication Interactive</title>
+<meta name="description" content="Interactive ion implantation: Gaussian dopant profile, projected range and straggle, dose and peak concentration, junction depth, masking thickness and beam time.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=b33a3eb4b5">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Doping</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Doping · ion implantation</p>
+      <h1>Ion implantation: how deep, how much, and what stops it?</h1>
+    </div>
+    <p class="lede">Dopant ions are fired into the wafer with a chosen energy and an exactly counted dose. Energy sets the depth, dose sets the concentration – and the mask must catch the tail.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>As-implanted profile in an amorphous target (Gaussian approximation) with projected range <span class="tex">R_p</span>, straggle <span class="tex">\Delta R_p</span> and dose <span class="tex">Q</span>:</p>
+      <div class="tex-display">N(x) = \frac{Q}{\sqrt{2\pi}\,\Delta R_p}\exp\!\left[-\frac{(x-R_p)^2}{2\,\Delta R_p^2}\right], \qquad N_p = \frac{Q}{\sqrt{2\pi}\,\Delta R_p} \approx \frac{0.4\,Q}{\Delta R_p}</div>
+      <p>Junction(s) where the implanted dopant equals the substrate doping <span class="tex">N_B</span>:</p>
+      <div class="tex-display">x_j = R_p \pm \Delta R_p\,\sqrt{2\ln(N_p/N_B)}</div>
+      <p>A mask of thickness <span class="tex">d</span> (range <span class="tex">R_p^*</span>, straggle <span class="tex">\Delta R_p^*</span> in the mask material) lets through the fraction <span class="tex">T</span> of the dose; it is sufficient when the concentration at the mask/Si interface stays below <span class="tex">N_B</span>:</p>
+      <div class="tex-display">T = \tfrac12\,\mathrm{erfc}\,\frac{d - R_p^*}{\sqrt2\,\Delta R_p^*}, \qquad d \ge R_p^* + \Delta R_p^*\sqrt{2\ln(N_p^*/N_B)}</div>
+      <p>The dose is the collected charge: <span class="tex">Q = I\,t/(n\,q\,A)</span> for ions of charge state <span class="tex">n</span> on the area <span class="tex">A</span>.</p>
+      <table>
+        <tr><th>Ion, 100 keV</th><th><span class="tex">R_p</span> in Si</th><th><span class="tex">\Delta R_p</span> in Si</th><th><span class="tex">R_p</span> in resist</th></tr>
+        <tr><td>¹¹B⁺</td><td>318 nm</td><td>88.6 nm</td><td>≈ 569 nm</td></tr>
+        <tr><td>³¹P⁺</td><td>134 nm</td><td>47.0 nm</td><td>≈ 241 nm</td></tr>
+        <tr><td>⁷⁵As⁺</td><td>69.2 nm</td><td>20.6 nm</td><td>≈ 131 nm</td></tr>
+      </table>
+      <p class="note">SRIM-2013. In photoresist the range is about 1.8× that in Si; in SiO₂ it is within about ±10 % of that in Si.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>Boron, 50 keV, <span class="tex">10^{15}\ \mathrm{cm^{-2}}</span>, into n-type Si with <span class="tex">N_B = 10^{16}\ \mathrm{cm^{-3}}</span> (<span class="tex">R_p = 174.6</span> nm, <span class="tex">\Delta R_p = 64.2</span> nm). Peak concentration and junction depth?
+          <details><summary>Answer</summary><span class="tex">N_p = 10^{15}/(2.507\cdot 64.2\times10^{-7}\ \mathrm{cm}) = 6.2\times10^{19}\ \mathrm{cm^{-3}}</span>. <span class="tex">x_j = 174.6 + 64.2\sqrt{2\ln(6200)} = 174.6 + 64.2\cdot4.18 \approx 443\ \mathrm{nm}</span>. Check it in Explore mode.</details></li>
+        <li>Phosphorus, 100 keV, <span class="tex">10^{15}\ \mathrm{cm^{-2}}</span>, into p-type Si with <span class="tex">N_B = 10^{16}\ \mathrm{cm^{-3}}</span>. How thick must the photoresist mask be (<span class="tex">R_p^* = 241</span> nm, <span class="tex">\Delta R_p^* = 49</span> nm)? Compare with the design rule <span class="tex">R_p^* + 5\Delta R_p^*</span>.
+          <details><summary>Answer</summary><span class="tex">N_p^* = 8.1\times10^{19}\ \mathrm{cm^{-3}}</span>, <span class="tex">\sqrt{2\ln(8100)} = 4.24</span>, so <span class="tex">d \ge 241 + 4.24\cdot49 \approx 449\ \mathrm{nm}</span>. The rule <span class="tex">R_p^* + 5\Delta R_p^* = 486\ \mathrm{nm}</span> adds a small margin; real resist masks are usually much thicker (≥ 1 µm), because the resist must also survive the process.</details></li>
+        <li>An arsenic source/drain implant of <span class="tex">5\times10^{15}\ \mathrm{cm^{-2}}</span> on a 200 mm wafer with a 10 mA beam of As⁺: how long does it take?
+          <details><summary>Answer</summary><span class="tex">t = Q\,q\,A/I = 5\times10^{15}\cdot1.602\times10^{-19}\cdot314/0.01 \approx 25\ \mathrm{s}</span> (plus the time the beam spends off the wafer while scanning).</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Gaussian profile from the first two moments (<span class="tex">R_p</span>, <span class="tex">\Delta R_p</span>) for an amorphous target. Real profiles are skewed (boron above about 100 keV has a pronounced asymmetry) and are described by Pearson-IV distributions with higher moments.</li>
+        <li>No channeling: in crystalline Si some ions travel far along open crystal directions and form a tail. Wafers are therefore usually implanted tilted by about 7° (common industrial practice; Cho 1985).</li>
+        <li>As implanted: no damage, no amorphisation and no anneal. An anneal is needed to repair the lattice and activate the dopants; it also moves the profile (diffusion, including transient enhanced diffusion).</li>
+        <li>The profile under a too-thin mask is computed with the ranges of the mask material all the way, i.e. the slightly different stopping in the Si below is ignored.</li>
+        <li>Range data: SRIM-2013 tables for Si; for SiO₂ and photoresist (AZ-111), values read from published SRIM-2013 graphs (±2 nm in <span class="tex">R_p</span>). Energies 10–200 keV, interpolated log–log. The lateral spread under the mask edge is drawn schematically (about <span class="tex">\Delta R_p</span>).</li>
+        <li>Dose ranges quoted in the tour (about 10¹¹–10¹³ cm⁻² for threshold adjustment, up to about 10¹⁶ cm⁻² for source/drain and polysilicon doping) follow Rubin &amp; Poate (2003).</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 8 (ion implantation: Gaussian profile, masking).</li>
+        <li>R. C. Jaeger, <i>Introduction to Microelectronic Fabrication</i>, 2nd ed., Prentice Hall 2002, ch. 5.</li>
+        <li>J. F. Ziegler, M. D. Ziegler, J. P. Biersack, “SRIM – The stopping and range of ions in matter (2010)”, <i>Nucl. Instrum. Methods Phys. Res. B</i> 268 (2010) 1818.</li>
+        <li>S. M. Ben Saleh, H. M. Albangahzi, S. M. Alarabi, “Monte Carlo simulations of the electronic and nuclear stopping powers of light and heavy ions in silicon material”, <i>Academy J. Basic Appl. Sci.</i> 7(2) (2025) 1 (SRIM-2013 tables for B, P, As in Si).</li>
+        <li>Coherent Corp., “Ion Implantation – Projected Range Statistics”, datasheet (2022) (SRIM-2013 ranges in Si, SiO₂, Si₃N₄ and AZ-111 resist; mask rule <span class="tex">R_p + 5\Delta R_p</span>).</li>
+        <li>L. Rubin, J. Poate, “Ion implantation in silicon technology”, <i>The Industrial Physicist</i> (AIP), June/July 2003, 12 (doses and energies by application).</li>
+        <li>K. Cho, <i>Low energy boron implantation in silicon</i>, PhD thesis, Univ. North Carolina at Chapel Hill, 1985 (7° tilt to reduce channeling).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=77795f4908"></script>
+<script src="model.js?v=0ec384a1fd"></script>
+<script src="widget.js?v=cbe1c03e54"></script>
+</body>
+</html>

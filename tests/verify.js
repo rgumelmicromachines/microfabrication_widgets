@@ -235,5 +235,64 @@ section('Dry etching (geometric etch front, laser-interferometric end point)');
   check('page task 1: Si recess (nm)', DE.state({ hf: 500, Rv: 50, Rl: 5, W: 1000, t: 12, Ssi: 20, Sr: 3, hr: 1000 }).recess, 5, 1e-12);
   check('page task 2: fringes in 800 nm', DE.state({ ...o, hf: 800 }).fringes, 3.68, 0.01); }
 
+// ------------------------------------------------------------------ ion implantation
+section('Ion implantation (Gaussian, SRIM-2013 ranges)');
+{ const IM = W('implant');
+  check('erfc(1)', IM.erfc(1), 0.1572992070, 1e-6); check('erfc(0.5)', IM.erfc(0.5), 0.4795001222, 1e-6);
+  // dose transmitted through Rp + m·ΔRp of mask: ½ erfc(m/√2)
+  [[2, 2.275e-2], [3, 1.350e-3], [4, 3.167e-5], [5, 2.867e-7]].forEach(([m, T]) => check(`transmitted fraction at Rp + ${m}ΔRp`, IM.mask(1, { Rp: 100, dRp: 10 }, 100 + 10 * m, 1).pass, T, 2e-3));
+  // area under the Gaussian = dose (deep implant, no truncation at the surface)
+  { let s = 0; const dx = 0.05; for (let x = 0; x < 2000; x += dx) s += IM.gauss(x + dx / 2, 1e15, 500, 60) * dx * 1e-7; check('∫N dx = Q', s, 1e15, 1e-6); }
+  check('peak = 0.3989 Q/ΔRp', IM.peak(1e15, 50) * 50e-7 / 1e15, 0.398942, 1e-5);
+  // table points are reproduced, interpolation agrees with an independent graph read-off (P 30 keV in Si ≈ 43 / 18.6 nm)
+  check('B 100 keV in Si: Rp (nm)', IM.range('B', 'Si', 100).Rp, 318.0, 1e-9); check('B 100 keV in Si: ΔRp (nm)', IM.range('B', 'Si', 100).dRp, 88.6, 1e-9);
+  check('As 100 keV in Si: Rp (nm)', IM.range('As', 'Si', 100).Rp, 69.2, 1e-9);
+  check('P 30 keV in Si, interpolated Rp vs graph (nm)', IM.range('P', 'Si', 30).Rp, 43, 0.04); check('P 30 keV in Si, interpolated ΔRp vs graph (nm)', IM.range('P', 'Si', 30).dRp, 18.6, 0.04);
+  // resist ≈ 1.8 × Si, SiO2 ≈ Si (100 keV) – the rules of thumb quoted on the page
+  check('Rp resist / Rp Si, B 100 keV', IM.range('B', 'resist', 100).Rp / IM.range('B', 'Si', 100).Rp, 1.79, 0.01);
+  check('Rp SiO2 / Rp Si, P 100 keV', IM.range('P', 'sio2', 100).Rp / IM.range('P', 'Si', 100).Rp, 0.99, 0.01);
+  // page exercises
+  { const r = IM.range('B', 'Si', 50); check('page task 1: peak (cm⁻³)', IM.peak(1e15, r.dRp), 6.21e19, 0.003); check('page task 1: x_j (nm)', IM.junctions(1e15, r.Rp, r.dRp, 1e16)[1], 443, 0.002); }
+  { const rm = IM.range('P', 'resist', 100); check('page task 2: resist needed (nm)', IM.mask(1e15, rm, 500, 1e16).need, 449, 0.002); check('page task 2: rule Rp + 5ΔRp (nm)', rm.Rp + 5 * rm.dRp, 486, 1e-9); }
+  { const m = IM.mask(3.39e12, IM.range('B', 'resist', 130), 143, 1e14); n++; const ok = !m.ok && m.inSi > 1e17; if (!ok) fails++;
+    console.log(`${ok ? 'ok  ' : 'FAIL'}  too-thin mask (ions overshoot it) is reported as insufficient: inSi ${m.inSi.toExponential(2)}, ok = ${m.ok}`); }
+  check('page task 3: beam time (s)', IM.beamTime(5e15, Math.PI * 100, 0.01), 25.2, 0.002);
+  { const r = IM.range('B', 'Si', 100); const j = IM.junctions(1e13, r.Rp, r.dRp, 1e17); check('buried layer: shallow junction (nm)', j[0], 164.3, 0.002); check('buried layer: deep junction (nm)', j[1], 471.7, 0.002); }
+}
+
+// ------------------------------------------------------------------ PVD
+section('PVD (cosine law, mean free path, shadowing)');
+{ const PV = W('pvd');
+  check('point source, r = h: [1+1]^(−3/2)', PV.thickness(10, 10, 0), 2 ** -1.5, 1e-12);
+  check('cosine source, r = h: [1+1]^(−2)', PV.thickness(10, 10, 1), 0.25, 1e-12);
+  check('distanceFor inverts thickness', PV.thickness(7.5, PV.distanceFor(7.5, 1, 0.95), 1), 0.95, 1e-12);
+  // a cosine source deposits ∝ cos φ cos θ /(π L²); numerical integral over a disc of radius R vs the closed form R²/(R²+h²)
+  { const R = 5, h = 20; let num = 0; const N = 4000; for (let i = 0; i < N; i++) { const r = (i + 0.5) / N * R, L2 = r * r + h * h; num += (h * h / L2) / (Math.PI * L2) * 2 * Math.PI * r * R / N; }
+    check('cosine source: fraction collected = R²/(R²+h²)', num, R * R / (R * R + h * h), 1e-4); }
+  check('λ(air, 0.1 Pa, 22 °C) vs O’Hanlon Table 2.1 (6.6 cm)', PV.meanFreePath(0.1, PV.GAS.air.d, 295.15), 6.6, 0.02);
+  check('page task 1: distance for ±5 %, 150 mm (cm)', PV.distanceFor(7.5, 1, 0.95), 46.5, 0.002);
+  check('page task 2: collision-free over 40 cm at 1e-3 Pa', PV.unscattered(40, PV.meanFreePath(1e-3, PV.GAS.air.d, 295.15)), 0.94, 0.005);
+  check('page task 2: λ(Ar, 0.5 Pa) (cm)', PV.meanFreePath(0.5, PV.GAS.Ar.d, 295.15), 1.36, 0.01);
+  check('page task 3: angle (deg)', PV.incidence(10, 50), 11.31, 0.001); check('page task 3: shadow (µm)', PV.shadow(1.5, 10, 50), 0.3, 1e-12);
+}
+
+// ------------------------------------------------------------------ film stress
+section('Film stress (Stoney, thermal mismatch)');
+{ const ST = W('stress');
+  check('Si(100) biaxial modulus from C11, C12 (GPa)', ST.M_SI, 180.2, 0.002);
+  check('… equals 1/(S11 + S12) with Hall compliances 7.691, −2.142 (GPa)', 1 / (7.691e-3 - 2.142e-3), ST.M_SI, 0.002);
+  check('α_Si at 300 K (Okada & Tokumaru: 2.57 ppm/K)', ST.alphaSi(26.85) * 1e6, 2.57, 0.005);
+  check('∫α dT of a constant equals α·ΔT', ST.thermalStress({ E: 100, nu: 0, a: 2.6 }, 25, 25), 0, 0, 1e-9);
+  check('thermal SiO2 after 1200 °C vs measured −310 MPa (Jaccodine & Schlegel; bulk data, ±25 %)', ST.thermalStress(ST.FILMS.sio2, 1200), -310, 0.25);
+  check('Si3N4 default: measured total +1 GPa reproduced', ST.state({ film: 'si3n4', D: '100', Tdep: 750, sigI: ST.defaultIntrinsic('si3n4'), hf: 0.1 }).sig, 1000, 1e-9);
+  check('stressFrom inverts curvature', ST.stressFrom(ST.curvature(500, 0.3, 725), 0.3, 725), 500, 1e-12);
+  check('bow of a 100 mm wafer for R = 41.4 m (µm)', ST.bow(1 / 41.39, 100), 30.2, 0.002);
+  check('page task 1: R (m)', 1 / ST.curvature(1000, 0.2, 525), 41.4, 0.002); check('page task 1: bow (µm)', ST.bow(ST.curvature(1000, 0.2, 525), 100), 30.2, 0.002);
+  check('page task 2: stress from R = −40 m (MPa)', ST.stressFrom(-1 / 40, 0.5, 675), -684, 0.002);
+  check('page task 3: Al from 400 °C (MPa)', ST.thermalStress(ST.FILMS.al, 400), 790, 0.002);
+  check('page task 3: mean α_Si 25–400 °C (ppm/K)', ST.intAlphaSi(400, 25) / (25 - 400) * 1e6, 3.45, 0.002);
+  check('tour: α_Si at 1000 °C ≈ 4.4 ppm/K', ST.alphaSi(1000) * 1e6, 4.43, 0.005);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

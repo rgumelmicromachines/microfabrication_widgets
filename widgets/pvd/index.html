@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaporation and sputtering · Microfabrication Interactive</title>
+<meta name="description" content="Interactive physical vapour deposition: line-of-sight evaporation, thickness uniformity across the wafer, mean free path versus pressure, shadowing and lift-off.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=b33a3eb4b5">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Thin-film deposition</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Thin films · physical vapour deposition</p>
+      <h1>Evaporation and sputtering: line of sight</h1>
+    </div>
+    <p class="lede">In a good vacuum the atoms fly straight from the source to the wafer. That decides how uniform the film is, why the far edge gets less – and why lift-off works with evaporation but not with sputtering.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Thickness on a flat wafer parallel to a small source at distance <span class="tex">h</span>, at radius <span class="tex">r</span> from the point above the source:</p>
+      <div class="tex-display">\text{point source: } \frac{t}{t_0} = \left[1 + (r/h)^2\right]^{-3/2}, \qquad \text{small surface source: } \frac{t}{t_0} = \left[1 + (r/h)^2\right]^{-2}</div>
+      <p>The surface source emits according to Knudsen's cosine law, <span class="tex">\propto \cos\varphi</span>. A cosine source collects the fraction <span class="tex">R^2/(R^2+h^2)</span> of its vapour on a wafer of radius <span class="tex">R</span>. Source and wafers on one sphere receive the same thickness everywhere – the planetary dome.</p>
+      <p>Mean free path of gas molecules of diameter <span class="tex">d</span> and the fraction that crosses a distance <span class="tex">h</span> without a collision:</p>
+      <div class="tex-display">\lambda = \frac{k_B T}{\sqrt{2}\,\pi d^2 p}, \qquad f_0 = e^{-h/\lambda}</div>
+      <p>For air at room temperature <span class="tex">\lambda \approx 0.66\ \mathrm{cm\cdot Pa}/p</span>: 6.6 cm at 0.1 Pa, 6.6 m at 10⁻³ Pa. Shadowing behind a step of height <span class="tex">s</span>: offset <span class="tex">s\tan\theta</span> with <span class="tex">\tan\theta = r/h</span>.</p>
+      <table>
+        <tr><th></th><th>Evaporation</th><th>Sputtering</th></tr>
+        <tr><td>pressure</td><td>high vacuum, <span class="tex">\lambda \gg h</span></td><td>Ar glow discharge, a few to 100 mTorr</td></tr>
+        <tr><td>transport</td><td>line of sight, no collisions</td><td>many collisions on the way</td></tr>
+        <tr><td>at steps</td><td>shadows, bare sidewalls</td><td>sidewalls partly coated</td></tr>
+      </table>
+      <p class="note">After Ohring (1992), Table 3-7 and §3.3.3.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A small surface source evaporates onto a 150 mm wafer. How far away must the wafer be for the edge to get at least 95 % of the centre thickness? Which fraction of the vapour lands on the wafer then?
+          <details><summary>Answer</summary><span class="tex">[1 + (R/h)^2]^{-2} \ge 0.95 \Rightarrow R/h \le \sqrt{0.95^{-1/2} - 1} = 0.161</span>, so <span class="tex">h \ge 7.5/0.161 \approx 47\ \mathrm{cm}</span>. Collected: <span class="tex">R^2/(R^2+h^2) \approx 2.5\ \%</span> – the rest coats the chamber.</details></li>
+        <li>What is the mean free path in air at 10⁻³ Pa (22 °C), and which fraction of the atoms crosses 40 cm without a collision? And in argon at 0.5 Pa?
+          <details><summary>Answer</summary><span class="tex">\lambda = 0.66/10^{-3}\ \mathrm{cm} \approx 6.6\ \mathrm{m}</span>, <span class="tex">e^{-40/656} \approx 94\ \%</span>. In Ar at 0.5 Pa, <span class="tex">\lambda \approx 1.4\ \mathrm{cm}</span> and practically no atom (<span class="tex">e^{-29} \approx 10^{-13}</span>) arrives without a collision.</details></li>
+        <li>The edge of a 200 mm wafer, 50 cm above the source, carries a 1.5 µm resist step. At which angle do the atoms arrive, and how large is the shadow?
+          <details><summary>Answer</summary><span class="tex">\theta = \arctan(10/50) = 11.3^\circ</span>, shadow <span class="tex">1.5\ \mu\mathrm{m}\cdot 0.2 = 0.30\ \mu\mathrm{m}</span>. Patterns at the wafer edge shift by that much; the overhang of a lift-off resist must be larger than this offset so that the film still breaks.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Ideal small source (point or cosine) and a flat, stationary wafer parallel to it; every arriving atom sticks. Real sources have a finite size, e-beam hearths are often more forward-directed (cos<sup>n</sup>φ with n &gt; 1; Graper 1973), and wafers are usually rotated or placed on a planetary dome.</li>
+        <li>The mean free path uses hard-sphere diameters from gas viscosity (air 3.74 Å, Ar 3.67 Å) at 20 °C. The collision-free fraction <span class="tex">e^{-h/\lambda}</span> is for straight paths through a uniform gas.</li>
+        <li>The scattered paths drawn in the chamber and the coverage of the lift-off step are schematic: they only show that scattering destroys the directionality. Real sputter step coverage depends on the tool, pressure, bias and target–substrate distance.</li>
+        <li>The thickness and the shadow are pure geometry; deposition rate (vapour pressure of the source, Hertz–Knudsen flux), film structure and stress are not modelled.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>M. Ohring, <i>The Materials Science of Thin Films</i>, Academic Press 1992, ch. 3 (eqs. 3-13 to 3-20, §3.3.3 and Table 3-7); 2nd ed. 2002, ch. 3–4.</li>
+        <li>R. Glang, “Vacuum evaporation”, ch. 1 in L. I. Maissel, R. Glang (eds.), <i>Handbook of Thin Film Technology</i>, McGraw-Hill 1970 (thickness distributions, mean free path, Table 3 of molecular diameters).</li>
+        <li>J. F. O’Hanlon, <i>A User’s Guide to Vacuum Technology</i>, 3rd ed., Wiley 2003, ch. 2 (mean free path of air).</li>
+        <li>M. Knudsen, “Das Cosinusgesetz in der kinetischen Gastheorie”, <i>Ann. Phys.</i> 353 (1916) 1113.</li>
+        <li>E. B. Graper, “Distribution and apparent source geometry of electron-beam-heated evaporation sources”, <i>J. Vac. Sci. Technol.</i> 10 (1973) 100.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=77795f4908"></script>
+<script src="model.js?v=2d3fed3d3e"></script>
+<script src="widget.js?v=95d97a1dca"></script>
+</body>
+</html>

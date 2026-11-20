@@ -811,8 +811,11 @@
     { slug: 'spincoating', topic: 'Lithography', title: 'Spin coating' },
     { slug: 'lithography', topic: 'Lithography', title: 'Lithography resolution' },
     { slug: 'diffusion', topic: 'Doping', title: 'Diffusion & junction depth' },
+    { slug: 'implant', topic: 'Doping', title: 'Ion implantation' },
     { slug: 'oxidation', topic: 'Oxidation', title: 'Thermal oxidation' },
     { slug: 'cvd', topic: 'Thin-film deposition', title: 'CVD growth rate' },
+    { slug: 'pvd', topic: 'Thin-film deposition', title: 'Evaporation & sputtering' },
+    { slug: 'stress', topic: 'Thin films', title: 'Film stress & wafer bow' },
     { slug: 'etching', topic: 'Etching', title: 'Etching silicon' },
     { slug: 'dryetch', topic: 'Etching', title: 'Dry etching' },
   ];

@@ -45,6 +45,12 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
    load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement).
 5. Add a tile to `index.html`.
 
+## Contributing
+
+Read `CLAUDE.md` first: content rules (English, course-neutral, every number sourced), the visual quality bar (no overlaps, no flicker) and the checks to run before a change counts as done. Claude Code picks the file up automatically, so the same rules apply to AI-assisted work. Work on a branch and open a pull request to `main`.
+
+Course lecture slides used for cross-checking are kept locally in `source_prednasky/` and are never committed.
+
 ## Notes
 
 - Fonts (IBM Plex Sans) come from Google Fonts and KaTeX from jsDelivr. For a faculty server under GDPR you may prefer to self-host both (`MFW.config.katexBase`, and a local `@font-face`); the pages fall back to system fonts automatically.

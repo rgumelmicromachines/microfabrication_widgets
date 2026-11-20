@@ -97,7 +97,7 @@
     draw(p, v, w) {
       const R = recipeOf(v), T = R.T, { d, tp } = clock(R), rpmNow = R.rpmAt(tp);
       // ======================================================== animated coater (oblique view, schematic)
-      const cx = -3.5, cy = -0.55, Rx = 2.75, Ry = 0.8, Lx0 = -7.0, Lx1 = 0.0;
+      const cx = -3.7, cy = 0.45, Rx = 2.45, Ry = 0.68, Lx0 = -7.0, Lx1 = 0.0;
       if (lastD !== null && d >= lastD) angle += 2 * Math.PI * rpmNow / VIS_RPM * (d - lastD);   // rpm/3000 rev per animation second
       lastD = d;
       const ang = angle;
@@ -108,12 +108,12 @@
       p.text(`process time ${fmt.num(tp, 1)} s · ${rpmS(Math.round(rpmNow / 10) * 10)}`, Lx0 + 0.1, 2.4, { size: 0.21, color: C.yellow });
       p.text(`time-lapse ×${fmt.num(R.lapseAt(tp), R.lapseAt(tp) % 1 ? 1 : 0)}`, Lx1 - 0.2, 2.4, { size: 0.21, align: 'right', color: C.muted });
       // chuck, shaft and motor
-      p.box(cx - 0.55, cy - 1.55, cx + 0.55, cy - 0.12, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
-      p.ellipse(cx, cy - 1.55, 0.55, 0.16, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
-      p.box(cx - 0.16, cy - 2.35, cx + 0.16, cy - 1.6, { fill: C.grey, stroke: null });
-      p.box(cx - 0.8, cy - 3.0, cx + 0.8, cy - 2.35, { fill: C.greyD, stroke: C.greyB, width: 1.5, radius: 0.08 });
-      p.text('motor', cx, cy - 2.68, { size: 0.2, align: 'center', color: C.greyA });
-      p.text('vacuum chuck', cx + 0.7, cy - 1.0, { size: 0.2, color: C.muted });
+      p.box(cx - 0.45, cy - 1.0, cx + 0.45, cy - 0.12, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
+      p.ellipse(cx, cy - 1.0, 0.45, 0.12, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
+      p.box(cx - 0.12, cy - 1.22, cx + 0.12, cy - 1.08, { fill: C.grey, stroke: null });
+      p.box(cx - 0.7, cy - 1.56, cx + 0.7, cy - 1.22, { fill: C.greyD, stroke: C.greyB, width: 1.5, radius: 0.06 });
+      p.text('motor', cx, cy - 1.39, { size: 0.17, align: 'center', color: C.greyA });
+      p.text('vacuum chuck', cx + 0.55, cy - 0.85, { size: 0.18, color: C.muted });
       // wafer: side band (front half) and top surface
       const FRONT = a => a.slice(36);                                          // angles π … 2π: the half nearer to the viewer
       p.polygon(FRONT(ell(1, 0)).concat(FRONT(ell(1, -0.1)).reverse()), { fill: MAT.si.stroke, stroke: null });
@@ -163,7 +163,7 @@
         const age = d - born;
         const at = a => { const u = Math.cos(phi) + a * sp * (-Math.sin(phi) + 0.35 * Math.cos(phi)), q = Math.sin(phi) + a * sp * (Math.cos(phi) + 0.35 * Math.sin(phi)); return P(u, q, h - 0.6 * a * a); };
         const [X, Y] = at(age), [X0, Y0] = at(Math.max(0, age - 0.06));
-        if (X < Lx0 || X > Lx1 + 0.5) return;
+        if (X < Lx0 || X > Lx1 + 0.5 || Y < -1.05) return;
         const al = 1 - age / life;
         p.line(X0, Y0, X, Y, { color: col0, width: 2.5, alpha: 0.6 * al, noOcc: true });
         p.circle(X, Y, 0.045, { fill: col0, stroke: null, alpha: al });
@@ -219,17 +219,56 @@
           fling(born, 2 * Math.PI * hash(k + 9.7), C.blue, life, 0.6 + 2.7 * R.rpmAt(bp) / 8000);
         }
       }
-      // film-thickness gauge (under the stage title)
-      const gx = Lx0 + 0.1, gy = 1.62, gw = 2.3;
-      const frac = tp < T.disp ? vol : tp < T.wetEnd ? 1 : hFinal / 0.15 + (1 - hFinal / 0.15) * f;
+      // stage label for the film (under the stage title)
       const gLabel = !R.ebr ? (tp >= T.spin1 ? `film: dry, ${um(v.t)}` : tp >= T.wetEnd ? 'film: liquid, thinning…' : tp >= T.disp ? 'film: liquid, spreading' : 'film: puddle')
         : tp >= T.stop ? `film: dry, ${um(v.t)}, clean edge` : tp >= T.ebrOff ? `film: ${um(v.t)}, edge drying` : tp >= T.ebrOn + 2 ? 'film: dry – edge rinsed'
           : tp >= T.ebrOn ? 'film: dry – EBR clears the edge' : tp >= T.spin1 ? `film: dry, ${um(v.t)}`
             : tp >= T.wetEnd ? 'film: liquid, thinning…' : tp >= T.disp ? 'film: liquid, spreading' : 'film: puddle';
-      p.text(gLabel, gx, gy + 0.3, { size: 0.2, color: tp >= T.spin1 ? C.yellow : C.text, bold: tp >= T.spin1 });
-      p.box(gx, gy - 0.08, gx + gw, gy + 0.08, { fill: C.grid, stroke: null });
-      p.box(gx, gy - 0.08, gx + gw * M.clamp(frac, 0, 1), gy + 0.08, { fill: MAT.resist.stroke, stroke: null });
-      p.text('schematic, not to scale · rotation 50× slower', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
+      p.text(gLabel, Lx0 + 0.1, 1.98, { size: 0.2, color: tp >= T.spin1 ? C.yellow : C.text, bold: tp >= T.spin1 });
+
+      // ======================================================== radial cross-section: film thickness to scale
+      // horizontal: from the wafer centre (left) to the edge (right), not to scale; vertical: thickness to scale
+      const SX0 = Lx0 + 0.15, SXe = Lx1 - 0.75, SYb = -3.5, SYs = -3.0, SYt = -1.5;
+      p.text('radial cross-section, centre → edge: thickness to scale', SX0, -1.34, { size: 0.19, color: C.greyA });
+      const span = w.smooth('fspan', [1, 1.5, 2, 3, 5, 7.5, 10, 15, 20, 30, 50].find(x => x >= 2.6 * v.t) || 50, { log: true });   // µm over the box height
+      const kf = (SYt - SYs) / span;                                       // scene units per µm
+      const Xr = r => SX0 + r * (SXe - SX0);
+      p.material('si', SX0, SYb, SXe, SYs, { stroke: null });
+      p.polygon([[SXe, SYs], [SXe + 0.12, SYs - 0.12], [SXe + 0.12, SYb + 0.12], [SXe, SYb]], { fill: MAT.si.fill, stroke: null });   // rounded wafer edge
+      p.text('Si wafer', SX0 + 0.1, (SYb + SYs) / 2, { size: 0.19, color: C.text });
+      // current film: a dome-shaped puddle while spreading, a thick liquid film that thins during the spin
+      // (schematic, up to 2× the final value), the dry film at the end (to scale); edge bead near the edge
+      const liquid = tp < T.wetEnd ? 2 : tp < T.spin1 ? 1 + f : 1;                  // leaves a free strip at the top of the box
+      const beadF = M.clamp((tp - T.spin0) / 6, 0, 1) * (1 - ebr);
+      const rEnd = tp < T.disp ? rr : Math.min(rr / 0.97, 1) * 0.985 - (R.ebr ? 0.07 * ebr : 0);   // film edge (EBR clears the rim)
+      const yMax = SYt + 0.05;
+      const thick = r => {
+        if (vol <= 0 || r > rEnd) return 0;
+        let th = v.t * liquid * (tp < T.wetEnd ? Math.sqrt(Math.max(0, 1 - (r / rEnd) ** 6)) : 1);
+        if (beadF > 0) th += beadF * 25 * v.t * Math.exp(-((((rEnd - 0.012) - r) / 0.012) ** 2));
+        return th;
+      };
+      if (vol > 0) {
+        const rs = M.linspace(0, rEnd, 160), top = rs.map(r => [Xr(r), Math.min(yMax, SYs + thick(r) * kf)]);
+        p.polygon([[Xr(0), SYs], ...top, [Xr(rEnd), SYs]], { fill: MAT.resist.fill, stroke: MAT.resist.stroke, width: 1.5 });
+        if (beadF > 0.05 && SYs + beadF * 25 * v.t * kf > yMax)
+          p.place('edge bead (clipped) ↑', [[Xr(rEnd) - 0.32, yMax - 0.13, 'right'], [Xr(rEnd) - 0.5, yMax - 0.13, 'right']], { size: 0.17, color: C.text, key: 'sbead' });
+      }
+      // final dry thickness from the spin curve: dashed level, dimension and scale bar
+      const yT = SYs + v.t * kf;
+      p.line(SX0, yT, SXe, yT, { color: C.yellow, width: 2, dash: [0.1, 0.07] });
+      p.layer('bake', () => p.line(SX0, SYs + S.BAKE * v.t * kf, SXe, SYs + S.BAKE * v.t * kf, { color: C.gold, width: 2, dash: [0.04, 0.06] }));
+      const xd = Xr(0.42);
+      p.dim(xd, SYs, xd, yT, '');
+      // inside the dry-film band (the liquid film top never goes below it); hidden while the puddle edge
+      // is still sweeping through the label
+      if (vol <= 0 || rEnd >= 0.8)
+        p.text(`dry film t = ${um(v.t)}`, xd + 0.12, SYs + 0.4 * v.t * kf, { size: 0.18, color: C.yellow, bold: true });
+      const sb = [0.5, 1, 2, 5, 10, 20].find(x => x * kf >= 0.35) || 20;
+      p.line(SXe + 0.45, SYs, SXe + 0.45, SYs + sb * kf, { color: C.white, width: 3 });
+      p.text(um(sb), SXe + 0.55, SYs + sb * kf / 2, { size: 0.17, color: C.text });
+      p.text('liquid film schematic · dry film to scale', SX0, SYb - 0.2, { size: 0.17, color: C.muted });
+      p.text('rotation 50× slower', Lx1 - 0.1, SYb - 0.2, { size: 0.17, align: 'right', color: C.muted });
       p.layer('bead', () => {
         if (R.ebr && tp >= T.ebrOn + 2) p.place('edge cleared by EBR', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.blue, key: 'bead' });
         else if (tp >= T.spin0 + 3) p.place('edge bead: up to 20–30 × t', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.text, key: 'bead' });

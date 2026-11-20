@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silicon etching · Microfabrication Interactive</title>
+<meta name="description" content="Interactive cross-section of silicon etching: anisotropic KOH and TMAH, isotropic wet etching and Bosch DRIE, mask selectivity and undercut.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Etching</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Pattern transfer</p>
+      <h1>Etching silicon through a mask window</h1>
+    </div>
+    <p class="lede">Crystal planes, selectivity and undercut: why the same window gives a V-groove, a bowl or a deep vertical trench.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key relations</h2>
+      <h3>Anisotropic wet etching of (100) Si</h3>
+      <p>KOH and TMAH etch {111} planes far more slowly than {100} planes. A window with edges along &lt;110&gt; therefore develops {111} sidewalls at</p>
+      <div class="tex-display">\theta = \arctan\sqrt{2} = 54.74^\circ, \qquad w_{bottom} = W - \sqrt{2}\,d, \qquad d_{max} = \frac{W}{\sqrt{2}}</div>
+      <h3>Rates and selectivity</h3>
+      <div class="tex-display">R(T) = R_\mathrm{ref}\,\exp\!\left[-\frac{E_a}{k}\left(\frac{1}{T}-\frac{1}{T_\mathrm{ref}}\right)\right], \qquad S = \frac{R_\mathrm{Si}}{R_\mathrm{mask}}</div>
+      <p>The mask survives a time <span class="tex">t_\mathrm{mask} = h_\mathrm{mask}/R_\mathrm{mask}</span>.</p>
+      <table>
+        <tr><th>Etchant</th><th>Si (100)</th><th>SiO₂</th><th>Si₃N₄</th><th>Resist</th></tr>
+        <tr><td>KOH 30 %, 80 °C</td><td>1.1 µm/min</td><td>7.7 nm/min</td><td>≈ 0</td><td>dissolves</td></tr>
+        <tr><td>TMAH 25 %, 80 °C</td><td>≈ 0.55 µm/min</td><td>~10⁴× slower than Si</td><td>≈ 0</td><td>not usable</td></tr>
+        <tr><td>HNA type: HNO₃/H₂O/NH₄F, RT</td><td>0.15 µm/min</td><td>8.7 nm/min</td><td>–</td><td>usable</td></tr>
+        <tr><td>Bosch DRIE</td><td>1.5–2.4 µm/min*</td><td>≈ 24 nm/min</td><td>–</td><td>≈ 33 nm/min</td></tr>
+      </table>
+      <p class="note">Williams, Gupta &amp; Wasilik (2003); TMAH after Tabata (2001). * 2003 tool; current DRIE tools etch 5–20 µm/min.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A pressure-sensor membrane: the wafer is 380 µm thick and the membrane should be 20 µm. How long must you etch in 30 % KOH at 80 °C? What is the minimum window width so that the groove does not self-terminate before?
+          <details><summary>Answer</summary>Depth 360 µm at 1.1 µm/min ≈ 5.5 h. Self-termination at <span class="tex">W/\sqrt{2} &gt; 360\ \mathrm{\mu m}</span> requires <span class="tex">W &gt; 509\ \mathrm{\mu m}</span>; for a membrane of width <span class="tex">a</span> at the bottom, <span class="tex">W = a + \sqrt{2}\cdot360\ \mathrm{\mu m}</span>. With the {111} recession of this model (ratio 40) the opening also widens by about 11 µm per side during the 5.5 h – in a real design you would compensate for it.</details></li>
+        <li>How thick must a thermal oxide mask be for the etch in task 1?
+          <details><summary>Answer</summary>5.5 h × 7.7 nm/min ≈ 2.5 µm – impractical; that is why LPCVD nitride is used.</details></li>
+        <li>In Explore mode, compare a 20 µm window etched 40 min in KOH and in DRIE. Why can KOH not make an 80 µm deep trench in a 20 µm window?
+          <details><summary>Answer</summary>KOH self-terminates at <span class="tex">20/\sqrt{2} \approx 14\ \mathrm{\mu m}</span>. DRIE etches vertically regardless of crystal planes.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>2-D cross-section of a long window whose edges are aligned to &lt;110&gt;. Misalignment, convex corners (which are strongly undercut in KOH) and the ends of the window are not modelled.</li>
+        <li>{111} planes etch at <span class="tex">R_{100}/40</span> (KOH) or <span class="tex">R_{100}/20</span> (TMAH). Published (100):(111) ratios span roughly 30 to 400 for KOH depending on concentration and temperature (Seidel: ~100 at 20 °C, ~30 at 100 °C) and 10–35 for TMAH, so the undercut shown here is on the high side.</li>
+        <li>Heavily boron-doped silicon (above roughly 10¹⁹–2×10¹⁹ cm⁻³) is practically not etched by KOH – the etch stop used to make thin membranes (Seidel et al. 1990, part II). Doping is not modelled here.</li>
+        <li>Rates are constant in time: no loading effect, no aspect-ratio-dependent etching (ARDE) in DRIE, no hydrogen-bubble roughness. The temperature dependence uses one activation energy per material.</li>
+        <li>When the mask is consumed the drawing stops changing – in reality the whole surface would then be attacked.</li>
+        <li>DRIE scallops and the mask thickness are drawn larger than real for visibility.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>K. R. Williams, K. Gupta, M. Wasilik, “Etch rates for micromachining processing – Part II”, <i>J. Microelectromech. Syst.</i> 12 (2003) 761–778.</li>
+        <li>K. R. Williams, R. S. Muller, “Etch rates for micromachining processing”, <i>J. Microelectromech. Syst.</i> 5 (1996) 256–269.</li>
+        <li>H. Seidel, L. Csepregi, A. Heuberger, H. Baumgärtel, “Anisotropic etching of crystalline silicon in alkaline solutions”, <i>J. Electrochem. Soc.</i> 137 (1990) 3612; part II (influence of dopants), 3626.</li>
+        <li>O. Tabata, “Anisotropic etching of Si in TMAH solutions”, <i>Sensors and Materials</i> 13 (2001) 271.</li>
+        <li>M. J. Madou, <i>Fundamentals of Microfabrication and Nanotechnology</i>, CRC Press 2011.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js"></script>
+<script src="model.js"></script>
+<script src="widget.js"></script>
+</body>
+</html>

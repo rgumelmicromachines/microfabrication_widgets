@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spin coating · Microfabrication Interactive</title>
+<meta name="description" content="Interactive spin coating of photoresist: how spin speed, solids content and the spinner constant set the film thickness; soft bake and edge bead.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Lithography</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Lithography · resist coating</p>
+      <h1>Spin coating: how thick is the resist?</h1>
+    </div>
+    <p class="lede">Spin faster and the film gets thinner – but only with the square root of the speed. The resist itself sets the range.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key relation</h2>
+      <p>The empirical spin curve used in microfabrication courses:</p>
+      <div class="tex-display">t = k\,\frac{p^2}{\sqrt{w}}, \qquad t\ \text{in Å},\quad w = \frac{\text{spin speed in rpm}}{1000}</div>
+      <table>
+        <tr><th>Symbol</th><th>Meaning</th><th>Typical value</th></tr>
+        <tr><td><span class="tex">k</span></td><td>spinner constant (calibration)</td><td>80–100</td></tr>
+        <tr><td><span class="tex">p</span></td><td>solids content of the resist</td><td>% by weight</td></tr>
+        <tr><td><span class="tex">w</span></td><td>spin speed / 1000 rpm</td><td>3–6 (3000–6000 rpm, 15–30 s)</td></tr>
+        <tr><td><span class="tex">t</span></td><td>film thickness</td><td>1–2 µm in Si processes</td></tr>
+      </table>
+      <p>Consequences: <span class="tex">t \propto 1/\sqrt{w}</span> – twice the speed gives a <span class="tex">\sqrt2</span> thinner film; <span class="tex">t \propto p^2</span> – the resist formulation sets the range. The soft bake thins the film by up to about 25 %; the edge bead can be 20–30 times thicker than the film.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A resist with 25 % solids and a spinner with <span class="tex">k = 90</span>: which speed gives a 2.5 µm film?
+          <details><summary>Answer</summary><span class="tex">\sqrt{w} = k p^2 / t = 90\cdot 625 / 25\,000 = 2.25</span>, so <span class="tex">w = 5.06</span>, i.e. about 5060 rpm. Check it in Explore mode.</details></li>
+        <li>Your resist (20 %, <span class="tex">k = 90</span>) gives 1.8 µm at 4000 rpm, but you need 1.2 µm. What speed would that take, and what is the better solution?
+          <details><summary>Answer</summary><span class="tex">w = 4\cdot(1.8/1.2)^2 = 9</span>, i.e. 9000 rpm – outside the usual 3000–6000 rpm. Better: a thinner resist. At 4000 rpm, <span class="tex">p = 20\,\% \cdot \sqrt{1.2/1.8} \approx 16.3\,\%</span> gives 1.2 µm.</details></li>
+        <li>How high can the edge bead of a 1.8 µm film be, and why does it matter for contact printing?
+          <details><summary>Answer</summary>Up to 20–30 × 1.8 µm ≈ 36–54 µm. The ridge keeps the mask that far from the resist over the rest of the wafer – the contact becomes a proximity gap and the resolution drops. Hence edge bead removal right after coating.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>The spin curve is an empirical rule of thumb, not a physical law. Its units are not printed in the sources; the thickness comes out in ångströms, the only reading consistent with the typical values (3000–6000 rpm → 1–2 µm).</li>
+        <li>The robust part is the scaling with speed, <span class="tex">t \propto w^{-1/2}</span>, which holds for low- and medium-viscosity resists. Thick, viscous resists (e.g. SU-8) follow a steeper law, closer to <span class="tex">w^{-1}</span>.</li>
+        <li>The absolute thickness depends on everything lumped into <span class="tex">k</span> – spin time, acceleration, solvent, exhaust, temperature and humidity. Use a measured spin curve for your resist and spinner.</li>
+        <li>The soft-bake shrinkage (up to ~25 %) and the edge-bead height (up to 20–30 × t) are typical upper values; the drawing of the edge bead is not to scale. The rotation in the top view is slowed down 133 times.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>Wake Forest University, NAN 242, lecture “Photolithography” (spin curve <span class="tex">t = kp^2/\sqrt{w}</span>, spin-speed range, soft-bake shrinkage, edge bead), <a href="http://users.wfu.edu/ucerkb/Nan242/L15-Photolithography.pdf">PDF</a>.</li>
+        <li>DTU Nanolab, Litho Tool Package – Spin coating (spin-speed exponent of UV resists and SU-8), <a href="https://labadviser.nanolab.dtu.dk/images/a/ac/Litho_Tool_Package_-_2_Spin_coating_v8_LESJO_%28TARAN_ed%29.pdf">PDF</a>.</li>
+        <li>D. Meyerhofer, “Characteristics of resist films produced by spinning”, <i>J. Appl. Phys.</i> 49 (1978) 3993.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js"></script>
+<script src="model.js"></script>
+<script src="widget.js"></script>
+</body>
+</html>

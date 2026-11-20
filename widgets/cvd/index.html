@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CVD growth rate · Microfabrication Interactive</title>
+<meta name="description" content="Interactive Grove model of CVD and epitaxial growth: surface-reaction-limited vs gas-transport-limited regime, boundary layer, temperature, gas flow and precursor mole fraction.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Thin-film deposition</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Thin films · CVD and epitaxy</p>
+      <h1>CVD growth rate: reaction or transport?</h1>
+    </div>
+    <p class="lede">Two steps in series – the gas must bring the precursor to the wafer, and the surface must react it. The slower one sets the growth rate.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations (Grove model)</h2>
+      <p>Flux through the stagnant boundary layer of thickness <span class="tex">\delta</span> and flux consumed by the surface reaction:</p>
+      <div class="tex-display">F_1 = h_G\,(C_G - C_S),\quad h_G = \frac{D_G}{\delta}, \qquad F_2 = k_S\,C_S</div>
+      <p>In steady state <span class="tex">F_1 = F_2</span>, which gives the surface concentration and the growth rate</p>
+      <div class="tex-display">C_S = \frac{C_G}{1 + k_S/h_G}, \qquad V = \frac{F}{N_1} = \frac{k_S\,h_G}{k_S + h_G}\,\frac{C_T}{N_1}\,Y</div>
+      <p>with <span class="tex">C_T</span> the density of gas molecules, <span class="tex">Y</span> the mole fraction of the precursor and <span class="tex">N_1 = 5\times10^{22}\ \mathrm{cm^{-3}}</span> the density of Si atoms in the film. The limits:</p>
+      <div class="tex-display">h_G \gg k_S:\ V \simeq \frac{C_T}{N_1}k_S Y\ \text{(reaction)}, \qquad h_G \ll k_S:\ V \simeq \frac{C_T}{N_1}h_G Y\ \text{(transport)}</div>
+      <div class="tex-display">k_S = k_0\,e^{-E_a/kT}, \qquad h_G = \frac{3}{2}\,\frac{D_G}{L}\sqrt{\mathrm{Re}_L}, \qquad T^* = \frac{E_a}{k\,\ln(k_0/h_G)}\ \ (k_S = h_G)</div>
+      <table>
+        <tr><th>Constant</th><th>Value</th><th>Source</th></tr>
+        <tr><td><span class="tex">k_0</span>, <span class="tex">E_a</span></td><td>1 × 10⁷ cm/s, 1.9 eV</td><td>SiCl₄ epitaxy, Grove 1967</td></tr>
+        <tr><td><span class="tex">N_1</span></td><td>5 × 10²² cm⁻³</td><td>atom density of Si</td></tr>
+        <tr><td><span class="tex">C_T</span></td><td><span class="tex">p/kT</span>, 1 atm</td><td>ideal gas</td></tr>
+      </table>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>At which temperature do the two regimes meet for <span class="tex">h_G = 5\ \mathrm{cm/s}</span>? Calculate, then check in Explore mode.
+          <details><summary>Answer</summary><span class="tex">T^* = 1.9/(8.617\times10^{-5}\cdot\ln(10^7/5)) = 1519.7\ \mathrm{K} \approx 1247\ ^\circ\mathrm{C}</span>.</details></li>
+        <li>Growth at 1100 °C with <span class="tex">h_G = 5\ \mathrm{cm/s}</span> and <span class="tex">Y = 0.5\ \%</span>: what is <span class="tex">k_S</span>, the growth rate, and how long does a 10 µm epitaxial layer take?
+          <details><summary>Answer</summary><span class="tex">k_S = 1.06\ \mathrm{cm/s}</span>, <span class="tex">C_T = 5.35\times10^{18}\ \mathrm{cm^{-3}}</span>, <span class="tex">C_G = 2.67\times10^{16}\ \mathrm{cm^{-3}}</span>; <span class="tex">V = \frac{1.06\cdot5}{6.06}\cdot\frac{2.67\times10^{16}}{5\times10^{22}} = 4.7\times10^{-7}\ \mathrm{cm/s} = 0.28\ \mu\mathrm{m/min}</span>. 10 µm takes about 36 min. The process is reaction-limited (<span class="tex">k_S/h_G = 0.21</span>).</details></li>
+        <li>In the reaction-limited regime around 900 °C, how much does the growth rate change per 1 °C? What does this mean for a furnace with a ±2 °C temperature spread?
+          <details><summary>Answer</summary><span class="tex">\mathrm{d}\ln V/\mathrm{d}T = E_a/kT^2 - 1/T = 0.0160 - 0.0009 \approx 1.5\ \%/^\circ\mathrm{C}</span> (the <span class="tex">-1/T</span> comes from <span class="tex">C_T = p/kT</span>). A ±2 °C spread gives about ±3 % thickness spread – temperature uniformity is what matters in LPCVD.</details></li>
+        <li>At 1320 °C, <span class="tex">h_G = 2\ \mathrm{cm/s}</span>, the gas velocity is doubled. By how much does the growth rate increase?
+          <details><summary>Answer</summary><span class="tex">h_G \propto \sqrt{\mathrm{Re}_L} \propto \sqrt{U}</span>, so <span class="tex">h_G</span> grows 1.41×. The rate grows only 1.32×: with <span class="tex">k_S = 9.8\ \mathrm{cm/s}</span> the surface reaction still contributes (<span class="tex">1/V \propto 1/k_S + 1/h_G</span>). Only in the pure transport limit would the gain be the full 1.41×.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Stagnant-film model: one precursor, a first-order surface reaction and no gas-phase reactions. The rate constants are those of SiCl₄ + H₂ epitaxy; other precursors (SiH₄, SiH₂Cl₂, TEOS …) have their own <span class="tex">k_0</span> and <span class="tex">E_a</span>.</li>
+        <li><span class="tex">h_G</span> is a free parameter and is taken as independent of temperature, as in Grove’s figure. In reality <span class="tex">D_G</span> grows with temperature, so the transport-limited rate rises slightly with <span class="tex">T</span>; here it even falls slightly, because <span class="tex">C_T = p/kT</span> decreases.</li>
+        <li>The rate is proportional to <span class="tex">Y</span> only for dilute precursors. For SiCl₄ the measured rate peaks near <span class="tex">Y \approx 0.1</span> and turns into etching above <span class="tex">Y \approx 0.28</span> (HCl from the reaction etches Si; Theuerer 1961). Typical industrial growth uses <span class="tex">Y \approx 0.01</span>.</li>
+        <li>Pressure is fixed at 1 atm (APCVD / atmospheric epitaxy). At low pressure (LPCVD) <span class="tex">D_G \propto 1/p</span> makes <span class="tex">h_G</span> much larger, so LPCVD stays reaction-limited.</li>
+        <li>The cross-section is schematic: the drawn boundary-layer thickness only indicates <span class="tex">\delta = D_G/h_G</span> qualitatively, and the concentration profile is the linear stagnant-film profile.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>A. S. Grove, <i>Physics and Technology of Semiconductor Devices</i>, Wiley 1967, ch. 1 (growth kinetics of epitaxial Si, the <span class="tex">h_G</span>–<span class="tex">k_S</span> figure).</li>
+        <li>H. C. Theuerer, <i>J. Electrochem. Soc.</i> 108 (1961) 649 (growth rate vs SiCl₄ mole fraction, onset of etching).</li>
+        <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 9 (thin-film deposition, CVD kinetics).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js"></script>
+<script src="model.js"></script>
+<script src="widget.js"></script>
+</body>
+</html>

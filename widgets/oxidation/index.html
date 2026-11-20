@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thermal oxidation · Microfabrication Interactive</title>
+<meta name="description" content="Interactive Deal–Grove model of thermal oxidation of silicon: dry and wet oxidation, temperature, orientation, time to target thickness and oxide colour.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Oxidation</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Thin films</p>
+      <h1>Thermal oxidation of silicon</h1>
+    </div>
+    <p class="lede">The Deal–Grove model: how long does it take to grow an oxide, and why do thick oxides grow so slowly?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>The oxidant (O₂ or H₂O) diffuses through the oxide and reacts at the Si/SiO₂ interface. In steady state the two fluxes are equal, which gives the Deal–Grove relation</p>
+      <div class="tex-display">x_{ox}^2 + A\,x_{ox} = B\,(t+\tau), \qquad \tau = \frac{x_i^2 + A\,x_i}{B}</div>
+      <div class="tex-display">x_{ox}(t) = \frac{A}{2}\left[\sqrt{1+\frac{t+\tau}{A^2/4B}}-1\right]</div>
+      <p>Limits: <span class="tex">x_{ox} \approx \tfrac{B}{A}(t+\tau)</span> when <span class="tex">t+\tau \ll A^2/4B</span> (reaction-limited) and <span class="tex">x_{ox} \approx \sqrt{B\,t}</span> when <span class="tex">t \gg A^2/4B</span> (diffusion-limited).</p>
+      <p>Both constants follow Arrhenius laws, <span class="tex">B = C_1 e^{-E_1/kT}</span> and <span class="tex">B/A = C_2 e^{-E_2/kT}</span>:</p>
+      <table>
+        <tr><th>Ambient</th><th>C₁ (µm²/h)</th><th>E₁ (eV)</th><th>C₂ (µm/h)*</th><th>E₂ (eV)</th></tr>
+        <tr><td>Dry O₂</td><td>7.72 × 10²</td><td>1.23</td><td>6.23 × 10⁶</td><td>2.0</td></tr>
+        <tr><td>Wet H₂O</td><td>3.86 × 10²</td><td>0.78</td><td>1.63 × 10⁸</td><td>2.05</td></tr>
+      </table>
+      <p class="note">* for (111) Si; divide C₂ by 1.68 for (100) Si. The oxide grows 46 % into the silicon: <span class="tex">x_{Si} = 0.46\,x_{ox}</span> (1 µm of Si becomes 2.17 µm of SiO₂; textbooks quote 0.44–0.46 depending on the assumed oxide density).</p>
+      <p class="note">The original measurements of Deal &amp; Grove (1965) were made on (111) Si; at 1200 °C they give <span class="tex">B/A = 1.12\ \mathrm{\mu m/h}</span> in dry O₂ and 14.4 µm/h in wet O₂ (water at 95 °C, 640 Torr H₂O), with activation energies 1.24 eV (dry) and 0.71 eV (wet) for <span class="tex">B</span> and 2.0 eV / 1.96 eV for <span class="tex">B/A</span>. The table above is the later fit used by Plummer et al.; its H₂O row describes steam at about 1 atm, which grows somewhat faster.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>How long does it take to grow 500 nm of wet oxide on a bare (100) wafer at 1100 °C? Calculate first, then check with the target slider.
+          <details><summary>Answer</summary>At 1100 °C: <span class="tex">B = 0.529\ \mathrm{\mu m^2/h}</span>, <span class="tex">B/A = 2.90\ \mathrm{\mu m/h}</span>, <span class="tex">A = 0.182\ \mathrm{\mu m}</span>. <span class="tex">t = (0.5^2 + 0.182\cdot0.5)/0.529 \approx 0.65\ \mathrm{h} \approx 39\ \mathrm{min}</span>.</details></li>
+        <li>A wafer already carries 100 nm of oxide. How much longer does it take to reach 200 nm in dry O₂ at 1000 °C than starting from bare silicon would take to reach 100 nm?
+          <details><summary>Answer</summary>(100) Si: <span class="tex">B = 0.0104\ \mathrm{\mu m^2/h}</span>, <span class="tex">A = 0.233\ \mathrm{\mu m}</span>. Bare wafer (τ for the 25 nm offset = 0.62 h) to 100 nm: ≈ 2.6 h. From 100 nm (τ = 3.20 h) to 200 nm: ≈ 5.1 h – about twice as long for the same 100 nm, because the oxidant has to cross a thicker oxide.</details></li>
+        <li>Why is it pointless to quote an oxidation time for 10 nm of dry oxide from this model?
+          <details><summary>Answer</summary>Deal–Grove does not describe the fast initial regime of dry oxidation (below ~25 nm). It absorbs it in the offset τ; thin gate oxides need other models or calibrated data.</details></li>
+        <li>The colour of a wafer repeats as the oxide grows. Find two thicknesses below 600 nm that look blue. What is their difference, and why?
+          <details><summary>Answer</summary>Roughly 120 nm, 300 nm and 490 nm – a spacing of about 180–190 nm. The wafer looks blue mainly because yellow–orange light is <i>removed</i>: both reflections (air/SiO₂ and SiO₂/Si) flip the phase, so the reflectance has minima at <span class="tex">2nd = (m+\tfrac12)\lambda</span>. A minimum at <span class="tex">\lambda \approx 570\ \mathrm{nm}</span> repeats every <span class="tex">\Delta d = \lambda/(2n) \approx 570/(2\cdot1.46) \approx 195\ \mathrm{nm}</span>.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Rate constants are for 1 atm dry O₂ and for steam (the H₂O row of Plummer's Table 6-2, which reproduces Deal &amp; Grove's 640-torr data) in the range ~800–1200 °C. Pressure, chlorine addition and heavy substrate doping change them. Real furnaces differ by tens of per cent – always calibrate.</li>
+        <li>Dry O₂: the model is shifted by τ corresponding to a 25 nm starting oxide (Deal &amp; Grove's own convention). Below that the curve is not physical, and below ~950 °C the convention overestimates dry growth compared with furnace charts (≈ 1.5× at 900 °C, ≥ 2× at 800–850 °C and for short times).</li>
+        <li>The cross-section is drawn to scale with an automatic zoom (0.1, 1 or 10 µm full height); the scale bar shows the current zoom.</li>
+        <li>The oxide colour is computed from thin-film interference at normal incidence in daylight; real colours depend on the light source, viewing angle and your display.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>B. E. Deal, A. S. Grove, “General relationship for the thermal oxidation of silicon”, <i>J. Appl. Phys.</i> 36 (1965) 3770–3778.</li>
+        <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 6 (Table 6-2).</li>
+        <li>I. H. Malitson, “Interspecimen comparison of the refractive index of fused silica”, <i>J. Opt. Soc. Am.</i> 55 (1965) 1205.</li>
+        <li>M. A. Green, “Self-consistent optical parameters of intrinsic silicon at 300 K”, <i>Sol. Energy Mater. Sol. Cells</i> 92 (2008) 1305.</li>
+        <li>W. A. Pliskin, E. E. Conrad, “Nondestructive determination of thickness and refractive index of transparent films”, <i>IBM J. Res. Dev.</i> 8 (1964) 43 (oxide colour chart).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js"></script>
+<script src="model.js"></script>
+<script src="widget.js"></script>
+</body>
+</html>

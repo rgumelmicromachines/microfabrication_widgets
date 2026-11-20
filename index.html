@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microfabrication Interactive</title>
+<meta name="description" content="Interactive simulations for teaching microfabrication: crystal growth, lithography, diffusion, oxidation, thin-film deposition and etching of silicon.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="assets/mfw.css">
+<style>
+  .thumb-si { fill: #3A3F4B; } .thumb-ox { fill: #1F4E66; } .thumb-res { fill: #4B3A5C; }
+  :root[data-theme="light"] .thumb-si { fill: #C7CBD3; } :root[data-theme="light"] .thumb-ox { fill: #BFDDEC; } :root[data-theme="light"] .thumb-res { fill: #D9C7EA; }
+  .thumb-line { fill: none; stroke: var(--accent); stroke-width: 3; }
+  .thumb-line2 { fill: none; stroke: var(--link); stroke-width: 2.2; }
+  .thumb-axis { stroke: var(--line-strong); stroke-width: 1.5; fill: none; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <section class="hub-hero">
+    <p class="eyebrow">Open teaching material · Microfabrication</p>
+    <h1>See the physics behind every process step</h1>
+    <p>Interactive simulations for courses on microfabrication and semiconductor process technology. Each page has a guided tour that explains the step, an Explore mode where every parameter is yours, worked exercises and a list of the model's assumptions.</p>
+    <ol class="flow" aria-label="Process flow">
+      <li>Substrate</li><li>Lithography</li><li>Doping</li><li>Oxidation</li><li>Thin films</li><li>Etching</li><li>Analysis</li>
+    </ol>
+  </section>
+
+  <h2 class="section-title">Simulations</h2>
+  <div class="grid">
+    <a class="tile" href="widgets/segregation/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="30" y="110" width="110" height="50" class="thumb-ox" opacity=".8"/><path d="M24 70v96h122V70" class="thumb-axis"/>
+        <rect x="70" y="30" width="30" height="80" class="thumb-si"/><path d="M85 10v20" class="thumb-axis"/>
+        <path d="M180 150h120M180 150V30" class="thumb-axis"/><path d="M180 120 C230 115 260 100 290 50" class="thumb-line"/><path d="M180 90 C230 85 260 70 290 20" class="thumb-line2"/></svg></span>
+      <div><h2>Dopant segregation</h2><p>Czochralski growth: why the tail of a doped ingot has a different resistivity from the seed end.</p></div>
+      <div class="tile-meta"><span>Substrates</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/spincoating/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <circle cx="80" cy="88" r="58" class="thumb-res"/><path d="M80 30 A58 58 0 0 1 132 62" class="thumb-axis"/><circle cx="80" cy="88" r="7" class="thumb-si"/>
+        <path d="M170 160h135M170 160V20" class="thumb-axis"/><path d="M178 30 C200 75 230 98 300 120" class="thumb-line"/></svg></span>
+      <div><h2>Spin coating</h2><p>How spin speed and the resist set the film thickness: t ∝ 1/√(rpm), soft bake and edge bead.</p></div>
+      <div class="tile-meta"><span>Lithography</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/lithography/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <g fill="currentColor" opacity=".55"><rect x="20" y="16" width="40" height="10"/><rect x="100" y="16" width="40" height="10"/><rect x="180" y="16" width="40" height="10"/><rect x="260" y="16" width="40" height="10"/></g>
+        <path d="M20 120 C40 120 50 50 80 50 S120 120 140 120 S170 50 160 50 S200 120 220 120 S250 50 240 50 S280 120 300 120" class="thumb-line" transform="translate(0,4)"/>
+        <g class="thumb-res"><rect x="22" y="150" width="36" height="16"/><rect x="102" y="150" width="36" height="16"/><rect x="182" y="150" width="36" height="16"/><rect x="262" y="150" width="36" height="16"/></g></svg></span>
+      <div><h2>Lithography resolution</h2><p>Contact, proximity and projection printing: diffraction, k₁, the cut-off pitch and depth of focus.</p></div>
+      <div class="tile-meta"><span>Lithography</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/diffusion/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <path d="M30 160h270M30 160V20" class="thumb-axis"/><path d="M30 30 C80 32 110 60 140 160" class="thumb-line2" stroke-dasharray="6 5"/>
+        <path d="M30 60 C120 62 170 100 220 160" class="thumb-line"/><path d="M30 120h270" class="thumb-axis" stroke-dasharray="4 4"/></svg></span>
+      <div><h2>Diffusion &amp; junction depth</h2><p>Predeposition and drive-in of boron or phosphorus: erfc and Gaussian profiles, junction depth, sheet resistance.</p></div>
+      <div class="tile-meta"><span>Doping</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/oxidation/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <circle cx="80" cy="90" r="55" fill="#6870b4"/><path d="M150 150h150M150 150V20" class="thumb-axis"/>
+        <path d="M150 128 C190 120 220 90 300 40" class="thumb-line"/><path d="M150 140 L300 30" class="thumb-line2" stroke-dasharray="6 5"/></svg></span>
+      <div><h2>Thermal oxidation</h2><p>Deal–Grove model: dry vs wet oxidation, temperature, orientation, time to a target thickness and the colour of the oxide.</p></div>
+      <div class="tile-meta"><span>Oxidation</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/cvd/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <path d="M30 160h270M30 160V20" class="thumb-axis"/><path d="M40 40 L290 150" class="thumb-line2" stroke-dasharray="6 5"/>
+        <path d="M30 52h270" class="thumb-axis" stroke-dasharray="4 4"/><path d="M40 62 C120 66 160 80 200 105 S260 140 290 152" class="thumb-line"/></svg></span>
+      <div><h2>CVD growth rate</h2><p>Grove model: when does the surface reaction limit growth, and when the gas flow? Boundary layer, temperature and the regime boundary.</p></div>
+      <div class="tile-meta"><span>Thin-film deposition</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/etching/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="0" y="60" width="320" height="120" class="thumb-si"/><path d="M95 60 L135 117 L185 117 L225 60Z" fill="var(--stage)"/>
+        <rect x="0" y="52" width="95" height="8" class="thumb-ox"/><rect x="225" y="52" width="95" height="8" class="thumb-ox"/>
+        <path d="M95 60 L135 117" class="thumb-line"/></svg></span>
+      <div><h2>Etching silicon</h2><p>Anisotropic KOH/TMAH with 54.74° walls, isotropic etching, Bosch DRIE; mask selectivity and undercut.</p></div>
+      <div class="tile-meta"><span>Etching</span><span class="go">Open →</span></div>
+    </a>
+  </div>
+
+  <h2 class="section-title">How to use the pages</h2>
+  <div class="article" style="margin-top:0">
+    <div class="card">
+      <ul>
+        <li><b>Guided tour</b> walks through the topic step by step. Press <kbd>Space</kbd> to play or pause, <kbd>←</kbd> <kbd>→</kbd> to step; the speed selector sets how fast it runs. Sliders the tour controls are locked and marked.</li>
+        <li><b>Explore</b> unlocks every parameter. Numbers update live; the panel shows the derived quantities.</li>
+        <li>Below each simulation: the key equations, exercises with hidden answers, the model's assumptions and the references for every number used.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <p>The simulations are teaching models: every constant is taken from a cited source and the limitations are listed on each page. They reproduce trends and typical magnitudes well, but they do not replace calibrated process data from a real tool.</p>
+      <p class="note">Works on desktop and mobile, in light and dark mode. No data is collected.</p>
+    </div>
+  </div>
+
+  <footer class="footer">Microfabrication Interactive · open teaching material. Every model cites its sources and lists its limitations.</footer>
+</main>
+<script src="assets/mfw.js"></script>
+</body>
+</html>

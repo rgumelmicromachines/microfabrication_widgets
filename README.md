@@ -1,0 +1,49 @@
+# Microfabrication Interactive
+
+Interactive simulations for teaching microfabrication and semiconductor process technology: each page combines a guided tour, a free Explore mode, key equations, exercises with answers, the model's limitations and references for every number used.
+Static site: plain HTML, CSS and JavaScript, no build step. Works from any static web host (e.g. GitHub Pages or a university web server) and also when opened straight from disk.
+
+## Structure
+
+```
+index.html                    hub (links to all pages)
+assets/mfw.js                 widget engine: drawing, plots, tour/explore modes, themes, KaTeX loader
+assets/mfw.css                page + widget styles, light/dark theme tokens
+widgets/<topic>/index.html    page: widget + key equations, exercises, model limitations, references
+widgets/<topic>/model.js      physics only (pure functions, every constant with its source) – also runs in Node
+widgets/<topic>/widget.js     the figure, parameters, readout and guided-tour steps
+tests/verify.js               physics regression checks against textbook values and closed-form results
+tests/overlap-audit.js        browser: finds overlapping labels/lines/formulas over all tour steps and random slider states
+tests/stability.js            browser: drags every slider, reports any layout movement and the slowest frame
+tests/contact-sheet.js        browser: renders many states on one canvas for visual review
+```
+
+Pages: `segregation`, `spincoating`, `lithography`, `diffusion`, `oxidation`, `cvd`, `etching`. The page list for the lesson menu (order and topic) is `PAGES` in `assets/mfw.js`.
+
+## Run locally
+
+```
+python -m http.server 8765
+```
+
+then open http://localhost:8765. Run the physics checks with `node tests/verify.js` (all must pass before publishing).
+
+## Adding a page
+
+1. Copy a folder in `widgets/`, rename it.
+2. Put the physics in `model.js` (no drawing code, cite every constant) and add checks to `tests/verify.js`.
+3. Describe the figure in `widget.js` with `MFW.widget('#app', { params, derived, draw, readout, steps, ... })`.
+   - `params`: number → slider (`log: true` for a log slider), `options` → select, boolean → checkbox; `when: v => …` shows a control conditionally.
+   - `steps`: the guided tour. Parameters a step `set`s are locked while the tour is active; everything else stays under the student's control. `text`/`caption` may be functions of the live values.
+   - Use palette roles (`C.yellow`, `C.text`, `MFW.MAT.sio2` …), never literal colours – that is what makes light/dark mode work.
+   - Labels whose position depends on the data: use `p.place(text, candidates)` / `ax.place`, `ax.labelCurve`, or `ax.legend` – they
+     avoid everything already drawn and keep their position while it stays free (no hopping while a slider moves).
+     Auto-zoom and changing axis ranges: `w.smooth('key', target, { log: true })` in `draw(p, v, w)` glides instead of jumping.
+4. Before publishing, in the browser console of the page:
+   load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement).
+5. Add a tile to `index.html`.
+
+## Notes
+
+- Fonts (IBM Plex Sans) come from Google Fonts and KaTeX from jsDelivr. For a faculty server under GDPR you may prefer to self-host both (`MFW.config.katexBase`, and a local `@font-face`); the pages fall back to system fonts automatically.
+- Theme and playback speed are remembered in `localStorage` (per browser only); nothing is sent anywhere.

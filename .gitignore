@@ -1,0 +1,9 @@
+# course lecture slides – copyrighted teaching material, kept local only
+source_prednasky/
+# local tooling output
+.playwright-mcp/
+.claude/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db

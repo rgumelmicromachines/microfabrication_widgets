@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lithography resolution · Microfabrication Interactive</title>
+<meta name="description" content="Interactive aerial-image simulation of contact, proximity and projection lithography: diffraction, resolution, k1, depth of focus.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Lithography</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Patterning</p>
+      <h1>Optical lithography – resolution limits</h1>
+    </div>
+    <p class="lede">Light diffracts at every mask edge. How small can we print – in contact, with a gap, and through a lens?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <h3>Contact and proximity printing</h3>
+      <p>For a grating of lines and spaces of width <span class="tex">b</span>, gap <span class="tex">s</span> and resist thickness <span class="tex">d</span>, the theoretical limit is</p>
+      <div class="tex-display">b_{min} \approx 1.5\,\sqrt{\lambda\left(s + \tfrac{d}{2}\right)}</div>
+      <p class="note">In practice the prefactor is closer to 2.5 (DTU Nanolab lithography notes, after Madou). Some textbooks use the simpler form <span class="tex">\sqrt{\lambda g}</span> – the conventions differ by tens of per cent, so always state which one you use.</p>
+      <h3>Projection printing</h3>
+      <div class="tex-display">R = k_1\,\frac{\lambda}{NA}, \qquad \mathrm{DOF} \approx \pm k_2\,\frac{\lambda}{NA^2},\ k_2 \approx 0.5</div>
+      <p>A periodic pattern of pitch <span class="tex">p</span> diffracts into orders at <span class="tex">\sin\theta_m = m\lambda/p</span>. An image needs at least the 0th and one 1st order inside the pupil, which gives the smallest pitch</p>
+      <div class="tex-display">p_{min} = \frac{\lambda}{NA\,(1+\sigma)} \quad\Rightarrow\quad k_{1,\min} = \frac{0.5}{1+\sigma} \ge 0.25</div>
+      <table>
+        <tr><th>Source</th><th>λ</th><th>Typical NA</th></tr>
+        <tr><td>Hg g / h / i-line</td><td>436 / 405 / 365 nm</td><td>0.3–0.65 (steppers)</td></tr>
+        <tr><td>KrF excimer</td><td>248 nm</td><td>0.5–0.93</td></tr>
+        <tr><td>ArF excimer (dry / immersion)</td><td>193 nm</td><td>0.93 / 1.35</td></tr>
+        <tr><td>EUV</td><td>13.5 nm</td><td>0.33, High-NA 0.55</td></tr>
+      </table>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>Your lab mask aligner uses i-line light and 1.4 µm thick resist. What is the smallest line width you can expect in hard contact, and with a 10 µm proximity gap?
+          <details><summary>Answer</summary>Contact (<i>s</i> = 0): <span class="tex">1.5\sqrt{0.365\cdot0.7} \approx 0.76\ \mathrm{\mu m}</span>. Proximity 10 µm: <span class="tex">1.5\sqrt{0.365\cdot10.7} \approx 3.0\ \mathrm{\mu m}</span>. Check both in Explore mode.</details></li>
+        <li>An i-line stepper has NA = 0.5 and σ = 0.5. What is the smallest half-pitch it can image at all? What k₁ does that correspond to?
+          <details><summary>Answer</summary><span class="tex">p_{min} = 0.365/(0.5\cdot1.5) = 0.487\ \mathrm{\mu m}</span>, half-pitch 0.243 µm, <span class="tex">k_1 = 0.243\cdot0.5/0.365 = 0.33</span>. Below it the image is perfectly flat.</details></li>
+        <li>Set projection, ArF, NA = 0.85, half-pitch 120 nm. Increase the defocus until the lines no longer print. Compare with <span class="tex">\pm\lambda/(2NA^2)</span>.
+          <details><summary>Answer</summary><span class="tex">\lambda/(2NA^2) = 0.193/(2\cdot0.7225) \approx 0.13\ \mathrm{\mu m}</span>. In the simulation (dose 2.5) the printed width is 106 nm in focus, −5 % at 0.10 µm and −12 % at 0.13 µm; nothing prints from about 0.20 µm. A ±10 % width budget therefore gives about ±0.12 µm – close to the estimate.</details></li>
+        <li>In projection mode, change the dose. Why does the printed space width change although the mask does not?
+          <details><summary>Answer</summary>The aerial image has sloped edges. A higher dose lowers the threshold <span class="tex">E_0/E</span>, so the resist clears further into the slope and the space widens. The steeper the edge (higher contrast), the less sensitive the width is to dose.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Scalar diffraction of an infinitely thin, ideal chrome mask with equal lines and spaces (Kirchhoff approximation). Polarisation, mask 3-D effects and lens aberrations are ignored – these matter at high NA.</li>
+        <li>Projection imaging uses Abbe's method: the image is the average over points of a circular source of radius σ·NA. Dimensions are given at the wafer.</li>
+        <li>Proximity printing propagates the field through air over <span class="tex">s + d/2</span> (the middle of the resist), averaged over the illumination cone. Refraction and absorption in the resist, standing waves and the substrate reflection are ignored.</li>
+        <li>The resist is a sharp threshold: positive resist clears wherever the dose exceeds the dose-to-clear <span class="tex">E_0</span>. Real resists have finite contrast, so the walls are sloped.</li>
+        <li>Defocus is applied with the vacuum wavelength; inside a resist of refractive index <span class="tex">n</span> the effective defocus is roughly <span class="tex">n</span> times smaller.</li>
+        <li>Illumination is monochromatic. For an ideal periodic grating, proximity printing shows the Talbot effect: the image contrast drops and recovers (partly reversed) with the gap, with a period of <span class="tex">2p^2/\lambda</span>. Broadband mercury light and finite mask patterns weaken this in practice.</li>
+        <li>The illumination half-angle of real mask aligners is typically a few degrees and is set by the exposure optics.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>C. A. Mack, <i>Fundamental Principles of Optical Lithography</i>, Wiley 2007, ch. 2.</li>
+        <li>J. D. Plummer, M. D. Deal, P. B. Griffin, <i>Silicon VLSI Technology</i>, Prentice Hall 2000, ch. 5.</li>
+        <li>M. J. Madou, <i>Manufacturing Techniques for Microfabrication and Nanotechnology</i>, CRC Press 2011 (proximity-printing limit).</li>
+        <li>L. F. Thompson, C. G. Willson, M. J. Bowden, <i>Introduction to Microlithography</i>, ACS 1994.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js"></script>
+<script src="model.js"></script>
+<script src="widget.js"></script>
+</body>
+</html>

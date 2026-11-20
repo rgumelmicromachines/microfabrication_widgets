@@ -431,6 +431,7 @@
           c.lineTo(X0 + r, Y0 + H); c.arcTo(X0, Y0 + H, X0, Y0 + H - r, r);
           c.lineTo(X0, Y0 + r); c.arcTo(X0, Y0, X0 + r, Y0, r); c.closePath();
         } else c.rect(X0, Y0, W, H);
+        if (!o.noOcc) this._recSegs([[x, y], [x + w, y], [x + w, y + h], [x, y + h]], { ...o, closed: true }, o.fill ? null : C.text);
         this._strokeFill(o, o.fill ? null : C.text, 2);
       });
     }

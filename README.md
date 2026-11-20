@@ -23,10 +23,12 @@ Pages: `segregation`, `spincoating`, `lithography`, `diffusion`, `oxidation`, `c
 ## Run locally
 
 ```
-python -m http.server 8765
+python tools/serve.py
 ```
 
-then open http://localhost:8765. Run the physics checks with `node tests/verify.js` (all must pass before publishing).
+then open http://localhost:8765. (`python -m http.server 8765` works too, but sends no cache headers, so browsers – Firefox in particular – may keep showing an old version after an edit.) Run the physics checks with `node tests/verify.js` (all must pass before publishing).
+
+After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stamps every script and stylesheet link in the pages with a content hash (`?v=…`), so visitors' browsers always load the current version.
 
 ## Adding a page
 

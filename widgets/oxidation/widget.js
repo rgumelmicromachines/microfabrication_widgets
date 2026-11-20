@@ -62,7 +62,9 @@
       });
       p.box(x0, yBotBox, x1, yTopBox, { stroke: C.axis, width: 1.5 });
       p.line(x0, ySurf, x1, ySurf, { color: C.text, width: 2, dash: [0.1, 0.08] });
-      p.text('original Si surface', x1 - 0.08, ySurf + 0.14, { size: 0.2, align: 'right', color: C.text, bg: true });
+      p.place('original Si surface', [[x1 - 0.08, ySurf + 0.08, 'right', 'bottom'], [x1 - 0.08, ySurf - 0.08, 'right', 'top'],
+        [x1 - 0.08, ySurf + above * k + 0.08, 'right', 'bottom'], [x1 - 0.08, ySurf - below * k - 0.08, 'right', 'top']],
+        { size: 0.2, color: C.text, key: 'surf', within: [x0, yBotBox, x1, yTopBox] });
       if (above * k > 0.34) p.text('SiO₂', x0 + 0.12, ySurf + above * k / 2, { size: 0.24, color: C.text });
       if (below * k > 0.3) {
         const xd = x0 + 1.75;
@@ -73,7 +75,9 @@
       // scale bar
       const sb = spanT / 5;
       p.line(x1 - 0.25, yBotBox + 0.2, x1 - 0.25, yBotBox + 0.2 + sb * k, { color: C.white, width: 3 });
-      p.text(tickX(sb), x1 - 0.35, yBotBox + 0.2 + sb * k / 2, { size: 0.2, align: 'right', color: C.text });
+      const yb0 = yBotBox + 0.2, yb1 = yBotBox + 0.2 + sb * k;
+      p.place(tickX(sb), [[x1 - 0.35, (yb0 + yb1) / 2, 'right'], [x1 - 0.35, yb1 - 0.02, 'right', 'top'], [x1 - 0.35, yb0 + 0.02, 'right', 'bottom'], [x1 - 0.35, yb1 + 0.06, 'right', 'bottom']],
+        { size: 0.2, color: C.text, key: 'sbar', within: [x0, yBotBox, x1, yTopBox] });
       p.text('cross-section (to scale)', (x0 + x1) / 2, yBotBox - 0.22, { size: 0.21, align: 'center', color: C.muted });
 
       // ---------------------------------------------------------- growth curve, log–log

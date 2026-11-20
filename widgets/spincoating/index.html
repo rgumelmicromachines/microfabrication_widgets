@@ -24,7 +24,7 @@
       <p class="eyebrow">Lithography · resist coating</p>
       <h1>Spin coating: how thick is the resist?</h1>
     </div>
-    <p class="lede">Spin faster and the film gets thinner – but only with the square root of the speed. The resist itself sets the range.</p>
+    <p class="lede">Watch a full coating run – dispense, spread, spin-up, spin-off – and see why spinning faster thins the film only with the square root of the speed.</p>
   </div>
 
   <div id="app"></div>
@@ -62,7 +62,8 @@
         <li>The spin curve is an empirical rule of thumb, not a physical law. Its units are not printed in the sources; the thickness comes out in ångströms, the only reading consistent with the typical values (3000–6000 rpm → 1–2 µm).</li>
         <li>The robust part is the scaling with speed, <span class="tex">t \propto w^{-1/2}</span>, which holds for low- and medium-viscosity resists. Thick, viscous resists (e.g. SU-8) follow a steeper law, closer to <span class="tex">w^{-1}</span>.</li>
         <li>The absolute thickness depends on everything lumped into <span class="tex">k</span> – spin time, acceleration, solvent, exhaust, temperature and humidity. Use a measured spin curve for your resist and spinner.</li>
-        <li>The soft-bake shrinkage (up to ~25 %) and the edge-bead height (up to 20–30 × t) are typical upper values; the drawing of the edge bead is not to scale. The rotation in the top view is slowed down 133 times.</li>
+        <li>The soft-bake shrinkage (up to ~25 %) and the edge-bead height (up to 20–30 × t) are typical upper values; the drawing of the edge bead is not to scale.</li>
+        <li>The coating run is a schematic animation of a typical recipe (dispense at rest, spread at 500 rpm, ramp to the final speed, 30 s spin). It runs 4× faster than real time and the rotation is drawn 50× slower than at 4000 rpm. The thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution for a liquid film, h ∝ 1/√(1 + t/τ) with τ ∝ 1/ω² (fast at first, then slower), followed by drying; the final thickness comes from the spin curve.</li>
       </ul>
     </article>
 
@@ -72,6 +73,7 @@
         <li>Wake Forest University, NAN 242, lecture “Photolithography” (spin curve <span class="tex">t = kp^2/\sqrt{w}</span>, spin-speed range, soft-bake shrinkage, edge bead), <a href="http://users.wfu.edu/ucerkb/Nan242/L15-Photolithography.pdf">PDF</a>.</li>
         <li>DTU Nanolab, Litho Tool Package – Spin coating (spin-speed exponent of UV resists and SU-8), <a href="https://labadviser.nanolab.dtu.dk/images/a/ac/Litho_Tool_Package_-_2_Spin_coating_v8_LESJO_%28TARAN_ed%29.pdf">PDF</a>.</li>
         <li>D. Meyerhofer, “Characteristics of resist films produced by spinning”, <i>J. Appl. Phys.</i> 49 (1978) 3993.</li>
+        <li>A. G. Emslie, F. T. Bonner, L. G. Peck, “Flow of a viscous liquid on a rotating disk”, <i>J. Appl. Phys.</i> 29 (1958) 858.</li>
       </ul>
     </article>
   </section>

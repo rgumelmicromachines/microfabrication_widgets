@@ -51,14 +51,14 @@
   // ------------------------------------------------------------ process clock (restarts when a parameter changes)
   let clock0 = nowMs();
   const restart = () => { clock0 = nowMs(); };
-  const processTime = () => {
+  const processTime = anim => {
     if (typeof window !== 'undefined' && typeof window.MFW_SPIN_TP === 'number') return window.MFW_SPIN_TP;   // dev: freeze the clock
-    return still ? T.end - 0.01 : (((nowMs() - clock0) / 1000) * ACCEL) % T.end;
+    return anim ? (((nowMs() - clock0) / 1000) * ACCEL) % T.end : T.end - 0.01;
   };
 
   MFW.widget('#app', {
     title: 'Spin coating of photoresist',
-    loop: !still,
+    loop: true,                                                     // redraw every frame (cheap); the clock stops when animation is off
     alt: v => `Spin coating at ${rpmS(v.rpm)} with ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}: final resist thickness ${um(v.t)} (${um(v.tBaked)} after soft bake).`,
     source: 'Final thickness from the empirical spin curve t = k·p²/√w (t in Å, k = spinner constant 80–100, p = solids content in %, w = rpm/1000), the typical 3000–6000 rpm for 15–30 s and 1–2 µm, the ~25 % thinning in the soft bake and the edge bead of up to 20–30× the film thickness as quoted in microfabrication course notes (e.g. Wake Forest University, NAN 242, “Photolithography”). The units of t are not printed with the rule; Å is the only choice consistent with the typical values. Spin-speed exponent ½: DTU Nanolab, Litho Tool Package – Spin coating. The animation is schematic: the recipe (dispense, spread at 500 rpm, 30 s spin) is a typical one, the rotation is slowed down 50×, and the thinning during the spin only illustrates the shape of the Emslie–Bonner–Peck solution (fast at first, then slower), not its numbers.',
     freeText: v => `Explore – the coating run restarts whenever you change a parameter. With ${fmt.num(v.p, 0)} % solids and k = ${fmt.num(v.k, 0)}, a 1.5 µm film needs about ${rpmS(Math.round(S.speedFor(1.5, v.p, v.k) / 10) * 10)}.`,
@@ -68,6 +68,7 @@
       rpm: { value: 4000, min: 1000, max: 8000, step: 50, label: 'Final spin speed', format: rpmS },
       p: { value: 20, min: 10, max: 35, step: 0.5, label: 'Solids content of the resist <i>p</i>', unit: '%', digits: 1 },
       k: { value: 90, min: 80, max: 100, step: 1, label: 'Spinner constant <i>k</i>', digits: 0 },
+      anim: { value: !still, label: 'Animate the coating run (off: show the finished film)' },
     },
     layers: { window: false, bake: false, bead: false, band: false },
     explore: { show: ['window', 'bake', 'bead', 'band'] },
@@ -79,10 +80,10 @@
     ],
 
     draw(p, v, w) {
-      const tp = processTime(), rpmNow = rpmAt(tp, v.rpm);
+      const run = v.anim, tp = processTime(run), rpmNow = rpmAt(tp, v.rpm);
       // ======================================================== animated coater (oblique view, schematic)
       const cx = -3.5, cy = -0.55, Rx = 2.75, Ry = 0.8, Lx0 = -7.0, Lx1 = 0.0;
-      const ang = 2 * Math.PI * (still ? 0.15 : rpmIntegral(tp, v.rpm) / VIS_RPM / ACCEL);
+      const ang = 2 * Math.PI * (run ? rpmIntegral(tp, v.rpm) / VIS_RPM / ACCEL : 0.15);
       const P = (u, q, h = 0) => [cx + u * Rx, cy + q * Ry + h];        // wafer plane (u, q in units of the radius) → scene
       const ell = (r, h, n = 72) => M.linspace(0, 2 * Math.PI, n).map(a => P(r * Math.cos(a), r * Math.sin(a), h));
       // stage title and clock
@@ -132,7 +133,7 @@
         }
       }
       // resist flung off the edge: droplets leave tangentially, faster at higher speed (schematic), with short motion trails
-      if (!still && tp > T.spread0 && tp < T.stop) {
+      if (run && tp > T.spread0 && tp < T.stop) {
         const dt = 0.025, life = 0.8;
         for (let k = Math.floor((tp - life) / dt); k <= Math.floor(tp / dt); k++) {
           const born = k * dt, age = tp - born;
@@ -155,7 +156,7 @@
       p.text(gLabel, gx, gy + 0.3, { size: 0.2, color: tp >= T.spin1 ? C.yellow : C.text, bold: tp >= T.spin1 });
       p.box(gx, gy - 0.08, gx + gw, gy + 0.08, { fill: C.grid, stroke: null });
       p.box(gx, gy - 0.08, gx + gw * M.clamp(frac, 0, 1), gy + 0.08, { fill: MAT.resist.stroke, stroke: null });
-      p.text(still ? 'schematic, not to scale' : 'schematic, not to scale · rotation 50× slower', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
+      p.text(run ? 'schematic, not to scale · rotation 50× slower' : 'schematic, not to scale', Lx0 + 0.15, -3.75, { size: 0.18, color: C.muted });
       p.layer('bead', () => {
         if (tp >= T.spin0 + 3) p.place('edge bead: up to 20–30 × t', [[cx + Rx - 0.2, cy + Ry + 0.35, 'right', 'bottom'], [cx + Rx, cy - Ry - 0.3, 'right', 'top']], { size: 0.19, color: C.text, key: 'bead' });
       });

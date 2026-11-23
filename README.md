@@ -1,6 +1,8 @@
 # Microfabrication Interactive
 
 Interactive simulations for teaching microfabrication and semiconductor process technology: each page combines a guided tour, a free Explore mode, key equations, exercises with answers, the model's limitations and references for every number used.
+Live: https://rgumelmicromachines.github.io/microfabrication_widgets/ (GitHub Pages, branch `main`).
+
 Static site: plain HTML, CSS and JavaScript, no build step. Works from any static web host (e.g. GitHub Pages or a university web server) and also when opened straight from disk.
 
 ## Structure

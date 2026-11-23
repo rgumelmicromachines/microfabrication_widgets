@@ -49,4 +49,6 @@ Interactive teaching simulations for microfabrication / semiconductor process te
   `git pull` before starting. Keep one page's changes in one PR where possible – `assets/mfw.js` / `mfw.css` are
   shared by every page, so engine changes deserve a note in the PR and a quick audit of all pages.
 - Line endings are LF (`.gitattributes`); Windows warnings about CRLF are harmless.
-- The site is not published yet (no GitHub Pages) – don't enable publishing without agreement.
+- The repo is public and the site is published with GitHub Pages from `main` (root):
+  https://rgumelmicromachines.github.io/microfabrication_widgets/ – everything merged into `main` goes live within
+  minutes, so `main` must always pass the checks above. Never commit lecture material or the discrepancy log.

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carriers and the pn junction · Microfabrication Interactive</title>
+<meta name="description" content="Interactive silicon pn junction: intrinsic carrier density, Fermi level and doping, built-in voltage, depletion width, electric field, capacitance and breakdown.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=d9dac5dfa6">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Fundamentals</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Fundamentals · semiconductor physics</p>
+      <h1>Carriers and the pn junction</h1>
+    </div>
+    <p class="lede">Every doping step in microfabrication ultimately makes junctions. How many carriers does silicon have, where is the Fermi level – and what happens where p meets n?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Carriers in a uniformly doped region (full ionisation, non-degenerate):</p>
+      <div class="tex-display">n\,p = n_i^2, \qquad n = \frac{N_D - N_A}{2} + \sqrt{\left(\frac{N_D - N_A}{2}\right)^2 + n_i^2}, \qquad E_F - E_i = kT\ln\frac{n}{n_i}</div>
+      <p>Abrupt pn junction in the depletion approximation (<span class="tex">V</span> forward positive):</p>
+      <div class="tex-display">V_{bi} = \frac{kT}{q}\ln\frac{N_A N_D}{n_i^2}, \qquad W = \sqrt{\frac{2\varepsilon_s (V_{bi}-V)}{q}\,\frac{N_A + N_D}{N_A N_D}}</div>
+      <div class="tex-display">N_A x_p = N_D x_n, \qquad E_{max} = \frac{2\,(V_{bi}-V)}{W}, \qquad C_j = \frac{\varepsilon_s}{W}</div>
+      <table>
+        <tr><th>Quantity (Si)</th><th>Value</th><th>Source</th></tr>
+        <tr><td><span class="tex">n_i</span>, 300 K</td><td>9.65 × 10⁹ cm⁻³</td><td>Altermatt et al. 2003</td></tr>
+        <tr><td><span class="tex">n_i(T)</span></td><td><span class="tex">5.29\times10^{19}(T/300)^{2.54}e^{-6726/T}</span></td><td>Misiakos &amp; Tsamakis 1993</td></tr>
+        <tr><td><span class="tex">E_g</span>, 300 K</td><td>1.123 eV</td><td>Alex et al. 1996</td></tr>
+        <tr><td><span class="tex">\varepsilon_r</span></td><td>11.7</td><td>Dunlap &amp; Watters 1953</td></tr>
+      </table>
+      <p class="note">Older textbooks give n<sub>i</sub> = 1.45 × 10¹⁰ cm⁻³; measurements since 1990 show it is about 1.5× lower.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A junction with <span class="tex">N_A = 10^{17}</span> and <span class="tex">N_D = 10^{16}\ \mathrm{cm^{-3}}</span> at 300 K: built-in voltage, depletion width and its split, maximum field?
+          <details><summary>Answer</summary><span class="tex">V_{bi} = 0.02585\cdot\ln(10^{33}/(9.70\times10^{9})^2) = 0.775\ \mathrm{V}</span>. <span class="tex">W = 0.332\ \mu\mathrm{m}</span>, of which <span class="tex">x_n = 0.302</span> and <span class="tex">x_p = 0.030\ \mu\mathrm{m}</span> (ratio <span class="tex">N_A/N_D = 10</span>). <span class="tex">E_{max} = 2\cdot0.775/0.332\ \mu\mathrm{m} = 46.7\ \mathrm{kV/cm}</span>.</details></li>
+        <li>A p⁺n diode (<span class="tex">N_A = 10^{19}</span>, <span class="tex">N_D = 10^{15}\ \mathrm{cm^{-3}}</span>) of 100 µm × 100 µm at −5 V: depletion width and capacitance?
+          <details><summary>Answer</summary>One-sided: <span class="tex">W \approx \sqrt{2\varepsilon_s (V_{bi} - V)/(qN_D)}</span> with <span class="tex">V_{bi} = 0.835\ \mathrm{V}</span>: <span class="tex">W = 2.75\ \mu\mathrm{m}</span>. <span class="tex">C = \varepsilon_s A/W = 3.77\ \mathrm{nF/cm^2}\cdot10^{-4}\ \mathrm{cm^2} \approx 0.38\ \mathrm{pF}</span>.</details></li>
+        <li>By how much does <span class="tex">n_i</span> grow from 300 K to 400 K, and what happens to <span class="tex">V_{bi}</span> of the junction in task 1?
+          <details><summary>Answer</summary><span class="tex">n_i(400\ \mathrm{K}) = 5.5\times10^{12}\ \mathrm{cm^{-3}}</span> – about 560× more. <span class="tex">V_{bi}</span> falls from 0.775 to 0.597 V: <span class="tex">kT</span> grows, but <span class="tex">\ln(N_AN_D/n_i^2)</span> shrinks much faster.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Full ionisation of dopants and Boltzmann statistics. Above roughly 10¹⁸ cm⁻³ the Fermi level approaches the band edge (degeneracy), the ionisation energies shrink and band-gap narrowing sets in; at low temperature dopants freeze out. None of this is modelled.</li>
+        <li>Abrupt junction with uniform doping on both sides, depletion approximation (no free carriers inside W, none outside). It fails close to <span class="tex">V = V_{bi}</span> in forward bias. Diffused and implanted junctions are graded, not abrupt.</li>
+        <li>The intrinsic level is drawn at mid-gap (it lies within a few meV of it); the quasi-Fermi levels under bias are drawn schematically through the depletion region.</li>
+        <li><span class="tex">n_i(T)</span> is the Misiakos–Tsamakis fit, measured from 78 to 340 K; above 340 K it is an extrapolation that agrees with newer fits (Couderc et al. 2014) within a few per cent up to 700 K.</li>
+        <li>The breakdown voltage is shown as the range between two published approximations for a one-sided abrupt junction (about 15 % apart); real breakdown depends on junction curvature, edge termination and temperature.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>S. M. Sze, K. K. Ng, <i>Physics of Semiconductor Devices</i>, 3rd ed., Wiley 2007, ch. 1–2.</li>
+        <li>R. F. Pierret, <i>Semiconductor Device Fundamentals</i>, Addison-Wesley 1996, ch. 2–5.</li>
+        <li>K. Misiakos, D. Tsamakis, “Accurate measurements of the silicon intrinsic carrier density from 78 to 340 K”, <i>J. Appl. Phys.</i> 74 (1993) 3293.</li>
+        <li>P. P. Altermatt, A. Schenk, F. Geelhaar, G. Heiser, “Reassessment of the intrinsic carrier density in crystalline silicon in view of band-gap narrowing”, <i>J. Appl. Phys.</i> 93 (2003) 1598.</li>
+        <li>R. Couderc, M. Amara, M. Lemiti, “Reassessment of the intrinsic carrier density temperature dependence in crystalline silicon”, <i>J. Appl. Phys.</i> 115 (2014) 093705.</li>
+        <li>K. Alex, F. Finkbeiner, J. Weber, “Temperature dependence of the indirect energy gap in crystalline silicon”, <i>J. Appl. Phys.</i> 79 (1996) 6943.</li>
+        <li>W. C. Dunlap, R. L. Watters, “Direct measurement of the dielectric constants of silicon and germanium”, <i>Phys. Rev.</i> 92 (1953) 1396.</li>
+        <li>S. M. Sze, G. Gibbons, “Avalanche breakdown voltages of abrupt and linearly graded p-n junctions in Ge, Si, GaAs, and GaP”, <i>Appl. Phys. Lett.</i> 8 (1966) 111.</li>
+        <li>B. J. Baliga, <i>Fundamentals of Power Semiconductor Devices</i>, Springer 2008, ch. 3.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=9a841df8af"></script>
+<script src="model.js?v=b4751e1dec"></script>
+<script src="widget.js?v=346dc2af33"></script>
+</body>
+</html>

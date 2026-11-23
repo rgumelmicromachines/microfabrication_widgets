@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vacuum technology · Microfabrication Interactive</title>
+<meta name="description" content="Interactive high-vacuum pump-down: pumping speed, pipe conductance, flow regimes, outgassing, mean free path and monolayer time.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=d9dac5dfa6">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Fundamentals</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Fundamentals · vacuum technology</p>
+      <h1>Vacuum: pump-down, conductance and outgassing</h1>
+    </div>
+    <p class="lede">Evaporation, sputtering, plasma etching and ion implantation all need vacuum. Why does a big pump behind a thin pipe disappoint – and why does the last decade of pressure take hours?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Pressure in a chamber of volume <span class="tex">V</span> pumped with the effective speed <span class="tex">S_{eff}</span> against the gas load <span class="tex">Q</span>:</p>
+      <div class="tex-display">V\frac{dp}{dt} = -S_{eff}\,p + Q, \qquad Q = 0:\ p = p_0\,e^{-S_{eff}t/V}, \qquad p_\infty = \frac{Q}{S_{eff}}</div>
+      <p>Speed at the chamber through a conductance <span class="tex">C</span>, and the molecular-flow conductance of a round pipe and an aperture (air, room temperature, cm and L/s):</p>
+      <div class="tex-display">\frac{1}{S_{eff}} = \frac{1}{S} + \frac{1}{C}, \qquad C_{pipe} = 12.1\,\frac{d^3}{l}, \qquad C_{aperture} = 11.6\,A</div>
+      <p>Mean free path, Knudsen number and flow regime (air, 22 °C):</p>
+      <div class="tex-display">\lambda = \frac{6.6\times10^{-3}\ \mathrm{Pa\cdot m}}{p}, \qquad Kn = \frac{\lambda}{d}:\ \ Kn < 0.01 \text{ viscous}, \quad Kn > 1 \text{ molecular}</div>
+      <table>
+        <tr><th>Range (ISO 3529-1)</th><th>Pressure</th></tr>
+        <tr><td>low (rough) vacuum</td><td>≥ 100 Pa</td></tr>
+        <tr><td>medium vacuum</td><td>0.1 – 100 Pa</td></tr>
+        <tr><td>high vacuum</td><td>10⁻⁶ – 0.1 Pa</td></tr>
+        <tr><td>ultra-high vacuum</td><td>10⁻⁹ – 10⁻⁶ Pa</td></tr>
+        <tr><td>extreme-high vacuum</td><td>&lt; 10⁻⁹ Pa</td></tr>
+      </table>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A 500 L/s turbopump is connected through a pipe of 4 cm diameter and 50 cm length. What is the effective speed in molecular flow?
+          <details><summary>Answer</summary><span class="tex">C = 12.1\cdot 64/(50 + 5.3) \approx 14\ \mathrm{L/s}</span> (with the entrance correction; 15.5 L/s without), <span class="tex">S_{eff} = 1/(1/500 + 1/14) \approx 13.6\ \mathrm{L/s}</span> – the pump is almost useless behind this pipe.</details></li>
+        <li>How long does it take to pump a 50 L chamber with <span class="tex">S_{eff} = 100\ \mathrm{L/s}</span> from 1 Pa to 10⁻³ Pa, if only the gas in the volume counted?
+          <details><summary>Answer</summary><span class="tex">\tau = V/S_{eff} = 0.5\ \mathrm{s}</span>, <span class="tex">t = \tau\ln(p_0/p) = 0.5\cdot\ln 1000 \approx 3.5\ \mathrm{s}</span>. In reality the walls keep releasing gas, and the last decades take much longer.</details></li>
+        <li>An unbaked stainless-steel chamber has 1 m² of wall; after 1 h of pumping it outgasses about 9 × 10⁻⁸ mbar·L/(s·cm²). Which pressure does <span class="tex">S_{eff} = 100\ \mathrm{L/s}</span> reach after 1 h and after 10 h?
+          <details><summary>Answer</summary><span class="tex">Q = 9\times10^{-8}\cdot10^4 = 9\times10^{-4}\ \mathrm{mbar\,L/s} = 0.09\ \mathrm{Pa\,L/s}</span>, <span class="tex">p \approx Q/S_{eff} = 9\times10^{-4}\ \mathrm{Pa}</span> after 1 h; with <span class="tex">Q \propto 1/t</span> about <span class="tex">9\times10^{-5}\ \mathrm{Pa}</span> after 10 h.</details></li>
+        <li>Mean free path and monolayer time at 10⁻⁴ Pa?
+          <details><summary>Answer</summary><span class="tex">\lambda = 6.6\times10^{-3}/10^{-4} = 66\ \mathrm{m}</span>; a clean surface is covered in about 2.5 s if every molecule sticks (O’Hanlon).</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>High-vacuum stage only: pumping starts at 1 Pa after 5 min of roughing; the pump speed is constant (real pumps lose speed near their ultimate pressure and at their upper pressure limit). Air-like gas at room temperature.</li>
+        <li>Pipe conductance from Knudsen's interpolation formula (viscous to molecular), with Dushman's series combination as an approximate entrance correction for short pipes (it can be off by 10–15 % for intermediate l/d). Chamber treated as a cube; its own conductance and that of valves and traps are ignored.</li>
+        <li>Outgassing: one value per material after 1 h, falling as 1/t for unbaked metals and constant for baked steel. Published outgassing rates differ by more than an order of magnitude between sources, so the times are indicative. Elastomer seals, permeation and leaks are not included.</li>
+        <li>Flow-regime boundaries follow O’Hanlon (molecular for Kn &gt; 1); other references put the molecular boundary at Kn &gt; 0.5.</li>
+        <li>The molecules drawn in the chamber are schematic (their number falls with the logarithm of the pressure).</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>J. F. O’Hanlon, <i>A User’s Guide to Vacuum Technology</i>, 3rd ed., Wiley 2003, ch. 2–3 (mean free path, monolayer time, conductance).</li>
+        <li>W. Umrath (ed.), <i>Fundamentals of Vacuum Technology</i>, Leybold, Cologne 2016 (Knudsen conductance formula, pump-down, outgassing Table X, pumps).</li>
+        <li>Pfeiffer Vacuum, <i>Vacuum Technology Know-how</i> (online), sections 1.2–1.3 and 2.2 (conductance, outgassing time law, pump-down).</li>
+        <li>P. Chiggiato, “Outgassing properties of vacuum materials for particle accelerators”, CERN Accelerator School 2017, arXiv:2006.07124.</li>
+        <li>ISO 3529-1:2019, <i>Vacuum technology – Vocabulary – Part 1: General terms</i> (pressure ranges).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=9a841df8af"></script>
+<script src="model.js?v=25cf0de25d"></script>
+<script src="widget.js?v=db661bc8e2"></script>
+</body>
+</html>

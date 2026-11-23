@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four-point probe · Microfabrication Interactive</title>
+<meta name="description" content="Interactive four-point probe and van der Pauw measurement: sheet resistance, correction factors for finite and thick samples, resistivity and doping of silicon.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../../assets/mfw.css?v=d9dac5dfa6">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html"><span class="brand-mark">µ</span>Microfabrication <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Characterization</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle>Theme</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Characterization · electrical</p>
+      <h1>Sheet resistance and the four-point probe</h1>
+    </div>
+    <p class="lede">Four needles, one current, one voltage: the quickest check of a doped layer or a metal film. Why four, what does 4.532 mean – and when is it wrong?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Collinear probe with equal spacing <span class="tex">s</span>; current <span class="tex">I</span> through the outer pair, voltage <span class="tex">V</span> across the inner pair:</p>
+      <div class="tex-display">\text{thin infinite sheet: } R_s = \frac{\rho}{w} = \frac{\pi}{\ln 2}\frac{V}{I} = 4.532\,\frac{V}{I}, \qquad \text{semi-infinite bulk: } \rho = 2\pi s\,\frac{V}{I}</div>
+      <p>Finite thin circular slice of diameter <span class="tex">d</span> (probe centred) and thickness correction for a layer of thickness <span class="tex">w</span>:</p>
+      <div class="tex-display">R_s = C\,F\,\frac{V}{I}, \qquad C\!\left(\tfrac{d}{s}\right) = \frac{\pi}{\ln 2 + \ln\dfrac{(d/s)^2 + 3}{(d/s)^2 - 3}}, \qquad F\!\left(\tfrac{w}{s}\right) \to 1 \text{ for } w \ll s</div>
+      <p>Van der Pauw, any singly connected sample with four small contacts on its edge:</p>
+      <div class="tex-display">e^{-\pi R_A/R_s} + e^{-\pi R_B/R_s} = 1, \qquad R_A = R_B = R:\ R_s = \frac{\pi R}{\ln 2}</div>
+      <table>
+        <tr><th>d/s</th><th>3</th><th>5</th><th>10</th><th>20</th><th>40</th><th>∞</th></tr>
+        <tr><td>C</td><td>2.266</td><td>3.363</td><td>4.171</td><td>4.436</td><td>4.508</td><td>4.532</td></tr>
+      </table>
+      <p class="note">Smits (1958), Table I and closed form.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>On a large wafer the probe reads 2.0 mV at 100 µA on an annealed implanted layer. What is the sheet resistance?
+          <details><summary>Answer</summary><span class="tex">R_s = 4.532\cdot 2.0\ \mathrm{mV}/100\ \mu\mathrm{A} = 4.532\cdot 20\ \Omega \approx 91\ \Omega/\square</span>.</details></li>
+        <li>The same layer, but on an 8 mm chip with a 1 mm probe: the probe again reads V/I = 20 Ω. What is <span class="tex">R_s</span>, and how wrong would 4.532·V/I be?
+          <details><summary>Answer</summary><span class="tex">d/s = 8 \Rightarrow C = \pi/[\ln 2 + \ln(67/61)] = 3.99</span>, so <span class="tex">R_s = 3.99\cdot20 = 79.8\ \Omega/\square</span>. 4.532·V/I = 90.6 Ω/□ would be 13.5 % too high.</details></li>
+        <li>A 525 µm boron-doped wafer measures ρ = 1.49 Ω·cm. What is its doping, and what sheet resistance does the whole wafer have?
+          <details><summary>Answer</summary>From the Thurber curve: <span class="tex">N \approx 1.0\times10^{16}\ \mathrm{cm^{-3}}</span>. <span class="tex">R_s = \rho/w = 1.49/0.0525\ \mathrm{cm} \approx 28\ \Omega/\square</span> (w/s ≈ 0.33 for a 1.59 mm probe, so the thickness correction is negligible).</details></li>
+        <li>A square van der Pauw structure gives <span class="tex">R_A = R_B = 10\ \Omega</span>. Sheet resistance?
+          <details><summary>Answer</summary><span class="tex">R_s = \pi\cdot10/\ln 2 = 45.3\ \Omega/\square</span>.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Point contacts, probe in the centre of a circular sample, uniform resistivity over the layer thickness and a non-conducting bottom (e.g. a layer isolated by a pn junction or on oxide). Real diffused layers have a doping profile; the four-point probe then measures the integrated sheet resistance.</li>
+        <li>For a finite, thick sample the corrections are combined as C·F, which is Smits' first-order approach; edge effects of an off-centre probe (Swartzendruber 1964) are not modelled.</li>
+        <li>Resistivity vs doping at 300 K from the fits of Thurber et al. (1981) for boron and phosphorus; other dopants (As, Sb) and compensated material differ. At 23 °C (ASTM F723) the values are 2–3 % lower at low doping.</li>
+        <li>No probe heating, minority-carrier injection or contact effects; the current recommendation is the ASTM F84 table (±20 %).</li>
+        <li>The van der Pauw example assumes a sample whose two resistances have the ratio set by the slider; the sketch of the sample is schematic.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>L. B. Valdes, “Resistivity measurements on germanium for transistors”, <i>Proc. IRE</i> 42 (1954) 420.</li>
+        <li>A. Uhlir, “The potentials of infinite systems of sources and numerical solutions of problems in semiconductor engineering”, <i>Bell Syst. Tech. J.</i> 34 (1955) 105.</li>
+        <li>F. M. Smits, “Measurement of sheet resistivities with the four-point probe”, <i>Bell Syst. Tech. J.</i> 37 (1958) 711.</li>
+        <li>L. J. van der Pauw, “A method of measuring specific resistivity and Hall effect of discs of arbitrary shape”, <i>Philips Res. Rep.</i> 13 (1958) 1.</li>
+        <li>L. J. Swartzendruber, <i>Correction factor tables for four-point probe resistivity measurements on thin, circular semiconductor samples</i>, NBS Technical Note 199 (1964).</li>
+        <li>W. R. Thurber, R. L. Mattis, Y. M. Liu, J. J. Filliben, <i>The relationship between resistivity and dopant density for phosphorus- and boron-doped silicon</i>, NBS Special Publication 400-64 (1981).</li>
+        <li>NBS Technical Note 555 (1970), Table 2 (recommended currents of ASTM F84).</li>
+        <li>D. K. Schroder, <i>Semiconductor Material and Device Characterization</i>, 3rd ed., Wiley 2006, ch. 1.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=9a841df8af"></script>
+<script src="model.js?v=665ce1a836"></script>
+<script src="widget.js?v=15b0a3ec23"></script>
+</body>
+</html>

@@ -805,21 +805,33 @@
       : '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Dark</span>';
   }
   // ---------------------------------------------------------------- lesson navigation
-  /** All pages of the site, in the order of a typical process flow. The menu numbers them 1, 2, 3 … */
-  const PAGES = [
-    { slug: 'segregation', topic: 'Substrates', title: 'Dopant segregation' },
-    { slug: 'spincoating', topic: 'Lithography', title: 'Spin coating' },
-    { slug: 'lithography', topic: 'Lithography', title: 'Lithography resolution' },
-    { slug: 'diffusion', topic: 'Doping', title: 'Diffusion & junction depth' },
-    { slug: 'implant', topic: 'Doping', title: 'Ion implantation' },
-    { slug: 'oxidation', topic: 'Oxidation', title: 'Thermal oxidation' },
-    { slug: 'cvd', topic: 'Thin-film deposition', title: 'CVD growth rate' },
-    { slug: 'pvd', topic: 'Thin-film deposition', title: 'Evaporation & sputtering' },
-    { slug: 'stress', topic: 'Thin films', title: 'Film stress & wafer bow' },
-    { slug: 'etching', topic: 'Etching', title: 'Etching silicon' },
-    { slug: 'dryetch', topic: 'Etching', title: 'Dry etching' },
-  ];
-  PAGES.forEach((p, i) => { p.no = i + 1; });
+  /** Modules of the course, in the order of a process flow, and the pages in each. Pages are numbered
+      module.page (e.g. 4.2); the menu, the pager and the overview page are all built from this list. */
+  const MODULES = [
+    { id: 'base', title: 'Fundamentals', pages: [
+      { slug: 'semiconductor', title: 'Carriers & the pn junction' },
+      { slug: 'vacuum', title: 'Vacuum technology' }] },
+    { id: 'substrate', title: 'Substrate', pages: [
+      { slug: 'segregation', title: 'Dopant segregation' }] },
+    { id: 'litho', title: 'Lithography', pages: [
+      { slug: 'spincoating', title: 'Spin coating' },
+      { slug: 'lithography', title: 'Lithography resolution' }] },
+    { id: 'doping', title: 'Doping', pages: [
+      { slug: 'diffusion', title: 'Diffusion & junction depth' },
+      { slug: 'implant', title: 'Ion implantation' }] },
+    { id: 'films', title: 'Thin films', pages: [
+      { slug: 'oxidation', title: 'Thermal oxidation' },
+      { slug: 'cvd', title: 'CVD growth rate' },
+      { slug: 'pvd', title: 'Evaporation & sputtering' },
+      { slug: 'stress', title: 'Film stress & wafer bow' }] },
+    { id: 'etch', title: 'Etching', pages: [
+      { slug: 'etching', title: 'Etching silicon' },
+      { slug: 'dryetch', title: 'Dry etching' }] },
+    { id: 'char', title: 'Characterization', pages: [
+      { slug: 'fourpoint', title: 'Four-point probe' }] },
+  ].filter(m => m.pages.length);
+  const PAGES = [];
+  MODULES.forEach((m, i) => { m.no = i + 1; m.pages.forEach((p, j) => { p.topic = m.title; p.module = m; p.no = `${m.no}.${j + 1}`; PAGES.push(p); }); });
   const escH = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   /** Lesson menu in the header and previous / next links under the widget – inserted automatically on every page. */
   function buildNav() {
@@ -849,8 +861,9 @@
     btn.setAttribute('aria-label', cur ? `Lesson: ${cur.title}. Switch lesson` : 'Switch lesson');
     const pop = el('div', 'lesson-pop', menu);
     pop.hidden = true;
-    pop.innerHTML = PAGES.map(p => `<a href="${href(p)}"${p === cur ? ' aria-current="page"' : ''}><span class="lesson-no">${p.no}</span>`
-      + `<span class="lesson-txt">${escH(p.title)}<small>${escH(p.topic)}</small></span></a>`).join('')
+    pop.innerHTML = MODULES.map(md => `<div class="lesson-group" role="presentation"><span>${md.no}</span>${escH(md.title)}</div>`
+      + md.pages.map(p => `<a href="${href(p)}"${p === cur ? ' aria-current="page"' : ''}><span class="lesson-no">${p.no}</span>`
+        + `<span class="lesson-txt">${escH(p.title)}</span></a>`).join('')).join('')
       + `<a class="lesson-all" href="${root}index.html">All simulations</a>`;
     const close = () => { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
     btn.addEventListener('click', e => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); if (!pop.hidden) (pop.querySelector('[aria-current]') || pop.querySelector('a')).focus(); });
@@ -872,6 +885,25 @@
         : `<a class="pager-${dir} pager-hub" href="${root}index.html"><small>${dir === 'prev' ? '←' : '→'} Overview</small><span>All simulations</span></a>`);
       nav.innerHTML = link(prev, 'prev') + link(next, 'next');
       app.insertAdjacentElement('afterend', nav);
+    }
+    // overview page: sort the tiles into one section per module, numbered like the menu
+    const grid = !cur && document.querySelector('.grid');
+    if (grid) {
+      const tiles = new Map([...grid.querySelectorAll('a.tile')].map(t => [(t.getAttribute('href') || '').replace(/\/index\.html$/, '').split('/').pop(), t]));
+      const frag = document.createDocumentFragment();
+      MODULES.forEach(md => {
+        const sec = el('section', 'module', frag);
+        sec.innerHTML = `<h3 class="module-title"><span class="module-no">${md.no}</span>${escH(md.title)}</h3>`;
+        const g = el('div', 'grid', sec);
+        md.pages.forEach(p => {
+          const t = tiles.get(p.slug);
+          if (!t) return;
+          const meta = t.querySelector('.tile-meta span');
+          if (meta) meta.textContent = `${p.no} · ${md.title}`;
+          g.appendChild(t);
+        });
+      });
+      grid.replaceWith(frag);
     }
   }
 

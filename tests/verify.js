@@ -294,5 +294,69 @@ section('Film stress (Stoney, thermal mismatch)');
   check('tour: α_Si at 1000 °C ≈ 4.4 ppm/K', ST.alphaSi(1000) * 1e6, 4.43, 0.005);
 }
 
+// ------------------------------------------------------------------ semiconductor basics
+section('Carriers and the pn junction');
+{ const SC = W('semiconductor');
+  check('n_i(300 K) vs Misiakos & Tsamakis 9.7e9', SC.ni(300), 9.7e9, 0.005);
+  check('n_i(300 K) vs Altermatt 9.65e9 (accepted value)', SC.ni(300), 9.65e9, 0.01);
+  check('E_g(300 K) (Alex et al.: 1.1230 eV)', SC.Eg(300), 1.1230, 1e-4);
+  check('n·p = n_i² (N_D = 1e16)', SC.carriers(1e16, 0, 300).n * SC.carriers(1e16, 0, 300).p, SC.ni(300) ** 2, 1e-9);
+  check('compensated: n = N_D − N_A (1e16 − 4e15)', SC.carriers(1e16, 4e15, 300).n, 6e15, 1e-6);
+  check('intrinsic: n = n_i (N = 0)', SC.carriers(0, 0, 300).n, SC.ni(300), 1e-12);
+  { const j = SC.junction(1e17, 1e16, 0, 300);
+    check('charge balance N_A·x_p = N_D·x_n', 1e17 * j.xp, 1e16 * j.xn, 1e-12);
+    check('E_max = q N_D x_n / ε_s = 2 V_bi / W', SC.Q * 1e16 * j.xn * 1e-4 / SC.EPS_S, j.Emax, 1e-9);
+    check('page task 1: V_bi (V)', j.Vbi, 0.775, 0.002); check('page task 1: W (µm)', j.W, 0.332, 0.003);
+    check('page task 1: x_n (µm)', j.xn, 0.302, 0.003); check('page task 1: E_max (kV/cm)', j.Emax / 1e3, 46.7, 0.003); }
+  { const j = SC.junction(1e19, 1e15, -5, 300);
+    check('page task 2: V_bi (V)', j.Vbi, 0.835, 0.002); check('page task 2: W (µm)', j.W, 2.75, 0.003);
+    check('page task 2: C for 100 µm × 100 µm (pF)', j.Cj * 1e-4 * 1e12, 0.377, 0.005); }
+  check('page task 3: n_i(400 K)', SC.ni(400), 5.47e12, 0.005);
+  check('page task 3: V_bi at 400 K (V)', SC.junction(1e17, 1e16, 0, 400).Vbi, 0.597, 0.002);
+  // breakdown approximations agree with each other within ~15 % and give ~60 V at 1e16
+  { const b = SC.junction(1e18, 1e16, 0, 300).VB; check('breakdown 1e16: Baliga (V)', b[0], 53.4, 0.005); check('breakdown 1e16: Sze–Gibbons fit (V)', b[1], 61.9, 0.005); }
+}
+
+// ------------------------------------------------------------------ four-point probe
+section('Four-point probe and van der Pauw');
+{ const FP = W('fourpoint');
+  check('π/ln 2', FP.K_INF, 4.532360, 1e-6);
+  // Smits 1958, Table I (circular slice) – printed values, ±0.0005 (the printed table rounds)
+  [[3, 2.2662], [4, 2.9289], [5, 3.3625], [7.5, 3.9273], [10, 4.1716], [20, 4.4364], [40, 4.5076]].forEach(([d, c]) => check(`C(d/s = ${d}) vs Smits Table I`, FP.cCircle(d), c, 0, 6e-4));
+  // Smits 1958, Table III (thickness, non-conducting bottom)
+  [[0.4, 0.9995], [0.5, 0.9974], [0.7143, 0.9798], [1.0, 0.9214], [1.4286, 0.7938], [2.0, 0.6336]].forEach(([ws, f]) => check(`F(w/s = ${ws}) vs Smits Table III`, FP.fThick(ws), f, 0, 2e-4));
+  check('thick limit: (π/ln2)·w·F → 2πs', FP.K_INF * 20 * FP.fThick(20), 2 * Math.PI, 0.01);
+  // Thurber et al. 1981, 300 K fits (values recomputed from the published coefficients)
+  [['P', 1e14, 44.2], ['P', 1e16, 0.537], ['P', 1e18, 0.02356], ['B', 1e14, 134.7], ['B', 1e16, 1.485], ['B', 1e18, 0.04374]].forEach(([d, N, r]) => check(`ρ(${d}, ${N.toExponential(0)}) vs Thurber (Ω·cm)`, FP.rho(d, N), r, 0.003));
+  check('dopingFor inverts rho', FP.dopingFor('P', FP.rho('P', 3e17)), 3e17, 1e-6);
+  { const pr = FP.vdpPair(100, 3); check('vdP: pair satisfies the equation', Math.exp(-Math.PI * pr.RA / 100) + Math.exp(-Math.PI * pr.RB / 100), 1, 1e-9); check('vdP: Rs recovered', FP.vdpRs(pr.RA, pr.RB), 100, 1e-9); }
+  check('vdP f-factor at ratio 10 (exact 0.6993)', FP.vdpRs(10, 1) / (Math.PI * 5.5 / Math.LN2), 0.6993, 1e-3);
+  check('page task 1: R_s (Ω/□)', FP.K_INF * 20, 90.6, 0.002);
+  check('page task 2: C(8) and R_s (Ω/□)', FP.cCircle(8) * 20, 79.8, 0.002);
+  check('page task 3: N for 1.485 Ω·cm boron', FP.dopingFor('B', 1.485), 1e16, 0.002);
+  check('page task 4: symmetric vdP (Ω/□)', FP.vdpRs(10, 10), 45.32, 0.001);
+  check('ASTM current for 1.5 Ω·cm (A)', FP.recCurrent(1.5), 1e-3, 1e-12);
+}
+
+// ------------------------------------------------------------------ vacuum
+section('Vacuum: conductance, pump-down, outgassing');
+{ const VA = W('vacuum');
+  check('λ at 0.1 Pa (O’Hanlon: 6.6 cm)', VA.lambda(0.1), 6.6, 1e-9);
+  check('monolayer time at 1e-4 Pa (O’Hanlon ≈ 2.5 s)', VA.monolayer(1e-4), 2.5, 1e-9);
+  // Knudsen formula → molecular limit 12.1 d³/l at low pressure (long pipe, entrance term negligible)
+  check('Knudsen formula → 12.1 d³/l (molecular, l = 1000 d)', VA.conductance(1, 1000, 1e-6), 12.1 / (1000 + 4 / 3), 1e-4);
+  // … and the viscous term dominates at high pressure: 135 d⁴ p̄/l (mbar)
+  check('Knudsen formula, viscous limit 135 d⁴ p̄/l at 10 mbar', VA.conductance(5, 100, 1000), 135 * 625 * 10 / 100, 0.01);
+  check('S_eff = S·C/(S + C)', VA.sEff(500, 14), 13.62, 0.001);
+  // pump-down without gas load is exponential: compare the integrator with p0·exp(−S t/V)
+  { const o = { V: 50, S: 100, d: 30, l: 5, mat: 'baked' }; const c = VA.pumpDown(o, 10); const Seff = VA.sEff(100, VA.conductance(30, 5, 1e-3));
+    check('integrator: exponential decay while the volume dominates (p after 2 s)', VA.pAt(c, 2), Math.exp(-Seff * 2 / 50), 0.05); }
+  check('regime: Kn < 0.01 viscous', VA.regime(0.005) === 'viscous' ? 1 : 0, 1, 0); check('regime: Kn > 1 molecular', VA.regime(2) === 'molecular' ? 1 : 0, 1, 0);
+  check('ISO 3529-1: 1e-4 Pa is high vacuum', VA.rangeName(1e-4) === 'high vacuum' ? 1 : 0, 1, 0);
+  check('page task 1: C (L/s)', VA.molecularConductance(4, 50), 14.0, 0.002); check('page task 1: S_eff (L/s)', VA.sEff(500, VA.molecularConductance(4, 50)), 13.6, 0.003);
+  check('page task 2: t = τ ln 1000 (s)', 0.5 * Math.log(1000), 3.45, 0.002);
+  check('page task 3: Q from 9e-8 mbar·L/(s·cm²) on 1 m² (Pa·L/s)', 9e-8 * 1e4 * 100, 0.09, 1e-9);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

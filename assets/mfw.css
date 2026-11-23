@@ -92,8 +92,17 @@ kbd { border: 1px solid var(--line-strong); border-bottom-width: 2px; border-rad
 .lesson-pop {
   position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; width: max-content; min-width: 280px; max-width: min(92vw, 380px);
   background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; padding: 6px; box-shadow: var(--shadow);
-  display: grid; gap: 2px;
+  display: grid; gap: 2px; max-height: min(78vh, 680px); overflow-y: auto; overscroll-behavior: contain;
 }
+.lesson-group {
+  display: flex; align-items: center; gap: 8px; padding: 9px 10px 3px; font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.lesson-group:first-child { padding-top: 4px; }
+.lesson-group span { font-variant-numeric: tabular-nums; color: var(--accent); }
+.module + .module { margin-top: 28px; }
+.module-title { display: flex; align-items: baseline; gap: 10px; font-size: 19px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
+.module-no { display: inline-grid; place-items: center; min-width: 28px; height: 28px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 15px; font-variant-numeric: tabular-nums; }
 .lesson-pop a { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; color: var(--text); text-decoration: none; }
 .lesson-pop a:hover, .lesson-pop a:focus-visible { background: var(--surface-2); outline: none; }
 .lesson-pop a[aria-current="page"] { background: var(--accent-soft); }

@@ -18,7 +18,7 @@ tests/stability.js            browser: drags every slider, reports any layout mo
 tests/contact-sheet.js        browser: renders many states on one canvas for visual review
 ```
 
-Pages: `segregation`, `spincoating`, `lithography`, `diffusion`, `implant`, `oxidation`, `cvd`, `pvd`, `stress`, `etching`, `dryetch`. The page list for the lesson menu (order and topic) is `PAGES` in `assets/mfw.js`.
+Pages, grouped into modules: Fundamentals (`semiconductor`, `vacuum`), Substrate (`segregation`), Lithography (`spincoating`, `lithography`), Doping (`diffusion`, `implant`), Thin films (`oxidation`, `cvd`, `pvd`, `stress`), Etching (`etching`, `dryetch`), Characterization (`fourpoint`). The modules and their pages are listed once, in `MODULES` in `assets/mfw.js`; the lesson menu, the numbering (e.g. 4.2), the previous/next links and the grouping of the tiles on the overview page are all built from it – to add a page, add it there and add a tile to `index.html`.
 
 ## Run locally
 

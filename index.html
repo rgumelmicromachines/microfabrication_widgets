@@ -8,7 +8,7 @@
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
-<link rel="stylesheet" href="assets/mfw.css?v=b33a3eb4b5">
+<link rel="stylesheet" href="assets/mfw.css?v=d9dac5dfa6">
 <style>
   .thumb-si { fill: #3A3F4B; } .thumb-ox { fill: #1F4E66; } .thumb-res { fill: #4B3A5C; }
   :root[data-theme="light"] .thumb-si { fill: #C7CBD3; } :root[data-theme="light"] .thumb-ox { fill: #BFDDEC; } :root[data-theme="light"] .thumb-res { fill: #D9C7EA; }
@@ -30,12 +30,35 @@
     <h1>See the physics behind every process step</h1>
     <p>Interactive simulations for courses on microfabrication and semiconductor process technology. Each page has a guided tour that explains the step, an Explore mode where every parameter is yours, worked exercises and a list of the model's assumptions.</p>
     <ol class="flow" aria-label="Process flow">
-      <li>Substrate</li><li>Lithography</li><li>Doping</li><li>Oxidation</li><li>Thin films</li><li>Etching</li><li>Analysis</li>
+      <li>Fundamentals</li><li>Substrate</li><li>Lithography</li><li>Doping</li><li>Thin films</li><li>Etching</li><li>Characterization</li>
     </ol>
   </section>
 
   <h2 class="section-title">Simulations</h2>
   <div class="grid">
+    <a class="tile" href="widgets/semiconductor/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="120" y="20" width="70" height="140" fill="currentColor" opacity=".12"/>
+        <path d="M20 40 H120 C150 40 160 110 190 110 H300" class="thumb-line2"/><path d="M20 90 H120 C150 90 160 160 190 160 H300" class="thumb-line"/>
+        <path d="M20 70 H300" class="thumb-axis" stroke-dasharray="6 5"/></svg></span>
+      <div><h2>Carriers &amp; the pn junction</h2><p>Intrinsic carriers, Fermi level and doping, built-in voltage, depletion width, field, capacitance and breakdown.</p></div>
+      <div class="tile-meta"><span>Fundamentals</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/vacuum/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="20" y="40" width="80" height="80" class="thumb-axis" fill="none"/><rect x="100" y="70" width="40" height="20" class="thumb-axis" fill="none"/>
+        <circle cx="155" cy="80" r="15" class="thumb-axis" fill="none"/><path d="M180 160h125M180 160V20" class="thumb-axis"/>
+        <path d="M182 30 C200 60 205 70 215 72 S260 110 300 140" class="thumb-line"/></svg></span>
+      <div><h2>Vacuum technology</h2><p>Pump-down, pipe conductance and effective pumping speed, flow regimes, outgassing, mean free path.</p></div>
+      <div class="tile-meta"><span>Fundamentals</span><span class="go">Open →</span></div>
+    </a>
+    <a class="tile" href="widgets/fourpoint/index.html">
+      <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
+        <rect x="20" y="110" width="130" height="50" class="thumb-si"/><path d="M40 60 L40 108 M75 60 L75 108 M95 60 L95 108 M130 60 L130 108" class="thumb-line2"/>
+        <path d="M180 160h125M180 160V20" class="thumb-axis"/><path d="M182 150 C200 70 230 40 300 35" class="thumb-line"/></svg></span>
+      <div><h2>Four-point probe</h2><p>Sheet resistance, correction factors for small and thick samples, van der Pauw, resistivity and doping.</p></div>
+      <div class="tile-meta"><span>Characterization</span><span class="go">Open →</span></div>
+    </a>
     <a class="tile" href="widgets/segregation/index.html">
       <span class="tile-thumb"><svg viewBox="0 0 320 180" aria-hidden="true">
         <rect x="30" y="110" width="110" height="50" class="thumb-ox" opacity=".8"/><path d="M24 70v96h122V70" class="thumb-axis"/>
@@ -140,6 +163,6 @@
 
   <footer class="footer">Microfabrication Interactive · open teaching material. Every model cites its sources and lists its limitations.</footer>
 </main>
-<script src="assets/mfw.js?v=c97e95a7a4"></script>
+<script src="assets/mfw.js?v=9a841df8af"></script>
 </body>
 </html>

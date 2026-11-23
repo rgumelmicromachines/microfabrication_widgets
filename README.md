@@ -17,6 +17,7 @@ widgets/<topic>/widget.js     the figure, parameters, readout and guided-tour st
 tests/verify.js               physics regression checks against textbook values and closed-form results
 tests/overlap-audit.js        browser: finds overlapping labels/lines/formulas over all tour steps and random slider states
 tests/stability.js            browser: drags every slider, reports any layout movement and the slowest frame
+tests/flicker.js              browser: sweeps and wiggles every slider, reports labels, boxes or axes that jump back and forth
 tests/contact-sheet.js        browser: renders many states on one canvas for visual review
 ```
 
@@ -44,7 +45,8 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
      avoid everything already drawn and keep their position while it stays free (no hopping while a slider moves).
      Auto-zoom and changing axis ranges: `w.smooth('key', target, { log: true })` in `draw(p, v, w)` glides instead of jumping.
 4. Before publishing, in the browser console of the page:
-   load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement).
+   load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement), then `../../tests/flicker.js` and `MFWFlicker.run()` (no label or axis jumping back and forth).
+   Use `w.nice(key, list, need)` for any auto-zoomed range or scale bar (it has hysteresis) and `MFW.chars(rows)` for the characteristics table.
 5. Add a tile to `index.html`.
 
 ## Contributing

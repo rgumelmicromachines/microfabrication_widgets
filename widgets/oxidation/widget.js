@@ -50,7 +50,7 @@
       p.text('colour seen at normal incidence', cx, cy - R - 0.25, { size: 0.21, align: 'center', color: C.muted });
 
       // ---------------------------------------------------------- cross-section (auto zoom in decades)
-      const spanT = v.x < 0.08 ? 0.1 : v.x < 0.8 ? 1 : 10;              // full height of the drawing in µm (decades)
+      const spanT = w.nice('spanT', [0.1, 1, 10], v.x / 0.8);           // full height of the drawing in µm (decades)
       const span = w.smooth('span', spanT, { log: true });              // glide between zoom levels instead of jumping
       const x0 = -6.6, x1 = -2.1, yTopBox = -0.55, yBotBox = -2.95, h = yTopBox - yBotBox;
       const ySurf = yBotBox + 0.55 * h;                                   // original Si surface
@@ -111,14 +111,13 @@
 
     readout: v => {
       const tt = v.tTarget;
-      const tStr = tt <= 0 ? 'already reached' : fmt.hours(tt);
-      return `<table>
-        <tr><td>oxide thickness x<sub>ox</sub></td><td><b class="hl">${thk(v.x)}</b></td></tr>
-        <tr><td>Si consumed (0.46·Δx)</td><td>${thk(v.xsi)}</td></tr>
-        <tr><td>A = B/(B/A)</td><td>${fmt.sig(v.A, 3)} µm</td></tr>
-        <tr><td>τ (offset for starting oxide)</td><td>${v.tau === 0 ? '0' : fmt.hours(v.tau)}</td></tr>
-        <tr><td>x<sub>ox</sub>/A (linear term A·x vs x²)</td><td>${fmt.sig(v.x / v.A, 2)} – ${v.x < 0.5 * v.A ? 'mostly linear (reaction-limited)' : v.x < 2 * v.A ? 'mixed' : 'mostly parabolic (diffusion-limited)'}</td></tr>
-        <tr><td>time to ${thk(v.target)}</td><td><b>${tStr}</b></td></tr></table>`;
+      return MFW.chars([
+        ['oxide thickness', 'x<sub>ox</sub>', thk(v.x), undefined, { hl: true }],
+        ['Si consumed', '', thk(v.xsi), undefined, { f: '0.46·Δx' }],
+        ['linear–parabolic constant', 'A', `${fmt.sig(v.A, 3)} µm`, undefined, { f: 'B/(B/A)' }],
+        ['time offset for the starting oxide', 'τ', v.tau === 0 ? '0' : fmt.hours(v.tau)],
+        ['linear term A·x vs x²', 'x<sub>ox</sub>/A', fmt.sig(v.x / v.A, 2), '', { note: v.x < 0.5 * v.A ? 'mostly linear (reaction-limited)' : v.x < 2 * v.A ? 'mixed' : 'mostly parabolic (diffusion-limited)' }],
+        [`time to ${thk(v.target)}`, '', tt <= 0 ? 'already reached' : fmt.hours(tt)]]);
     },
 
     steps: [

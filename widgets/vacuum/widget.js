@@ -113,16 +113,17 @@
       if (inPlot) ax.place(pa(v.p), ax.around(v.tc, v.p, 0.16).concat(ax.around(v.tc, v.p, 0.45), ax.around(v.tc, v.p, 0.8)), { color: C.yellow, size: 0.19, key: 'pnow' });
     },
 
-    readout: v => `<table>
-      <tr><td>pipe conductance (molecular flow) 12.1·d³/(l + 4d/3)</td><td>${ls(v.Cmol)}</td></tr>
-      <tr><td>effective speed S<sub>eff</sub> (molecular flow)</td><td><b class="hl">${ls(v.SeffMol)}</b> (${fmt.num(100 * v.SeffMol / v.S, 0)} % of S)</td></tr>
-      <tr><td>time constant τ = V/S<sub>eff</sub></td><td>${dur(v.tau)}</td></tr>
-      <tr><td>pressure after ${dur(v.tc)}</td><td><b>${pa(v.p)}</b> – ${v.range}</td></tr>
-      <tr><td>gas load from the walls Q (area ${fmt.sig(VA.area(v.V) / 1e4, 2)} m²)</td><td>${fmt.sci(v.Q, 1)} Pa·L/s</td></tr>
-      <tr><td>mean free path / Kn = λ/d</td><td>${cm(v.lam)} / ${fmt.sci(v.Kn, 1)} (${v.regimeName})</td></tr>
-      <tr><td>monolayer time (sticking 1)</td><td>${dur(v.tml)}</td></tr>
-      <tr><td>time to ${pa(v.target)}</td><td><b>${isFinite(v.tTarget) ? dur(v.tTarget) : 'not within 100 h'}</b></td></tr>
-      <tr><td>pressure after 100 h</td><td>${pa(v.pEnd)}</td></tr></table>`,
+    readout: v => MFW.chars([
+      ['pipe conductance (molecular flow)', 'C', ls(v.Cmol), undefined, { f: '12.1·d³/(l + 4d/3)' }],
+      ['effective pumping speed (molecular flow)', 'S<sub>eff</sub>', ls(v.SeffMol), undefined, { hl: true, note: `${fmt.num(100 * v.SeffMol / v.S, 0)} % of S` }],
+      ['time constant', 'τ', dur(v.tau), undefined, { f: 'V/S<sub>eff</sub>' }],
+      [`pressure after ${dur(v.tc)}`, 'p', pa(v.p), undefined, { note: v.range }],
+      ['gas load from the walls', 'Q', `${fmt.sci(v.Q, 1)} Pa·L/s`, undefined, { f: `wall area ${fmt.sig(VA.area(v.V) / 1e4, 2)} m²` }],
+      ['mean free path', 'λ', cm(v.lam)],
+      ['Knudsen number', 'Kn', fmt.sci(v.Kn, 1), '', { f: 'λ/d', note: v.regimeName }],
+      ['monolayer time (sticking 1)', '', dur(v.tml)],
+      [`time to ${pa(v.target)}`, '', isFinite(v.tTarget) ? dur(v.tTarget) : 'not within 100 h'],
+      ['pressure after 100 h', '', pa(v.pEnd)]]),
 
     steps: [
       { name: 'Pumping out the volume', caption: 'p = p₀·exp(−S_{eff}·t/V): seconds for the gas in the volume', set: { V: 100, mat: 'ss', S: 300, d: 10, l: 30, tc: 5, target: 1e-4 }, show: ['parts'], duration: 1.5,

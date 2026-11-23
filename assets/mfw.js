@@ -247,6 +247,34 @@
   }
 
   /** Same sub/superscript syntax as canvas text, for DOM text. Text between <b>…</b>, <i>…</i>, <em>…</em> keeps the tags. */
+  /** Characteristics table for cfg.readout, laid out like a datasheet: Parameter · Symbol · Value · Unit.
+      rows: [parameter, symbol, value, unit, opts] (HTML strings; falsy rows are skipped).
+      - unit omitted: "112 nm" is split into value "112" and unit "nm"; a value that is text spans value and unit.
+      - opts.f: formula or condition, shown small under the parameter; opts.note: comment after the unit;
+        opts.hl: the key value (one per table); opts.warn: the value is a warning.
+      { warn: 'html' } is a full-width warning row, { text: 'html' } a full-width plain row. */
+  const SPLIT_UNIT = /^(.*[0-9⁰¹²³⁴-⁹])\s+([^\s0-9]+)$/;
+  const NUMERIC = /^[−+±≈~<>≤≥–-]?\s?[0-9.]/;
+  function chars(rows) {
+    let h = '<table class="mfw-ctable"><thead><tr><th>Parameter</th><th>Symbol</th><th class="num">Value</th><th>Unit</th></tr></thead><tbody>';
+    for (const r of rows) {
+      if (!r) continue;
+      if (!Array.isArray(r)) {
+        if (r.warn) h += `<tr class="mfw-crow-note"><td colspan="4" class="warn">${r.warn}</td></tr>`;
+        else if (r.text) h += `<tr class="mfw-crow-note"><td colspan="4">${r.text}</td></tr>`;
+        continue;
+      }
+      const [par, sym, val, unit0, o = {}] = r;
+      let v = val === undefined || val === null ? '–' : String(val), u = unit0;
+      if (u === undefined) { const m = v.match(SPLIT_UNIT); if (m) { v = m[1]; u = m[2]; } else u = ''; }
+      const cls = (o.hl ? ' hl' : '') + (o.warn ? ' warn' : '');
+      const note = o.note ? `<span class="mfw-cnote">${o.note}</span>` : '';
+      const pc = `<td class="par">${par}${o.f ? `<span class="mfw-cf">${o.f}</span>` : ''}</td><td class="sym">${sym || ''}</td>`;
+      if (!u && !NUMERIC.test(v)) h += `<tr>${pc}<td class="num txt${cls}" colspan="2">${v}${note}</td></tr>`;
+      else h += `<tr>${pc}<td class="num${cls}">${v}</td><td class="unit">${u}${note}</td></tr>`;
+    }
+    return h + '</tbody></table>';
+  }
   function richToHTML(s) {
     const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const KEEP = /(<\/?(?:b|i|em|strong|sub|sup|span class="hl"|span)>)/g;
@@ -393,7 +421,12 @@
       const key = o.key || String(str).replace(/[\d.,−-]+/g, '#'), last = this._placed.get(key);
       const boxOf = cd => this._tbox(str, cd[0], cd[1], { ...o, align: cd[2] || o.align, baseline: cd[3] || o.baseline });
       let best = -1, bestS = Infinity;
-      if (last !== undefined && last < cands.length) { const sc = this._collide(boxOf(cands[last]), o); if (sc === 0) { best = last; bestS = 0; } }
+      // hysteresis: the label may keep its place with a quarter of the clearance a new place needs, so a slider held at a
+      // boundary between two places cannot make it hop back and forth (flicker)
+      if (last !== undefined && last < cands.length) {
+        const sc = this._collide(boxOf(cands[last]), { ...o, pad: (o.pad === undefined ? 0.04 : o.pad) * 0.25 });
+        if (sc === 0) { best = last; bestS = 0; }
+      }
       if (best < 0) {
         for (let i = 0; i < cands.length; i++) {
           const sc = this._collide(boxOf(cands[i]), o);
@@ -576,7 +609,7 @@
     /** Inverse of X (scene x → data value). */
     xVal(sx) { const t = (sx - this.x) / this.w; return this.xlog ? 10 ** (Math.log10(this.xr[0]) + t * (Math.log10(this.xr[1]) - Math.log10(this.xr[0]))) : this.xr[0] + t * (this.xr[1] - this.xr[0]); }
     pt(xv, yv) { return [this.X(xv), this.Y(yv)]; }
-    _ticks(r, log, given) {
+    _ticks(r, log, given, which) {
       if (given) return given;
       if (log) {
         const out = [], e0 = Math.ceil(Math.log10(r[0]) - 1e-9), e1 = Math.floor(Math.log10(r[1]) + 1e-9);
@@ -584,7 +617,14 @@
         for (let e = e0; e <= e1; e += every) out.push(10 ** e);
         return out;
       }
-      const st = niceStep(r[1] - r[0], this.nticks), out = [];
+      // hysteresis on the tick spacing: a range that moves with a slider keeps its spacing while it still gives a sensible
+      // number of intervals (3–8.5), so the tick labels do not re-pick their spacing back and forth near a threshold
+      const memo = this.p._ticksMemo || (this.p._ticksMemo = new Map()), key = [this.x, this.y, this.w, this.h, which].join();
+      let st = niceStep(r[1] - r[0], this.nticks);
+      const old = memo.get(key), n = old && (r[1] - r[0]) / old;
+      if (old && n >= 3 * this.nticks / 5 && n <= 8.5 * this.nticks / 5) st = old;
+      memo.set(key, st);
+      const out = [];
       for (let v = Math.ceil(r[0] / st - 1e-9) * st; v <= r[1] + st * 1e-6; v += st) out.push(Math.abs(v) < st * 1e-9 ? 0 : v);
       return out;
     }
@@ -597,7 +637,7 @@
       return fmt.num(v, d);
     }
     draw() {
-      const p = this.p, xt = this._ticks(this.xr, this.xlog, this.xticks), yt = this._ticks(this.yr, this.ylog, this.yticks), s = this.size;
+      const p = this.p, xt = this._ticks(this.xr, this.xlog, this.xticks, 'x'), yt = this._ticks(this.yr, this.ylog, this.yticks, 'y'), s = this.size;
       const axc = this.color || C.axis, lc = this.labelColor || C.muted;
       if (this.grid) {
         xt.forEach(v => p.line(this.X(v), this.y, this.X(v), this.y + this.h, { color: C.grid, width: 1.5 }));
@@ -772,6 +812,8 @@
     source: 'Sources & model notes',
   };
   const SPEEDS = [0.5, 0.75, 1, 1.5, 2];
+  const NICE_SERIES = [];
+  for (let e = -6; e <= 9; e++) for (const m of [1, 1.5, 2, 3, 4, 5, 6, 8]) NICE_SERIES.push(+(m * 10 ** e).toPrecision(3));
   const widgets = new Set();
   const store = {
     get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
@@ -1036,8 +1078,15 @@
       this._buildTex();
       this.painter = new Painter(this.ctx, 10, 10);
       this._resize();
-      if (typeof ResizeObserver !== 'undefined') { this._ro = new ResizeObserver(() => this._resize()); this._ro.observe(this.stage); }
-      else window.addEventListener('resize', () => this._resize());
+      if (typeof ResizeObserver !== 'undefined') {
+        this._ro = new ResizeObserver(() => this._resize()); this._ro.observe(this.stage);
+        this._roCol = new ResizeObserver(() => this._pin()); this._roCol.observe(this.figCol);
+      } else window.addEventListener('resize', () => this._resize());
+      this._mqWide = window.matchMedia('(min-width: 1180px)');
+      const lay = () => { this._placeChars(); this._pin(); };
+      if (this._mqWide.addEventListener) this._mqWide.addEventListener('change', lay); else this._mqWide.addListener(lay);
+      window.addEventListener('resize', () => this._pin());
+      this._placeChars();
       if ((cfg.tex || []).length && cfg.katex !== false) ensureKaTeX(() => this._renderTexAll());
       if (document.fonts) {
         if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { this.dirty = true; });
@@ -1082,6 +1131,24 @@
       if (first || !fade || reduceMotion()) { c.innerHTML = richToHTML(text || ''); c.style.opacity = 1; return; }
       c.style.opacity = 0;
       this._capT = setTimeout(() => { this._capT = null; c.innerHTML = richToHTML(this._cap || ''); c.style.opacity = 1; }, 200);
+    }
+    /** Smallest value of the ascending list `list` that holds `need` – an axis range, a zoom step or a scale bar – with
+        hysteresis, so a slider held near a step boundary cannot make the axis flip back and forth (flicker): the
+        choice grows as soon as `need` no longer fits, and shrinks only when `need` is 10 % (o.h) below the next smaller
+        step. Without a list, the 1–1.5–2–3–4–5–6–8 series over all decades is used. */
+    nice(key, list, need, o = {}) {
+      if (!list) list = NICE_SERIES;
+      if (!isFinite(need)) return list[list.length - 1];
+      const s = this._nice || (this._nice = new Map()), h = o.h === undefined ? 0.1 : o.h;
+      const fit = list.find(n => n >= need);
+      const pickV = fit === undefined ? list[list.length - 1] : fit;
+      const cur = s.get(key);
+      if (cur !== undefined && cur > pickV && need <= cur) {
+        const lower = list[list.indexOf(cur) - 1];
+        if (lower !== undefined && need > lower * (1 - h)) return cur;          // still close to the boundary: keep
+      }
+      s.set(key, pickV);
+      return pickV;
     }
     /** Value that glides towards target over a few frames (for auto-zoom and axis ranges, so the picture does not jump).
         Call it from draw() as w.smooth('key', target, {log: true}). */
@@ -1173,7 +1240,8 @@
     _buildDOM() {
       const r = this.root, cfg = this.cfg;
       r.innerHTML = '';
-      this.stageWrap = el('div', 'mfw-stagewrap', r);
+      this.figCol = el('div', 'mfw-figcol', r);                    // figure plate (+ characteristics on wide screens)
+      this.stageWrap = el('div', 'mfw-stagewrap', this.figCol);
       this.stage = el('div', 'mfw-stage', this.stageWrap);
       this.canvas = el('canvas', null, this.stage);
       this.canvas.setAttribute('role', 'img');
@@ -1254,8 +1322,9 @@
         });
       }
       if (cfg.readout) {
-        const chars = el('section', 'mfw-chars', this.panel);
-        el('h3', 'mfw-chars-h', chars).innerHTML = `${S.chars}<span>value</span>`;
+        const chars = this.charsEl = el('section', 'mfw-chars', this.panel);
+        this._charsSlot = this.panel.appendChild(document.createComment('characteristics'));   // its place in the panel
+        el('h3', 'mfw-chars-h', chars, S.chars);
         this.readoutEl = el('div', 'mfw-readout', chars);
       }
       const params = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
@@ -1375,7 +1444,7 @@
         extremes (and options) of those free sliders. In Explore the table sits below the sliders and needs no reserve. */
     _primeReadout() {
       const e = this.readoutEl, cfg = this.cfg;
-      if (!cfg.readout || !e || !e.offsetParent || this.mode !== 'tour') return;
+      if (!cfg.readout || !e || !e.offsetParent || this.mode !== 'tour' || !this.panel.contains(e)) return;
       const P0 = { ...this.P };
       if (this.step >= 0 && cfg.steps && cfg.steps[this.step]) {
         const t = stepState(cfg, this.step).P;
@@ -1396,6 +1465,19 @@
       e.innerHTML = keep;
       h = Math.max(h, e.offsetHeight);
       if (h > (e._mfwH || 0)) { e._mfwH = h; e.style.minHeight = h + 'px'; }
+    }
+    /** Wide screens: the characteristics table sits under the figure (a datasheet plate with its table), the panel keeps
+        the tour and the sliders. Narrow screens: the table goes back into the panel. */
+    _placeChars() {
+      if (!this.charsEl) return;
+      const wide = this._mqWide && this._mqWide.matches;
+      if (wide && this.charsEl.parentNode !== this.figCol) { this.figCol.appendChild(this.charsEl); this._resetHeights(); }
+      else if (!wide && this.charsEl.parentNode !== this.panel) { this.panel.insertBefore(this.charsEl, this._charsSlot); this._resetHeights(); }
+    }
+    /** Wide screens: keep the figure column in view while the panel scrolls – only when the whole column fits. */
+    _pin() {
+      const wide = this._mqWide && this._mqWide.matches;
+      this.figCol.classList.toggle('is-pinned', !!wide && this.figCol.offsetHeight + 66 + 12 <= window.innerHeight);
     }
     _markStep(i) {
       (this.chips || []).forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('is-done', j < i); });
@@ -1561,6 +1643,6 @@
 
   function widget(target, cfg) { return new Widget(target, cfg); }
 
-  return { VERSION, config, C, MAT, DARK, LIGHT, M, K, ease, fmt, mix, rgba, col, texToText, richToHTML, renderMath,
+  return { VERSION, config, C, MAT, DARK, LIGHT, M, K, ease, fmt, mix, rgba, col, texToText, richToHTML, renderMath, chars,
     Painter, Axes, Widget, widget, renderStill, stepState, fillTemplate, setTheme, currentTheme, instances: widgets, PAGES };
 }));

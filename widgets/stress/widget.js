@@ -83,7 +83,7 @@
       const Tmax = 1200;
       const sigAt = T => v.sigI + S.thermalStress(v.f, v.Tdep, T);
       const lo = Math.min(-200, v.sigI, v.sig, sigAt(v.Tdep)), hi = Math.max(200, v.sigI, v.sig);
-      const span = w.smooth('sspan', [500, 1000, 1500, 2000, 3000].find(s => s >= Math.max(Math.abs(lo), Math.abs(hi)) * 1.15) || 3000, { log: true });
+      const span = w.smooth('sspan', w.nice('sspan', [500, 1000, 1500, 2000, 3000], Math.max(Math.abs(lo), Math.abs(hi)) * 1.15), { log: true });
       const ax = p.axes({ x: 1.0, y: -2.75, w: 5.6, h: 5.15, xr: [0, Tmax], yr: [-span, span], grid: true, size: 0.21, nticks: 6,
         yfmt: y => fmt.num(y, 0), xlabel: 'temperature (°C) – cooling runs from right to left', ylabel: 'film stress (MPa), + tensile', ylabelOffset: 0.9 }).draw();
       p.clip(ax.x, ax.y, ax.x + ax.w, ax.y + ax.h, () => {
@@ -102,19 +102,17 @@
       });
     },
 
-    readout: v => {
-      const warn = Math.abs(v.bow) > v.hs / 2 ? `<tr><td colspan="2" class="warn">The bow exceeds half the wafer thickness – Stoney’s small-deflection assumption becomes questionable.</td></tr>` : '';
-      return `<table>
-        <tr><td>film E/(1−ν) / α</td><td>${fmt.num(v.Mf, 0)} GPa / ${fmt.sig(v.f.a, 2)} ppm/K</td></tr>
-        <tr><td>Si: mean α from T<sub>dep</sub> to 25 °C</td><td>${fmt.sig(v.aMean * 1e6, 3)} ppm/K</td></tr>
-        <tr><td>intrinsic stress</td><td>${mpa(v.sigI)}</td></tr>
-        <tr><td>thermal-mismatch stress</td><td>${mpa(v.sigTh)}</td></tr>
-        <tr><td>total stress at 25 °C</td><td><b class="hl">${mpa(v.sig)}</b> – ${kind(v.sig)}</td></tr>
-        <tr><td>force per width σ·h<sub>f</sub></td><td>${fmt.sig(v.F, 3)} N/m</td></tr>
-        <tr><td>radius of curvature R</td><td>${metres(Math.abs(v.R))}</td></tr>
-        <tr><td>bow δ = r²/2R</td><td><b>${um(Math.abs(v.bow))}</b> ${Math.abs(v.sig) < 5 ? '' : v.sig > 0 ? '(concave)' : '(convex)'}</td></tr>
-        ${warn}</table>`;
-    },
+    readout: v => MFW.chars([
+      ['film biaxial modulus', 'E<sub>f</sub>/(1−ν<sub>f</sub>)', `${fmt.num(v.Mf, 0)} GPa`],
+      ['film thermal expansion', 'α<sub>f</sub>', `${fmt.sig(v.f.a, 2)} ppm/K`],
+      ['Si: mean expansion, T<sub>dep</sub> to 25 °C', 'α<sub>s</sub>', `${fmt.sig(v.aMean * 1e6, 3)} ppm/K`],
+      ['intrinsic stress', 'σ<sub>int</sub>', mpa(v.sigI)],
+      ['thermal-mismatch stress', 'σ<sub>th</sub>', mpa(v.sigTh)],
+      ['total stress at 25 °C', 'σ', mpa(v.sig), undefined, { hl: true, note: kind(v.sig) }],
+      ['force per width', 'σ·h<sub>f</sub>', `${fmt.sig(v.F, 3)} N/m`],
+      ['radius of curvature', 'R', metres(Math.abs(v.R))],
+      ['bow', 'δ', um(Math.abs(v.bow)), undefined, { f: 'r²/2R', note: Math.abs(v.sig) < 5 ? '' : v.sig > 0 ? 'concave' : 'convex' }],
+      Math.abs(v.bow) > v.hs / 2 && { warn: 'The bow exceeds half the wafer thickness – Stoney’s small-deflection assumption becomes questionable.' }]),
 
     steps: [
       { name: 'A stressed film bends the wafer', caption: 'Stoney: 1/R = 6σh_f / (M_s h_s²)', set: { film: 'si3n4', hf: 0.1, Tdep: 750, sigI: Math.round(S.defaultIntrinsic('si3n4')), D: '100' }, duration: 1.5,

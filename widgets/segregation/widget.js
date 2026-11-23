@@ -94,12 +94,12 @@
       });
     },
 
-    readout: v => `<table>
-      <tr><td>segregation coefficient k₀</td><td>${fmt.num(v.k, 3)}</td></tr>
-      <tr><td>melt C<sub>L</sub>/C₀</td><td>${fmt.num(v.cl, 2)}</td></tr>
-      <tr><td>crystal at interface C<sub>s</sub>/C₀</td><td><b class="hl">${fmt.num(v.cs, 3)}</b></td></tr>
-      <tr><td>dopant still in the melt</td><td>${fmt.num(100 * v.left, 0)} %</td></tr>
-      <tr><td>tail / seed concentration</td><td>${fmt.sig(v.cl, 3)}×</td></tr></table>`,
+    readout: v => MFW.chars([
+      ['segregation coefficient', 'k₀', fmt.num(v.k, 3), ''],
+      ['melt concentration', 'C<sub>L</sub>/C₀', fmt.num(v.cl, 2), ''],
+      ['crystal at the interface', 'C<sub>s</sub>/C₀', fmt.num(v.cs, 3), '', { hl: true }],
+      ['dopant still in the melt', '', `${fmt.num(100 * v.left, 0)} %`],
+      ['tail / seed concentration', '', fmt.sig(v.cl, 3), '×']]),
 
     // The tour never changes the dopant: pick one in the menu and the whole story is told for it.
     steps: [

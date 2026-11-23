@@ -133,13 +133,13 @@
         ZX0 + 0.08, -2.62, { size: 0.19, color: fs < 0.05 ? C.green : fs < 0.5 ? C.gold : C.red, bold: true, bg: true });
     },
 
-    readout: v => `<table>
-      <tr><td>edge thickness t(R)/t(0)</td><td><b class="hl">${pct(v.tEdge)}</b> (non-uniformity ${pct(v.nonU)})</td></tr>
-      <tr><td>distance for ±5 % (edge ≥ 95 %)</td><td>${cm(v.h5)}</td></tr>
-      <tr><td>mean free path λ (${PV.GAS[v.gas].name}, 20 °C)</td><td>${cm(v.lam)}</td></tr>
-      <tr><td>atoms arriving without a gas collision, e<sup>−h/λ</sup></td><td>${pct(v.f0)}</td></tr>
-      <tr><td>angle of incidence at the zoomed step</td><td>${fmt.num(v.theta, 1)}°</td></tr>
-      <tr><td>shadow offset s·tan θ</td><td>${um(v.off)}</td></tr></table>`,
+    readout: v => MFW.chars([
+      ['edge thickness', 't(R)/t(0)', pct(v.tEdge), undefined, { hl: true, note: `non-uniformity ${pct(v.nonU)}` }],
+      ['distance for ±5 % (edge ≥ 95 %)', '', cm(v.h5)],
+      [`mean free path (${PV.GAS[v.gas].name}, 20 °C)`, 'λ', cm(v.lam)],
+      ['atoms arriving without a gas collision', '', pct(v.f0), undefined, { f: 'e<sup>−h/λ</sup>' }],
+      ['angle of incidence at the zoomed step', 'θ', fmt.num(v.theta, 1), '°'],
+      ['shadow offset', '', um(v.off), undefined, { f: 's·tan θ' }]]),
 
     steps: [
       { name: 'Line of sight', caption: 'In a high vacuum atoms fly straight from the source to the wafer', set: { src: 'knudsen', h: 40, D: '100', p: 1e-4, gas: 'air', rpos: 0.9, s: 2 }, duration: 1.5,

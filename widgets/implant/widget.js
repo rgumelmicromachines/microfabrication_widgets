@@ -23,9 +23,9 @@
     const [xj1, xj2] = IM.junctions(v.Q, r.Rp, r.dRp, v.NB);
     const mk = IM.mask(v.Q, rm, v.dm, v.NB);
     const need = Math.max(r.Rp + 3.5 * r.dRp, (xj2 || 0) * 1.25);
-    const zmax = NICE.find(n => n >= need) || 2000;
-    const xs = M.linspace(0, zmax, 301);
-    memo = { Rp: r.Rp, dRp: r.dRp, Rpm: rm.Rp, dRpm: rm.dRp, Np, xj1, xj2, mk, zmax, xs,
+    const iN = NICE.findIndex(n => n >= need), zmax = iN < 0 ? 2000 : NICE[iN];
+    const xs = M.linspace(0, NICE[Math.min(iN < 0 ? NICE.length - 1 : iN + 1, NICE.length - 1)], 451);   // one step beyond: the held range is covered
+    memo = { Rp: r.Rp, dRp: r.dRp, Rpm: rm.Rp, dRpm: rm.dRp, Np, xj1, xj2, mk, zmax, need, xs,
       prof: xs.map(x => IM.gauss(x, v.Q, r.Rp, r.dRp)),
       leak: xs.map(x => IM.gauss(x + v.dm, v.Q, rm.Rp, rm.dRp)),       // under the mask, Si treated like the mask material (approximation)
       tBeam: IM.beamTime(v.Q, WAFER_A, v.I), N0: IM.gauss(0, v.Q, r.Rp, r.dRp) };
@@ -60,13 +60,14 @@
     draw(p, v, w) {
       const ion = ION[v.ion], dopMat = ion.type === 'p' ? 'pdoped' : 'ndoped', subMat = ion.type === 'p' ? 'ndoped' : 'pdoped';
       const dopCol = ion.type === 'p' ? C.red : C.blue;
-      const zmax = w.smooth('zmax', v.zmax, { log: true });
+      const zmaxT = w.nice('zmax', NICE, v.need);                                              // no flip-flop at a step boundary
+      const zmax = w.smooth('zmax', zmaxT, { log: true });
 
       // ---------------------------------------------------------- cross-section through a mask window (depth to scale)
       // Si and mask share one vertical scale: the height is split between the depth range and the mask thickness,
       // with at least 2.3 units for the Si (a thicker mask is drawn broken)
       const X0 = -6.45, X1 = -1.75, Yb = -2.75, mTop = 2.45;
-      const k = w.smooth('kz', Math.max(2.3 / v.zmax, (mTop - Yb) / (v.zmax + v.dm)), { log: true });   // units per nm
+      const k = w.smooth('kz', Math.max(2.3 / zmaxT, (mTop - Yb) / (zmaxT + v.dm)), { log: true });   // units per nm
       const Ys = Math.min(Yb + zmax * k, mTop - 0.9);
       const wL = -4.9, wR = -3.3;                                                              // window
       const view = [X0, Yb, X1, 3.0];
@@ -114,7 +115,7 @@
       });
       // mask, to the same vertical scale; a mask taller than the drawing is shown broken in the middle
       // (lower part next to the Si, upper part with the top surface where the ions enter)
-      const mh = v.dm * k, cut = Ys + mh > mTop, top = Math.min(Ys + mh, mTop);
+      const mh = v.dm * k, cut = Ys + mh > mTop + 0.02, top = Math.min(Ys + mh, mTop);   // tolerance: a mask that just fits is not drawn broken (no blinking at equality)
       const gB = Ys + 0.55, gT = Ys + 0.72;                                                    // break between the two parts
       const parts = cut ? [{ y0: Ys, y1: gB, d0: v.dm - 0.55 / k }, { y0: gT, y1: mTop, d0: 0 }] : [{ y0: Ys, y1: top, d0: 0 }];
       const yOf = (part, d) => (cut ? (part.d0 === 0 ? mTop - d * k : Ys + (v.dm - d) * k) : Ys + mh - d * k);   // depth below the mask top → y
@@ -178,15 +179,18 @@
 
     readout: v => {
       const mk = v.mk;
-      return `<table>
-        <tr><td>projected range R<sub>p</sub> / straggle ΔR<sub>p</sub></td><td>${nm(v.Rp)} / ${nm(v.dRp)}</td></tr>
-        <tr><td>peak N<sub>p</sub> = Q/(√(2π)ΔR<sub>p</sub>) ≈ 0.4 Q/ΔR<sub>p</sub></td><td><b class="hl">${conc(v.Np)}</b></td></tr>
-        <tr><td>concentration at the surface</td><td>${conc(v.N0)}</td></tr>
-        <tr><td>junction depth x<sub>j</sub></td><td><b>${v.xj2 ? nm(v.xj2) : 'none (peak below N<sub>B</sub>)'}</b>${v.xj1 ? ` – buried layer from ${nm(v.xj1)}` : ''}</td></tr>
-        <tr><td>in ${MASKN[v.mask]}: R<sub>p</sub> / ΔR<sub>p</sub></td><td>${nm(v.Rpm)} / ${nm(v.dRpm)}</td></tr>
-        <tr><td>dose through the mask</td><td>${passS(mk.pass)}</td></tr>
-        <tr><td>mask needed (N at the Si surface ≤ N<sub>B</sub>)</td><td>${nm(mk.need)} – <b class="${mk.ok ? '' : 'warn'}">${mk.ok ? 'mask is thick enough' : 'mask too thin'}</b></td></tr>
-        <tr><td>implant time, t = Q·q·A/I (200 mm)</td><td>${secs(v.tBeam)}</td></tr></table>`;
+      return MFW.chars([
+        ['projected range', 'R<sub>p</sub>', nm(v.Rp)],
+        ['straggle', 'ΔR<sub>p</sub>', nm(v.dRp)],
+        ['peak concentration', 'N<sub>p</sub>', conc(v.Np), undefined, { hl: true, f: 'Q/(√(2π)·ΔR<sub>p</sub>) ≈ 0.4·Q/ΔR<sub>p</sub>' }],
+        ['concentration at the surface', '', conc(v.N0)],
+        ['junction depth', 'x<sub>j</sub>', v.xj2 ? nm(v.xj2) : 'none (peak below N<sub>B</sub>)', undefined, { note: v.xj1 ? `buried layer from ${nm(v.xj1)}` : '' }],
+        [`range in ${MASKN[v.mask]}`, 'R<sub>p</sub><sup>*</sup>', nm(v.Rpm)],
+        [`straggle in ${MASKN[v.mask]}`, 'ΔR<sub>p</sub><sup>*</sup>', nm(v.dRpm)],
+        ['dose through the mask', 'T', passS(mk.pass)],
+        ['mask needed', '', nm(mk.need), undefined, { f: 'N at the Si surface ≤ N<sub>B</sub>' }],
+        ['this mask', '', mk.ok ? 'thick enough' : 'too thin', '', { warn: !mk.ok }],
+        ['implant time, 200 mm wafer', 't', secs(v.tBeam), undefined, { f: 'Q·q·A/I' }]]);
     },
 
     steps: [

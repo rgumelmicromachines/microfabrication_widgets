@@ -115,15 +115,15 @@
       });
     },
 
-    readout: v => `<table>
-      <tr><td>surface reaction k<sub>S</sub> = k₀·e<sup>−Ea/kT</sup></td><td>${cms(v.ks)}</td></tr>
-      <tr><td>gas transport h<sub>G</sub> = D<sub>G</sub>/δ</td><td>${cms(v.hG)}</td></tr>
-      <tr><td>k<sub>S</sub>/h<sub>G</sub></td><td>${fmt.sig(v.ratio, 2)} – ${regime(v.ratio)}</td></tr>
-      <tr><td>surface concentration C<sub>S</sub>/C<sub>G</sub> = 1/(1 + k<sub>S</sub>/h<sub>G</sub>)</td><td>${fmt.num(v.CS / v.CG, 2)}</td></tr>
-      <tr><td>precursor in the gas C<sub>G</sub> = Y·p/kT</td><td>${fmt.sci(v.CG, 2)} cm⁻³</td></tr>
-      <tr><td>growth rate V</td><td><b class="hl">${rateStr(v.V)}</b></td></tr>
-      <tr><td>time for a 10 µm epitaxial layer</td><td>${v.V > 0 ? fmt.hours(10 / v.V / 60) : '–'}</td></tr>
-      <tr><td>regime boundary k<sub>S</sub> = h<sub>G</sub></td><td>${fmt.num(v.Tstar, 0)} °C</td></tr></table>`,
+    readout: v => MFW.chars([
+      ['surface reaction rate constant', 'k<sub>S</sub>', cms(v.ks), undefined, { f: 'k₀·e<sup>−E<sub>a</sub>/kT</sup>' }],
+      ['gas-phase transport coefficient', 'h<sub>G</sub>', cms(v.hG), undefined, { f: 'D<sub>G</sub>/δ' }],
+      ['ratio of the two', 'k<sub>S</sub>/h<sub>G</sub>', fmt.sig(v.ratio, 2), '', { note: regime(v.ratio) }],
+      ['surface concentration', 'C<sub>S</sub>/C<sub>G</sub>', fmt.num(v.CS / v.CG, 2), '', { f: '1/(1 + k<sub>S</sub>/h<sub>G</sub>)' }],
+      ['precursor in the gas', 'C<sub>G</sub>', `${fmt.sci(v.CG, 2)} cm⁻³`, undefined, { f: 'Y·p/kT' }],
+      ['growth rate', 'V', rateStr(v.V), undefined, { hl: true }],
+      ['time for a 10 µm epitaxial layer', '', v.V > 0 ? fmt.hours(10 / v.V / 60) : '–'],
+      ['regime boundary, k<sub>S</sub> = h<sub>G</sub> at', 'T', `${fmt.num(v.Tstar, 0)} °C`]]),
 
     steps: [
       { name: 'Two steps in series', caption: 'Transport through the boundary layer, then reaction at the surface', set: { T: 1150, hG: 2, Y: 0.01 }, duration: 1.5,

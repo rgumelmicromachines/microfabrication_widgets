@@ -18,7 +18,7 @@
       if (!c.inp || c.inp.type !== 'range' || c.lab.hidden || c.inp.disabled) continue;
       // sticky elements (the stage on wide screens) stay put on screen while the page scrolls: compare them in viewport
       // coordinates; everything else in page coordinates. Controls hidden by a `when` condition are skipped.
-      const isSticky = e => !!e.closest('.mfw-stagewrap') && getComputedStyle(e.closest('.mfw-stagewrap')).position === 'sticky';
+      const isSticky = e => !!e.closest('.mfw-figcol') && getComputedStyle(e.closest('.mfw-figcol')).position === 'sticky';
       const pos = e => e.getBoundingClientRect().top + (isSticky(e) ? 0 : window.scrollY);
       c.inp.focus(); await frame();                       // focusing may scroll the page – measure after that
       const els = watched(), top0 = els.map(pos);

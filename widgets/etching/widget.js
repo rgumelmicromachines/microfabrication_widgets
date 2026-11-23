@@ -37,12 +37,13 @@
       const extentX = (s.top + Math.max(10, 0.25 * v.W)) * 2, extentY = Math.max(s.depth, (E.ETCH[v.etch].kind === 'aniso' ? Math.min(s.dmax, 1.2 * v.W) : v.W * 0.5)) * 1.25;
       const need = Math.max(extentX / 9.2, extentY / 4.6) * 5;                    // µm per 5 scene units
       const zoom = ZOOM.find(z => z >= need) || 2000;
-      return { ...s, zoom, sel: s.mr > 0 ? s.R * 1000 / s.mr : Infinity };
+      return { ...s, zoom, need, sel: s.mr > 0 ? s.R * 1000 / s.mr : Infinity };
     },
 
     draw(p, v, w) {
       // ---------------------------------------------------------- cross-section (equal x and y scale)
-      const zoom = w.smooth('zoom', v.zoom, { log: true });                        // glide between zoom steps
+      const zoomT = w.nice('zoom', ZOOM, v.need);
+      const zoom = w.smooth('zoom', zoomT, { log: true });                        // glide between zoom steps
       const cx = -2.2, ys = 1.55, k = 5 / zoom;                                    // scene units per µm
       const X0 = -6.95, X1 = 2.55, Yb = -3.05;
       const sx = x => cx + x * k, sy = d => ys + d * k;
@@ -81,7 +82,7 @@
       p.text(`${MASKNAME[v.mask]} mask (thickness not to scale)`, X0 + 0.1, ys + 0.55, { size: 0.21, color: C.muted });
       p.text('(100) Si', X0 + 0.15, ySi + 0.25, { size: 0.24, color: C.text });
       // scale bar, below the drawing
-      const sb = v.zoom / 5;
+      const sb = zoomT / 5;
       p.line(X1 - 0.2 - sb * k, Yb - 0.3, X1 - 0.2, Yb - 0.3, { color: C.white, width: 3 });
       p.text(um(sb), X1 - 0.32 - sb * k, Yb - 0.3, { size: 0.2, align: 'right', color: C.text });
       p.text('x and y to the same scale', X0 + 0.1, Yb - 0.3, { size: 0.19, color: C.muted });
@@ -116,7 +117,7 @@
       const tmax = 480;
       const depthAt = t => E.etchState({ etch: v.etch, mask: v.mask, tm: v.tm, W: v.W, t, T: v.T, rate: v.rate }).depth;
       const dEnd = Math.max(depthAt(tmax), v.depth) * 1.08;                         // depth never decreases with time
-      const ymax = w.smooth('ymax', [10, 20, 50, 100, 200, 300, 500, 600].find(n => n >= dEnd) || 600, { log: true });
+      const ymax = w.smooth('ymax', w.nice('ymax', [10, 20, 50, 100, 200, 300, 500, 600], dEnd), { log: true });
       const ax = p.axes({ x: 3.55, y: -2.55, w: 3.25, h: 4.5, xr: [0, tmax], yr: [0, ymax], grid: true, size: 0.21, nticks: 4,
         xlabel: 'etch time (min)', ylabel: 'depth (µm)', ylabelOffset: 0.8 }).draw();
       p.clip(ax.x, ax.y, ax.x + ax.w, ax.y + ax.h, () => {
@@ -141,15 +142,16 @@
       p.text(maskNote(v), (X0 + X1) / 2, 3.35, { size: 0.23, align: 'center', color: (v.mr === null || v.t > v.tFail) ? C.red : C.greyA });
     },
 
-    readout: v => `<table>
-      <tr><td>Si etch rate</td><td>${fmt.sig(v.R, 3)} µm/min</td></tr>
-      <tr><td>depth</td><td><b class="hl">${um(v.depth)}</b></td></tr>
-      <tr><td>undercut under the mask edge</td><td>${um(v.undercut)}</td></tr>
-      ${v.kind === 'aniso' ? `<tr><td>bottom width (W' − √2·d)</td><td>${v.closed ? 'V-groove closed' : um(2 * v.bottom)}</td></tr><tr><td>V-groove closes (≈ W/√2)</td><td>${um(v.dClose)} after ${mins(v.tClose)}</td></tr>` : ''}
-      ${v.kind === 'drie' ? `<tr><td>aspect ratio depth : width</td><td>${fmt.sig(v.depth / v.W, 2)} : 1</td></tr>` : ''}
-      <tr><td>selectivity Si : mask</td><td>${v.mr === null ? 'mask dissolves' : v.mr === undefined ? 'no data' : isFinite(v.sel) ? fmt.sig(v.sel, 2) + ' : 1' : 'very high'}</td></tr>
-      ${v.through ? `<tr><td colspan="2" class="warn">etched through the ${E.WAFER} µm wafer after ${mins(v.tThrough)}</td></tr>` : ''}
-      <tr><td>mask remaining</td><td>${v.mr === undefined ? '–' : `${fmt.sig(v.maskLeft, 3)} nm`}</td></tr></table>`,
+    readout: v => MFW.chars([
+      ['Si etch rate', '', `${fmt.sig(v.R, 3)} µm/min`],
+      ['depth', 'd', um(v.depth), undefined, { hl: true }],
+      ['undercut under the mask edge', '', um(v.undercut)],
+      v.kind === 'aniso' && ['bottom width', '', v.closed ? 'V-groove closed' : um(2 * v.bottom), undefined, { f: 'W′ − √2·d' }],
+      v.kind === 'aniso' && ['V-groove closes at the depth', '', um(v.dClose), undefined, { f: '≈ W/√2', note: `after ${mins(v.tClose)}` }],
+      v.kind === 'drie' && ['aspect ratio depth : width', '', `${fmt.sig(v.depth / v.W, 2)} : 1`, ''],
+      ['selectivity Si : mask', '', v.mr === null ? 'mask dissolves' : v.mr === undefined ? 'no data' : isFinite(v.sel) ? fmt.sig(v.sel, 2) + ' : 1' : 'very high', ''],
+      ['mask remaining', '', v.mr === undefined ? '–' : `${fmt.sig(v.maskLeft, 3)} nm`],
+      v.through && { warn: `etched through the ${E.WAFER} µm wafer after ${mins(v.tThrough)}` }]),
 
     steps: [
       { name: 'Anisotropic KOH etch', caption: 'KOH etches (100) fast and {111} very slowly', set: { etch: 'koh', mask: 'si3n4', tm: 100, W: 100, t: 30, T: 80, rate: 2 }, show: ['dims'], duration: 2.5,

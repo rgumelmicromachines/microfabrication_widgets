@@ -36,7 +36,7 @@
     draw(p, v, w) {
       // ---------------------------------------------------------- band diagram (x to scale, energy to scale)
       const BX0 = -6.1, BX1 = -0.7, BY0 = -2.6, BY1 = 2.35;
-      const span = w.smooth('span', NICE.find(n => n >= 1.3 * Math.max(v.xp, v.xn)) || 20, { log: true });
+      const span = w.smooth('span', w.nice('span', NICE, 1.3 * Math.max(v.xp, v.xn)), { log: true });
       const X = x => BX0 + (x + span) / (2 * span) * (BX1 - BX0);
       const Eip = v.EFp < 0 ? -v.EFp : 0;                          // E_i − E_F on the p side (eV, > 0)
       const Ecp = Eip + v.Eg / 2, Emin = Ecp - v.Vj - v.Eg;         // energies relative to the p-side Fermi level
@@ -85,12 +85,12 @@
       p.dim(X(-v.xp), BY0 - 0.3, X(v.xn), BY0 - 0.3, '');
       p.place(`W = ${um(v.W)}`, [[(X(-v.xp) + X(v.xn)) / 2, BY0 - 0.55, 'center'], [X(v.xn) + 0.1, BY0 - 0.3, 'left'], [X(-v.xp) - 0.1, BY0 - 0.3, 'right']], { size: 0.2, color: C.text, key: 'wdim' });
       p.text(`x: ±${um(span)}, to scale`, BX0, BY0 - 0.82, { size: 0.17, color: C.muted });
-      const eb = [10, 5, 2, 1, 0.5, 0.2, 0.1].find(e => e * ey <= 0.7) || 0.1;                                    // energy scale bar
+      const eb = 1 / w.nice('eb', [0.1, 0.2, 0.5, 1, 2, 5, 10], ey / 0.7);                                    // energy scale bar
       p.line(BX1 - 0.05, BY0 - 0.92, BX1 - 0.05, BY0 - 0.92 + eb * ey, { color: C.text, width: 3 });
       p.text(`${fmt.num(eb, eb < 1 ? 1 : 0)} eV`, BX1 - 0.15, BY0 - 0.92 + eb * ey / 2, { size: 0.17, align: 'right', color: C.text });
 
       // ---------------------------------------------------------- electric field in the depletion region
-      const fmax = w.smooth('fmax', [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find(n => n >= v.Emax / 1000 * 1.15) || 10000, { log: true });
+      const fmax = w.smooth('fmax', w.nice('fmax', [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000], v.Emax / 1000 * 1.15), { log: true });
       const ax = p.axes({ x: 1.0, y: 0.55, w: 5.6, h: 2.15, xr: [-span, span], yr: [0, fmax], grid: true, size: 0.19, nticks: 4,
         xlabel: 'position x (µm)', ylabel: '|E| (kV/cm)', ylabelOffset: 0.75 }).draw();
       p.layer('field', () => {
@@ -114,22 +114,22 @@
       bx.place(`n_i = ${fmt.sci(v.ni, 2)}`, bx.around(v.T, v.ni, 0.15).concat(bx.around(v.T, v.ni, 0.4), bx.around(v.T, v.ni, 0.7), [[bx.x + 0.1, bx.y + bx.h * 0.45, 'left'], [bx.x + 0.1, bx.y + bx.h * 0.35, 'left']]), { color: C.yellow, size: 0.18, key: 'ni' });
     },
 
-    readout: v => {
-      const warn = (Math.max(v.NA, v.ND) > 1.4e18 ? '<tr><td colspan="2" class="warn">Doping above ~10¹⁸ cm⁻³: the Fermi level approaches the band edge; Boltzmann statistics and full ionisation become inaccurate.</td></tr>' : '')
-        + (-v.V > v.VB[0] ? '<tr><td colspan="2" class="warn">The reverse voltage exceeds the estimated avalanche breakdown voltage: a real junction would break down and conduct.</td></tr>' : '')
-        + (!v.valid ? '<tr><td colspan="2" class="warn">Forward bias close to V<sub>bi</sub>: the depletion approximation no longer holds (high injection).</td></tr>' : '');
-      return `<table>
-        <tr><td>intrinsic density n<sub>i</sub></td><td>${conc(v.ni)}</td></tr>
-        <tr><td>p side: holes / electrons</td><td>${fmt.sci(v.pp, 1)} / ${fmt.sci(v.np, 1)} cm⁻³</td></tr>
-        <tr><td>n side: electrons / holes</td><td>${fmt.sci(v.nn, 1)} / ${fmt.sci(v.pn, 1)} cm⁻³</td></tr>
-        <tr><td>E<sub>F</sub> − E<sub>i</sub>: p side / n side</td><td>${fmt.num(v.EFp, 3)} / ${fmt.num(v.EFn, 3)} eV</td></tr>
-        <tr><td>built-in voltage V<sub>bi</sub></td><td><b class="hl">${volt(v.Vbi)}</b></td></tr>
-        <tr><td>depletion width W (x<sub>p</sub> + x<sub>n</sub>)</td><td><b>${um(v.W)}</b> (${um(v.xp)} + ${um(v.xn)})</td></tr>
-        <tr><td>maximum field E<sub>max</sub></td><td>${fmt.sig(v.Emax / 1000, 3)} kV/cm</td></tr>
-        <tr><td>junction capacitance ε<sub>s</sub>/W</td><td>${fmt.sig(v.Cj * 1e9, 3)} nF/cm²</td></tr>
-        <tr><td>avalanche breakdown (one-sided, N<sub>B</sub> = ${fmt.sci(Math.min(v.NA, v.ND), 1)})</td><td>≈ ${fmt.sig(v.VB[0], 2)}–${fmt.sig(v.VB[1], 2)} V</td></tr>
-        ${warn}</table>`;
-    },
+    readout: v => MFW.chars([
+      ['intrinsic carrier density', 'n<sub>i</sub>', conc(v.ni)],
+      ['p side: holes', 'p<sub>p</sub>', `${fmt.sci(v.pp, 1)} cm⁻³`],
+      ['p side: electrons', 'n<sub>p</sub>', `${fmt.sci(v.np, 1)} cm⁻³`],
+      ['n side: electrons', 'n<sub>n</sub>', `${fmt.sci(v.nn, 1)} cm⁻³`],
+      ['n side: holes', 'p<sub>n</sub>', `${fmt.sci(v.pn, 1)} cm⁻³`],
+      ['Fermi level, p side', 'E<sub>F</sub> − E<sub>i</sub>', `${fmt.num(v.EFp, 3)} eV`],
+      ['Fermi level, n side', 'E<sub>F</sub> − E<sub>i</sub>', `${fmt.num(v.EFn, 3)} eV`],
+      ['built-in voltage', 'V<sub>bi</sub>', volt(v.Vbi), undefined, { hl: true }],
+      ['depletion width', 'W', um(v.W), undefined, { f: `x<sub>p</sub> + x<sub>n</sub> = ${um(v.xp)} + ${um(v.xn)}` }],
+      ['maximum field', 'E<sub>max</sub>', `${fmt.sig(v.Emax / 1000, 3)} kV/cm`],
+      ['junction capacitance', 'C<sub>j</sub>', `${fmt.sig(v.Cj * 1e9, 3)} nF/cm²`, undefined, { f: 'ε<sub>s</sub>/W' }],
+      ['avalanche breakdown, one-sided', 'V<sub>B</sub>', `≈ ${fmt.sig(v.VB[0], 2)}–${fmt.sig(v.VB[1], 2)} V`, undefined, { f: `N<sub>B</sub> = ${fmt.sci(Math.min(v.NA, v.ND), 1)} cm⁻³` }],
+      Math.max(v.NA, v.ND) > 1.4e18 && { warn: 'Doping above ~10¹⁸ cm⁻³: the Fermi level approaches the band edge; Boltzmann statistics and full ionisation become inaccurate.' },
+      -v.V > v.VB[0] && { warn: 'The reverse voltage exceeds the estimated avalanche breakdown voltage: a real junction would break down and conduct.' },
+      !v.valid && { warn: 'Forward bias close to V<sub>bi</sub>: the depletion approximation no longer holds (high injection).' }]),
 
     steps: [
       { name: 'Intrinsic silicon', caption: 'n_i ≈ 10¹⁰ cm⁻³ at room temperature – and very temperature-sensitive', set: { NA: 1e17, ND: 1e16, V: 0, T: 300 }, duration: 1,

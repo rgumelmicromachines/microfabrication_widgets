@@ -108,16 +108,16 @@
 
     readout: v => {
       const err = (v.naive - v.Rs) / v.Rs, curWarn = v.I > 3 * v.rec || v.I < v.rec / 3;
-      return `<table>
-        <tr><td>resistivity ρ (Thurber et al., 300 K)</td><td>${ohmcm(v.rho)}</td></tr>
-        <tr><td>sheet resistance R<sub>s</sub> = ρ/w</td><td><b class="hl">${ohmsq(v.Rs)}</b></td></tr>
-        <tr><td>measured voltage V at I = ${amps(v.I)}</td><td>${volts(v.V)}</td></tr>
-        <tr><td>correction C(d/s) · F(w/s)</td><td>${fmt.num(v.C, 3)} · ${fmt.num(v.F, 4)}</td></tr>
-        <tr><td>naive 4.532·V/I</td><td>${ohmsq(v.naive)} (${err >= 0 ? '+' : '−'}${fmt.sig(Math.abs(100 * err), 2)} %)</td></tr>
-        <tr><td>doping recovered from ρ</td><td>${conc(v.Nback)}</td></tr>
-        <tr><td>recommended current (ASTM F84-68T)</td><td>${amps(v.rec)}${curWarn ? ' – yours is far off' : ''}</td></tr>
-        <tr><td>van der Pauw: R<sub>A</sub> / R<sub>B</sub></td><td>${fmt.sig(v.RA, 3)} / ${fmt.sig(v.RB, 3)} Ω</td></tr>
-        <tr><td>… simple average π(R<sub>A</sub>+R<sub>B</sub>)/(2 ln 2)</td><td>${ohmsq(v.vdpNaive)} (+${fmt.sig(100 * (v.vdpNaive / v.Rs - 1), 2)} %)</td></tr></table>`;
+      return MFW.chars([
+        ['resistivity (Thurber et al., 300 K)', 'ρ', ohmcm(v.rho)],
+        ['sheet resistance', 'R<sub>s</sub>', ohmsq(v.Rs), undefined, { hl: true, f: 'ρ/w' }],
+        ['measured voltage', 'V', volts(v.V), undefined, { f: `at I = ${amps(v.I)}` }],
+        ['correction factors', 'C · F', `${fmt.num(v.C, 3)} · ${fmt.num(v.F, 4)}`, '', { f: 'C(d/s), F(w/s)' }],
+        ['naive estimate', '', ohmsq(v.naive), undefined, { f: '4.532·V/I', note: `${err >= 0 ? '+' : '−'}${fmt.sig(Math.abs(100 * err), 2)} %` }],
+        ['doping recovered from ρ', '', conc(v.Nback)],
+        ['recommended current (ASTM F84-68T)', '', amps(v.rec), undefined, { note: curWarn ? '<span class="warn">yours is far off</span>' : '' }],
+        ['van der Pauw resistances', 'R<sub>A</sub> / R<sub>B</sub>', `${fmt.sig(v.RA, 3)} / ${fmt.sig(v.RB, 3)} Ω`],
+        ['van der Pauw, simple average', '', ohmsq(v.vdpNaive), undefined, { f: 'π(R<sub>A</sub>+R<sub>B</sub>)/(2 ln 2)', note: `+${fmt.sig(100 * (v.vdpNaive / v.Rs - 1), 2)} %` }]]);
     },
 
     steps: [

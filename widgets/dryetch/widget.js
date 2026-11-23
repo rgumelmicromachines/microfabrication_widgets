@@ -112,13 +112,13 @@
           }
         }
       });
-      const sb = [100, 200, 500, 1000, 2000].find(s => s * k > 0.6) || 2000;
+      const sb = w.nice('sb', [100, 200, 500, 1000, 2000], 0.6 / k);
       p.line(sx1 - 0.15 - sb * k, sBot - 0.2, sx1 - 0.15, sBot - 0.2, { color: C.white, width: 3 });
       p.text(nmS(sb), sx1 - 0.25 - sb * k, sBot - 0.2, { size: 0.18, align: 'right', color: C.text });
       p.text('one feature, to scale', sx0, sBot - 0.2, { size: 0.18, color: C.muted });
 
       // ======================================================== end-point signal: reflected laser intensity
-      const tMax = Math.max(1.5 * v.tc, v.t * 1.05, 2);
+      const tMax = w.smooth('tmax', w.nice('tmax', null, Math.max(1.5 * v.tc, v.t * 1.05, 2)), { log: true });
       const a1 = p.axes({ x: 0.85, y: 0.75, w: 5.85, h: 2.15, xr: [0, tMax], yr: [0, 0.45], grid: true, size: 0.19, nticks: 5,
         yticks: [0, 0.2, 0.4], xlabel: '', ylabel: 'reflectance', ylabelOffset: 0.7 }).draw();
       p.text('etch time (min)', a1.x + a1.w, a1.y - 0.42, { size: 0.19, align: 'right', color: C.muted });
@@ -136,7 +136,7 @@
 
       // ======================================================== depth and undercut vs time
       const yMax = Math.max(v.hf * 1.15, v.hf + v.recess * 1.2, v.U * 1.2, 100);
-      const a2 = p.axes({ x: 0.85, y: -2.95, w: 5.85, h: 2.5, xr: [0, tMax], yr: [0, w.smooth('ymax', yMax, { log: true })], grid: true, size: 0.19, nticks: 5,
+      const a2 = p.axes({ x: 0.85, y: -2.95, w: 5.85, h: 2.5, xr: [0, tMax], yr: [0, w.smooth('ymax', w.nice('ymax', null, yMax), { log: true })], grid: true, size: 0.19, nticks: 5,
         xlabel: 'etch time (min)', ylabel: 'nm', ylabelOffset: 0.7 }).draw();
       const st = tt => DR.state({ ...v, t: tt });
       a2.hline(v.hf, { color: MAT.sio2.stroke, width: 1.5 });
@@ -153,18 +153,17 @@
       });
     },
 
-    readout: v => {
-      const warn = v.maskGone ? `<tr><td colspan="2" class="warn">The resist is used up before the end of the etch – the film under the mask is attacked.</td></tr>` : '';
-      return `<table>
-      <tr><td>anisotropy A = 1 − R<sub>l</sub>/R<sub>v</sub></td><td><b class="hl">${fmt.num(v.A, 2)}</b></td></tr>
-      <tr><td>end point t<sub>c</sub> = h<sub>f</sub>/R<sub>v</sub></td><td>${minS(v.tc)}</td></tr>
-      <tr><td>overetch</td><td>${v.over > 0 ? `${fmt.num(v.overPct, 0)} % (${minS(v.over)})` : '– (film not cleared yet)'}</td></tr>
-      <tr><td>undercut U per side</td><td>${nmS(v.U)}</td></tr>
-      <tr><td>bias B = d<sub>f</sub> − d<sub>m</sub> = 2U</td><td><b>${nmS(v.B)}</b> → opening ${nmS(v.cd)}</td></tr>
-      <tr><td>Si recess during overetch</td><td>${nmS(v.recess)}</td></tr>
-      <tr><td>resist left</td><td>${v.resist > 0 ? nmS(v.resist) : 'none'}</td></tr>
-      <tr><td>interference: one fringe per</td><td>${fmt.num(v.period, 0)} nm = ${minS(v.periodT)} (${fmt.num(v.fringes, 1)} fringes in total)</td></tr>${warn}</table>`;
-    },
+    readout: v => MFW.chars([
+      ['anisotropy', 'A', fmt.num(v.A, 2), '', { hl: true, f: '1 − R<sub>l</sub>/R<sub>v</sub>' }],
+      ['end point', 't<sub>c</sub>', minS(v.tc), undefined, { f: 'h<sub>f</sub>/R<sub>v</sub>' }],
+      ['overetch', '', v.over > 0 ? `${fmt.num(v.overPct, 0)} %` : '– (film not cleared yet)', undefined, { note: v.over > 0 ? minS(v.over) : '' }],
+      ['undercut per side', 'U', nmS(v.U)],
+      ['bias', 'B', nmS(v.B), undefined, { f: 'd<sub>f</sub> − d<sub>m</sub> = 2U' }],
+      ['opening in the film', 'd<sub>f</sub>', nmS(v.cd)],
+      ['Si recess during overetch', '', nmS(v.recess)],
+      ['resist left', '', v.resist > 0 ? nmS(v.resist) : 'none'],
+      ['film etched per interference fringe', '', `${fmt.num(v.period, 0)} nm`, undefined, { note: `${minS(v.periodT)} per fringe, ${fmt.num(v.fringes, 1)} fringes in total` }],
+      v.maskGone && { warn: 'The resist is used up before the end of the etch – the film under the mask is attacked.' }]),
 
     steps: [
       { name: 'Reactive ion etching', caption: 'Ions accelerated through the sheath + reactive radicals', set: { Rv: 100, Rl: 15, t: 0, hf: 1000, W: 2000, Ssi: 15, Sr: 4, hr: 1500 }, duration: 0.5,

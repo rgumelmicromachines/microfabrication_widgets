@@ -154,6 +154,8 @@ p, li { text-wrap: pretty; }
 
 /* ---------------------------------------------------------------- widget */
 .mfw { --u: 10px; color: var(--text); display: grid; gap: 18px 28px; align-items: start; }
+.mfw-figcol { min-width: 0; display: grid; gap: 22px; align-content: start; }
+.mfw-figcol:has(.is-full) { z-index: 70; }
 .mfw-stagewrap { min-width: 0; background: var(--bg); }
 .mfw-stage {
   position: relative; margin: 0 auto;
@@ -270,20 +272,30 @@ body.mfw-noscroll { overflow: hidden; }
 .mfw-check { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--text-2); }
 .mfw-check input { accent-color: var(--accent); width: 17px; height: 17px; }
 
-/* characteristics: the readout as a datasheet table */
+/* characteristics: the readout as a datasheet table (MFW.chars): Parameter · Symbol · Value · Unit */
 .mfw-chars:has(.mfw-readout:empty) { display: none; }
-.mfw-chars-h { margin: 0 0 4px; font-size: 15px; font-weight: 700; font-stretch: 85%; color: var(--text); display: flex; justify-content: space-between; }
-.mfw-chars-h span { font-weight: 600; color: var(--muted); font-size: 14px; }
-.mfw-readout { font-size: 15px; color: var(--text-2); line-height: 1.4; border-top: 2px solid var(--text); }
+.mfw-chars-h { margin: 0 0 4px; font-size: 15px; font-weight: 700; font-stretch: 85%; color: var(--text); }
+.mfw-readout { font-size: 15px; color: var(--text-2); line-height: 1.35; }
 .mfw-readout:empty { display: none; }
-.mfw-readout b { color: var(--text); font-weight: 650; }
-.mfw-readout .hl { color: var(--accent); font-weight: 700; }
-.mfw-readout .warn { color: var(--danger); }
-.mfw-readout table { border-collapse: collapse; width: 100%; border-bottom: 1px solid var(--text); }
+.mfw-readout table { border-collapse: collapse; width: 100%; border-top: 2px solid var(--text); border-bottom: 1px solid var(--text); }
+.mfw-readout th { padding: 4px 0; text-align: left; font-size: 13px; font-weight: 600; font-stretch: 82%; color: var(--muted); border-bottom: 1px solid var(--line-strong); }
 .mfw-readout td { padding: 5px 0; vertical-align: baseline; border-bottom: 1px solid var(--line); }
 .mfw-readout tr:last-child td { border-bottom: 0; }
-.mfw-readout td:first-child { padding-right: 12px; }
-.mfw-readout td:last-child { text-align: right; color: var(--text); }
+.mfw-readout th + th, .mfw-readout td + td { padding-left: 12px; }
+.mfw-readout .num { text-align: right; white-space: nowrap; color: var(--text); }
+.mfw-readout .num.txt { white-space: normal; color: var(--text-2); }
+.mfw-readout .unit { white-space: nowrap; color: var(--text-2); padding-left: 6px !important; }
+.mfw-readout .sym { white-space: nowrap; color: var(--text); }
+.mfw-readout .par { width: 100%; }
+.mfw-cf, .mfw-cnote { display: block; font-size: 13px; line-height: 1.3; color: var(--muted); white-space: normal; }
+.mfw-readout .hl { color: var(--accent); font-weight: 700; }
+.mfw-readout .warn { color: var(--danger); }
+.mfw-readout .mfw-crow-note td { font-size: 14px; color: var(--text-2); }
+/* under the figure there is room: comments run on after the unit, and the table keeps a readable width */
+.mfw-figcol .mfw-readout table { max-width: 780px; }
+.mfw-figcol .mfw-cnote { display: inline; margin-left: 0.6em; font-size: 14px; white-space: nowrap; }
+.mfw-readout .mfw-crow-note td.warn { color: var(--danger); }
+.mfw-readout b { font-weight: 650; color: var(--text); }
 .mfw-source { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
 .mfw-source summary { cursor: pointer; color: var(--link); }
 .mfw-source div { margin-top: 6px; }
@@ -292,7 +304,7 @@ body.mfw-noscroll { overflow: hidden; }
 @media (max-width: 1100px) { .brand-sub { display: none; } }
 @media (min-width: 1180px) {
   .mfw { grid-template-columns: minmax(0, 1fr) clamp(350px, 30vw, 600px); }
-  .mfw-stagewrap { position: sticky; top: 66px; }
+  .mfw-figcol.is-pinned { position: sticky; top: 66px; }
   .mfw-panel .mfw-params { grid-template-columns: 1fr; }
 }
 /* a wide panel takes the sliders in two columns */
@@ -301,7 +313,8 @@ body.mfw-noscroll { overflow: hidden; }
 }
 /* narrow screens: the figure stays in view while the panel scrolls under it */
 @media (max-width: 1179px) and (min-height: 560px) {
-  .mfw-stagewrap { position: sticky; top: 48px; z-index: 5; padding: 6px 0 8px; margin-top: -6px; border-bottom: 1px solid var(--line); }
+  .mfw-figcol { position: sticky; top: 48px; z-index: 5; }
+  .mfw-stagewrap { padding: 6px 0 8px; margin-top: -6px; border-bottom: 1px solid var(--line); }
   .mfw-stage { width: min(100%, calc(42vh * var(--mfw-aspect, 1.7778))); width: min(100%, calc(42svh * var(--mfw-aspect, 1.7778))); }
   .mfw-stagewrap.is-full { border-bottom: 0; margin-top: 0; }
 }

@@ -148,16 +148,14 @@
       p.text('position x', X0 + W / 2, -1.42, { size: 0.21, align: 'center', color: C.muted });
     },
 
-    readout: v => {
-      const rows = [`<tr><td>image contrast (I<sub>max</sub>−I<sub>min</sub>)/(I<sub>max</sub>+I<sub>min</sub>)</td><td><b class="hl">${fmt.num(v.contrast, 2)}</b></td></tr>`,
-        `<tr><td>result</td><td>${verdict(v)}</td></tr>`, `<tr><td>resist threshold E₀/E (1/dose)</td><td>${fmt.num(v.thr, 2)}</td></tr>`];
-      if (v.mode === 'projection') rows.push(
-        `<tr><td>k₁ = half-pitch·NA/λ</td><td>${fmt.num(v.k1, 2)}</td></tr>`,
-        `<tr><td>smallest half-pitch (cut-off)</td><td>${um(v.hpMin)}</td></tr>`,
-        `<tr><td>depth of focus ≈ ±λ/(2NA²)</td><td>±${um(v.dofv / 2)}</td></tr>`);
-      else rows.push(`<tr><td>b<sub>min</sub> = 1.5√(λ(s+d/2))</td><td>${um(v.bmin)}</td></tr>`);
-      return `<table>${rows.join('')}</table>`;
-    },
+    readout: v => MFW.chars([
+      ['image contrast', '', fmt.num(v.contrast, 2), '', { hl: true, f: '(I<sub>max</sub> − I<sub>min</sub>)/(I<sub>max</sub> + I<sub>min</sub>)' }],
+      ['result', '', verdict(v), ''],
+      ['resist threshold', 'E₀/E', fmt.num(v.thr, 2), '', { f: '1/dose' }],
+      v.mode === 'projection' && ['k₁ factor', 'k₁', fmt.num(v.k1, 2), '', { f: 'half-pitch·NA/λ' }],
+      v.mode === 'projection' && ['smallest half-pitch (cut-off)', '', um(v.hpMin)],
+      v.mode === 'projection' && ['depth of focus', 'DOF', `±${um(v.dofv / 2)}`, undefined, { f: '≈ ±λ/(2NA²)' }],
+      v.mode !== 'projection' && ['smallest resolvable feature', 'b<sub>min</sub>', um(v.bmin), undefined, { f: '1.5√(λ(s + d/2))' }]]),
 
     steps: [
       { name: 'Contact printing', caption: 'Mask in contact with the resist: a near-perfect shadow', set: { mode: 'proximity', lam: 'i', hp: 2, gap: 0, resist: 1.4, coll: 2, dose: 2.5 }, duration: 1,

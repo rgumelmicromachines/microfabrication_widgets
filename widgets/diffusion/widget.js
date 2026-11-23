@@ -21,10 +21,10 @@
     const xj1 = DF.crossing(prof1, v.NB, 2 * Math.sqrt(Dt1) * 6 + 0.01);
     const xj2 = DF.crossing(prof2, v.NB, 2 * Math.sqrt(Dt1 + Dt2) * 6 + 0.01);
     const need = Math.max(xj2 * 1.45, 0.2);
-    const xmax = NICE.find(n => n >= need) || 20;
-    const xs = M.linspace(0, xmax, 241);
+    const iN = NICE.findIndex(n => n >= need), xmax = iN < 0 ? 20 : NICE[iN];
+    const xs = M.linspace(0, NICE[Math.min(iN < 0 ? NICE.length - 1 : iN + 1, NICE.length - 1)], 361);   // one step beyond: the held range is covered
     const carrier = v.dop === 'B' ? 'p' : 'n';
-    memo = { D1, D2, Dt1, Dt2, Cs, Q, xj1, xj2, xmax, xs, c1: xs.map(prof1), c2: xs.map(prof2), cg: Dt2 > 0 ? xs.map(x => DF.gaussian(x, Q, Dt2)) : null,
+    memo = { D1, D2, Dt1, Dt2, Cs, Q, xj1, xj2, xmax, need, xs, c1: xs.map(prof1), c2: xs.map(prof2), cg: Dt2 > 0 ? xs.map(x => DF.gaussian(x, Q, Dt2)) : null,
       Cs2: prof2(0), Rs1: DF.sheetResistance(prof1, v.NB, xj1, carrier), Rs2: DF.sheetResistance(prof2, v.NB, xj2, carrier),
       ni1: DF.ni(v.T1), ratio: Dt2 / Dt1 };
     memoKey = key;
@@ -62,7 +62,8 @@
       const dopCol = pType ? C.red : C.blue, subMat = pType ? 'ndoped' : 'pdoped', difMat = pType ? 'pdoped' : 'ndoped';
 
       // ---------------------------------------------------------- cross-section through a mask window (to scale)
-      const xmax = w.smooth('xmax', v.xmax, { log: true });                                    // depth range glides, never jumps
+      const xmaxT = w.nice('xmax', NICE, v.need);                                              // no flip-flop at a step boundary
+      const xmax = w.smooth('xmax', xmaxT, { log: true });                                     // depth range glides, never jumps
       const X0 = -6.7, X1 = -1.7, Ytop = 1.9, Ybot = -2.7, k = (Ytop - Ybot) / xmax;           // units per µm
       const wL = -5.0, wR = -3.4;                                                             // window edges
       p.material('si', X0, Ybot, X1, Ytop);
@@ -93,7 +94,7 @@
         p.text(pType ? 'n-type substrate' : 'p-type substrate', X1 - 0.1, Ybot + 0.25, { size: 0.22, align: 'right', color: C.text });
       });
       // depth scale bar
-      const sb = v.xmax / 4;                                                                   // label for the target range
+      const sb = xmaxT / 4;                                                                   // label for the target range
       p.line(X0 - 0.15, Ytop, X0 - 0.15, Ytop - sb * k, { color: C.text, width: 3 });
       p.text(um(sb), X0 - 0.22, Ytop - sb * k / 2, { size: 0.19, align: 'right', color: C.text, rotate: 90 });
       p.text('depth and lateral spread to scale, window width schematic', (X0 + X1) / 2, Ybot - 0.25, { size: 0.21, align: 'center', color: C.muted });
@@ -126,18 +127,17 @@
       });
     },
 
-    readout: v => {
-      const warn = v.Cs > v.ni1 ? `<tr><td colspan="2" class="warn">C<sub>s</sub> &gt; n<sub>i</sub>(T₁) = ${fmt.sci(v.ni1, 1)} cm⁻³: real diffusion is faster and concentration-dependent.</td></tr>` : '';
-      return `<table>
-        <tr><td>D(T₁) / D(T₂)</td><td>${fmt.sci(v.D1, 2)} / ${fmt.sci(v.D2, 2)} cm²/s</td></tr>
-        <tr><td>√(D₁t₁) / √(D₂t₂)</td><td>${um(Math.sqrt(v.Dt1))} / ${v.Dt2 > 0 ? um(Math.sqrt(v.Dt2)) : '–'}</td></tr>
-        <tr><td>surface concentration C<sub>s</sub> (predep)</td><td>${conc(v.Cs)}</td></tr>
-        <tr><td>dose Q</td><td>${fmt.sci(v.Q, 2)} cm⁻²</td></tr>
-        <tr><td>surface conc. after drive-in</td><td>${conc(v.Cs2)}</td></tr>
-        <tr><td>junction depth x<sub>j</sub></td><td><b class="hl">${um(v.xj2)}</b></td></tr>
-        <tr><td>sheet resistance R<sub>s</sub></td><td><b>${fmt.sig(v.Rs2, 3)} Ω/□</b></td></tr>
-        ${warn}</table>`;
-    },
+    readout: v => MFW.chars([
+      ['diffusivity at T₁', 'D(T₁)', `${fmt.sci(v.D1, 2)} cm²/s`],
+      ['diffusivity at T₂', 'D(T₂)', `${fmt.sci(v.D2, 2)} cm²/s`],
+      ['diffusion length, predeposition', '√(D₁t₁)', um(Math.sqrt(v.Dt1))],
+      ['diffusion length, drive-in', '√(D₂t₂)', v.Dt2 > 0 ? um(Math.sqrt(v.Dt2)) : '–'],
+      ['surface concentration, predeposition', 'C<sub>s</sub>', conc(v.Cs)],
+      ['dose', 'Q', `${fmt.sci(v.Q, 2)} cm⁻²`],
+      ['surface concentration after drive-in', '', conc(v.Cs2)],
+      ['junction depth', 'x<sub>j</sub>', um(v.xj2), undefined, { hl: true }],
+      ['sheet resistance', 'R<sub>s</sub>', `${fmt.sig(v.Rs2, 3)} Ω/□`],
+      v.Cs > v.ni1 && { warn: `C<sub>s</sub> &gt; n<sub>i</sub>(T₁) = ${fmt.sci(v.ni1, 1)} cm⁻³: real diffusion is faster and concentration-dependent.` }]),
 
     steps: [
       { name: 'Predeposition', caption: 'Constant surface concentration → erfc profile', set: { T1: 950, t1: 30, csMode: 'sol', t2: 0, T2: 1100 }, duration: 1.5,

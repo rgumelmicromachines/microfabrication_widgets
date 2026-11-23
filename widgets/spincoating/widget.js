@@ -230,7 +230,7 @@
       // horizontal: from the wafer centre (left) to the edge (right), not to scale; vertical: thickness to scale
       const SX0 = Lx0 + 0.15, SXe = Lx1 - 0.75, SYb = -3.5, SYs = -3.0, SYt = -1.5;
       p.text('radial cross-section, centre → edge: thickness to scale', SX0, -1.34, { size: 0.19, color: C.greyA });
-      const span = w.smooth('fspan', [1, 1.5, 2, 3, 5, 7.5, 10, 15, 20, 30, 50].find(x => x >= 2.6 * v.t) || 50, { log: true });   // µm over the box height
+      const span = w.smooth('fspan', w.nice('fspan', [1, 1.5, 2, 3, 5, 7.5, 10, 15, 20, 30, 50], 2.6 * v.t), { log: true });   // µm over the box height
       const kf = (SYt - SYs) / span;                                       // scene units per µm
       const Xr = r => SX0 + r * (SXe - SX0);
       p.material('si', SX0, SYb, SXe, SYs, { stroke: null });
@@ -264,7 +264,7 @@
       // is still sweeping through the label
       if (vol <= 0 || rEnd >= 0.8)
         p.text(`dry film t = ${um(v.t)}`, xd + 0.12, SYs + 0.4 * v.t * kf, { size: 0.18, color: C.yellow, bold: true });
-      const sb = [0.5, 1, 2, 5, 10, 20].find(x => x * kf >= 0.35) || 20;
+      const sb = w.nice('sb', [0.5, 1, 2, 5, 10, 20], 0.35 / kf);
       p.line(SXe + 0.45, SYs, SXe + 0.45, SYs + sb * kf, { color: C.white, width: 3 });
       p.text(um(sb), SXe + 0.55, SYs + sb * kf / 2, { size: 0.17, color: C.text });
       p.text('liquid film schematic · dry film to scale', SX0, SYb - 0.2, { size: 0.17, color: C.muted });
@@ -275,7 +275,7 @@
       });
 
       // ======================================================== recipe: spin speed vs process time
-      const a1 = p.axes({ x: 1.0, y: 0.55, w: 5.7, h: 1.95, xr: [0, T.end], yr: [0, 9000], grid: true, size: 0.19, nticks: 5,
+      const a1 = p.axes({ x: 1.0, y: 0.55, w: 5.7, h: 1.95, xr: [0, w.smooth('rend', w.nice('rend', null, T.end), { log: true })], yr: [0, 9000], grid: true, size: 0.19, nticks: 5,
         yticks: [0, 4000, 8000], yfmt: y => (y ? `${y / 1000}k` : '0'), xlabel: '', ylabel: 'rpm', ylabelOffset: 0.6 }).draw();
       p.text('process time (s)', a1.x + a1.w, a1.y - 0.42, { size: 0.19, align: 'right', color: C.muted });
       a1.curve(R.pts.map(q => q[0]), R.pts.map(q => q[1]), { color: C.blue, width: 3 });
@@ -284,7 +284,7 @@
       p.text('spin recipe', a1.x + 0.1, a1.y + a1.h + 0.18, { size: 0.2, color: C.greyA });
 
       // ======================================================== spin curve t(rpm)
-      const ymax = w.smooth('ymax', [2, 3, 4, 5, 6, 8, 10, 12, 15].find(y => y >= S.thickness(1000, v.p, 100) * 1.05) || 15, { log: true });
+      const ymax = w.smooth('ymax', w.nice('ymax', [2, 3, 4, 5, 6, 8, 10, 12, 15], S.thickness(1000, v.p, 100) * 1.05), { log: true });
       const ax = p.axes({ x: 1.0, y: -2.9, w: 5.7, h: 2.55, xr: [1000, 8000], yr: [0, ymax], grid: true, size: 0.19, nticks: 7,
         xfmt: x => String(Math.round(x)), xlabel: 'final spin speed (rpm)', ylabel: 'thickness t (µm)', ylabelOffset: 0.7 }).draw();
       p.layer('window', () => {
@@ -312,14 +312,14 @@
       if (Rr.hasSpread) parts.push(`${rpmS(v.spreadRpm)} ${secS(v.spreadTime)}`);
       parts.push(`<b>${rpmS(v.rpm)} ${secS(v.spinTime)}</b>`);
       if (v.ebr) parts.push(`EBR ${rpmS(v.ebrRpm)} ${secS(v.ebrTime)}`, `dry ${rpmS(v.dryRpm)} ${secS(v.dryTime)}`);
-      const warn = Rr.warn ? `<tr><td colspan="2" class="warn">EBR or spin-dry speed is not below the coating speed. A film that has already set hardly thins any more, but one that is still wet would (not modelled).</td></tr>` : '';
-      return `<table>
-      <tr><td colspan="2">recipe: ${parts.join(' → ')} · total ${secS(Math.round(Rr.T.stop))}</td></tr>${warn}
-      <tr><td>final thickness t = k·p²/√w</td><td><b class="hl">${um(v.t)}</b> (${fmt.num(v.tA, 0)} Å)</td></tr>
-      <tr><td>range for k = 80 … 100</td><td>${um(v.tLo)} … ${um(v.tHi)}</td></tr>
-      <tr><td>after soft bake (illustrative −25 %)</td><td>${um(v.tBaked)}</td></tr>
-      <tr><td>at double the speed</td><td>${um(v.t / Math.SQRT2)} (÷ √2)</td></tr>
-      <tr><td>edge bead, typically</td><td>≈ ${um(v.bead)} above the film${v.ebr ? ' (removed by EBR)' : ''}</td></tr></table>`;
+      return MFW.chars([
+        { text: `Recipe: ${parts.join(' → ')} · total ${secS(Math.round(Rr.T.stop))}` },
+        Rr.warn && { warn: 'EBR or spin-dry speed is not below the coating speed. A film that has already set hardly thins any more, but one that is still wet would (not modelled).' },
+        ['final thickness', 't', um(v.t), undefined, { hl: true, f: 'k·p²/√w', note: `${fmt.num(v.tA, 0)} Å` }],
+        ['range for k = 80 … 100', '', `${um(v.tLo)} … ${um(v.tHi)}`, ''],
+        ['after soft bake (illustrative −25 %)', '', um(v.tBaked)],
+        ['at double the speed', '', um(v.t / Math.SQRT2), undefined, { note: '÷ √2' }],
+        ['edge bead, typically', '', `≈ ${um(v.bead)}`, undefined, { note: v.ebr ? 'above the film; removed by EBR' : 'above the film' }]]);
     },
 
     steps: [

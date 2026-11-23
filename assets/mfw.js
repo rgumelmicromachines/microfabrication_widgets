@@ -781,7 +781,7 @@
     if (!isBrowser) return 'dark';
     const t = document.documentElement.getAttribute('data-theme');
     if (t === 'light' || t === 'dark') return t;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return 'light';                                            // default until the reader picks a theme
   }
   function applyPalette(theme) {
     Object.assign(C, theme === 'light' ? LIGHT : DARK);
@@ -920,11 +920,6 @@
       renderMath(document);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
-    if (window.matchMedia) {
-      const mq = window.matchMedia('(prefers-color-scheme: light)');
-      const onChange = () => { if (!store.get('mfw-theme')) setTheme(mq.matches ? 'light' : 'dark', false); };
-      if (mq.addEventListener) mq.addEventListener('change', onChange);
-    }
   }
 
   // ---------------------------------------------------------------- KaTeX

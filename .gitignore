@@ -8,3 +8,5 @@ __pycache__/
 *.log
 .DS_Store
 Thumbs.db
+# design tooling (impeccable critique snapshots, live server)
+.impeccable/

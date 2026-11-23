@@ -8,6 +8,7 @@
     const w = [...MFW.instances][0];
     if (w.hasTour) w.setMode('explore');
     await frame();
+    await new Promise(r => setTimeout(r, 350));          // let the caption cross-fade of the mode switch finish
     let slow = 0;
     const draw0 = w._draw.bind(w);
     w._draw = function () { const t = performance.now(); draw0(); slow = Math.max(slow, performance.now() - t); };

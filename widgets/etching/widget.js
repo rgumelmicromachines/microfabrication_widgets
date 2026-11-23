@@ -104,8 +104,10 @@
         if (v.kind === 'aniso' && v.depth * k > 0.5) {
           const x0 = sx(-v.top), y0 = ys, dk = v.depth * k, run = dk / Math.tan(E.ANGLE);
           p.arc(x0, y0, 0.7, -54.74, 0, { color: C.yellow, width: 2.5 });
-          p.place('54.74°', [[x0 + 0.8, y0 - 0.3, 'left'], [x0 + 0.8, y0 - 0.58, 'left'], [x0 + 0.45, y0 - 0.95, 'left'], [x0 - 0.15, y0 - 0.3, 'right'], [x0 + 1.1, y0 - 0.95, 'left']], { size: 0.22, color: C.yellow, within: view, key: 'ang' });
-          p.place('{111} sidewall', [0.5, 0.38, 0.62, 0.75, 0.25].map(f => [x0 + run * f - 0.17, y0 - dk * f, 'right']),
+          p.place('54.74°', [[x0 + 0.8, y0 - 0.3, 'left'], [x0 + 0.8, y0 - 0.58, 'left'], [x0 + 0.45, y0 - 0.95, 'left'], [x0 - 0.15, y0 - 0.3, 'right'], [x0 + 1.1, y0 - 0.95, 'left'],
+            [x0 - 0.15, y0 - 0.62, 'right'], [x0 + 0.8, y0 - 1.25, 'left'], [x0 - 0.15, y0 - 0.95, 'right']], { size: 0.22, color: C.yellow, within: view, key: 'ang' });
+          p.place('{111} sidewall', [0.5, 0.38, 0.62, 0.75, 0.25].map(f => [x0 + run * f - 0.17, y0 - dk * f, 'right'])
+            .concat([0.62, 0.75, 0.88].map(f => [x0 + run * f + 0.2, y0 - dk * f, 'left']), [0.88, 0.95].map(f => [x0 + run * f - 0.17, y0 - dk * f, 'right'])),
             { size: 0.2, color: C.yellow, bg: true, within: view, key: 'wall' });
         }
       });

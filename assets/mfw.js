@@ -24,16 +24,17 @@
   const VERSION = '2.1.0';
   const config = {
     katexBase: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/',
-    font: '"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif',
+    font: '"Archivo", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif',
     frameWidth: 14.2222,                    // frame width in scene units (height follows the aspect ratio)
+    feedbackUrl: 'https://github.com/rgumelmicromachines/microfabrication_widgets/issues/new',   // suggestions and error reports
   };
 
   // ================================================================ palettes
-  // Dark = Manim CE constants (the original look). Light = same roles, re-tuned for a pale background
+  // Dark = Manim CE constants on a blue-black stage. Light = same roles, re-tuned for a white background
   // (dark-on-light, every line colour >= 3:1 against the light stage). Keys are roles, not hues:
   // 'white' means "strongest foreground", greyD/greyE mean "faint fills".
   const DARK = {
-    bg: '#000000', text: '#DDDDDD', white: '#FFFFFF', muted: '#8C8C8C', axis: '#6A6A6A', grid: '#262626',
+    bg: '#0B0E12', text: '#DDDDDD', white: '#FFFFFF', muted: '#8C8C8C', axis: '#6A6A6A', grid: '#1F252D',
     blueA: '#C7E9F1', blueB: '#9CDCEB', blue: '#58C4DD', blueD: '#29ABCA', blueE: '#236B8E',
     tealA: '#ACEAD7', tealB: '#76DDC0', teal: '#5CD0B3', tealD: '#55C1A7', tealE: '#49A88F',
     greenA: '#C9E2AE', greenB: '#A6CF8C', green: '#83C167', greenD: '#77B05D', greenE: '#699C52',
@@ -46,7 +47,7 @@
     pink: '#D147BD', lightPink: '#DC75CD', orange: '#FF862F', lightBrown: '#CD853F', darkBrown: '#8B4513',
   };
   const LIGHT = {
-    bg: '#FBFAF7', text: '#222226', white: '#000000', muted: '#66666B', axis: '#8E8E93', grid: '#E7E5DF',
+    bg: '#FFFFFF', text: '#1D2228', white: '#000000', muted: '#5F6670', axis: '#8C949D', grid: '#E3E7EB',
     blueA: '#0B3954', blueB: '#0A4F75', blue: '#0072B2', blueD: '#2E8BC0', blueE: '#8CC3E0',
     tealA: '#0B4D3E', tealB: '#0A6551', teal: '#00846A', tealD: '#2A9C84', tealE: '#8FD0C0',
     greenA: '#24501A', greenB: '#2F6B22', green: '#3B8526', greenD: '#5C9E48', greenE: '#A9D19A',
@@ -55,7 +56,7 @@
     redA: '#6B1A14', redB: '#8F2219', red: '#C2372B', redD: '#D45549', redE: '#F0A69F',
     maroonA: '#4F1426', maroonB: '#6E1E37', maroon: '#99335C', maroonD: '#B15274', maroonE: '#E4A9BD',
     purpleA: '#3A1F57', purpleB: '#512B78', purple: '#7446A0', purpleD: '#8E66B5', purpleE: '#CDB8E2',
-    greyA: '#2E2E33', greyB: '#4C4C52', grey: '#808086', greyD: '#C9C8C3', greyE: '#ECEBE6',
+    greyA: '#2C3036', greyB: '#4A5058', grey: '#7F8690', greyD: '#C7CCD2', greyE: '#EBEEF1',
     pink: '#B02F9C', lightPink: '#C65AB4', orange: '#D55E00', lightBrown: '#9A5A1C', darkBrown: '#6B3410',
   };
   const C = { ...DARK };
@@ -763,7 +764,8 @@
   // ================================================================ browser part
   const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
   const STRINGS = {
-    play: '▶ Play', pause: '❚❚ Pause', prev: '‹ Back', next: 'Next ›', steps: 'Steps of the explanation',
+    play: 'Play', pause: 'Pause', prev: 'Back', next: 'Next', steps: 'All steps', chars: 'Characteristics',
+    full: 'Enlarge figure', exitFull: 'Close',
     tour: 'Guided tour', explore: 'Explore', speed: 'Speed',
     free: 'Explore mode – every slider is yours. Change parameters and watch what happens.',
     locked: 'set by the tour', lockedHint: 'Sliders marked “set by the tour” follow the current step. Switch to <b>Explore</b> to set them yourself.',
@@ -796,13 +798,21 @@
     widgets.forEach(w => w._themeChanged());
     document.querySelectorAll('[data-mfw-theme-toggle]').forEach(updateToggle);
   }
+  /** Small line icons (no glyph or emoji icons). */
+  const ICON = {
+    sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>',
+    moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>',
+    left: '<path d="M14.5 6l-6 6 6 6"/>', right: '<path d="M9.5 6l6 6-6 6"/>', down: '<path d="M6 9.5l6 6 6-6"/>',
+    play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>', pause: '<path d="M8 5.5v13M16 5.5v13" stroke-width="3"/>',
+    full: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', exit: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
+    lock: '<rect x="5.5" y="11" width="13" height="9"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>',
+  };
+  const icon = n => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
   function updateToggle(btn) {
     const t = currentTheme();
     btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     btn.setAttribute('title', btn.getAttribute('aria-label'));
-    btn.innerHTML = t === 'dark'
-      ? '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg><span>Light</span>'
-      : '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Dark</span>';
+    btn.innerHTML = icon(t === 'dark' ? 'sun' : 'moon') + `<span>${t === 'dark' ? 'Light' : 'Dark'}</span>`;
   }
   // ---------------------------------------------------------------- lesson navigation
   /** Modules of the course, in the order of a process flow, and the pages in each. Pages are numbered
@@ -833,21 +843,11 @@
   const PAGES = [];
   MODULES.forEach((m, i) => { m.no = i + 1; m.pages.forEach((p, j) => { p.topic = m.title; p.module = m; p.no = `${m.no}.${j + 1}`; PAGES.push(p); }); });
   const escH = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  /** Lesson menu in the header and previous / next links under the widget – inserted automatically on every page. */
+  /** Lesson menu in the header, previous / next links under the widget and the page footer – inserted on every page. */
   function buildNav() {
     const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (parent) parent.appendChild(e); return e; };
     const header = document.querySelector('.site-header');
     if (!header || header.querySelector('.lesson-menu')) return;
-    // work-in-progress note above the header and a suggestion link next to the theme toggle
-    const wip = el('div', 'wip-banner');
-    wip.innerHTML = '<strong>Work in progress</strong> – simulations and texts are still being added and checked.';
-    header.parentNode.insertBefore(wip, header);
-    const sug = el('a', 'suggest-link');
-    sug.href = 'https://github.com/rgumelmicromachines/microfabrication_widgets/issues/new';
-    sug.target = '_blank'; sug.rel = 'noopener';
-    sug.innerHTML = '<span class="suggest-long">Missing content? </span>Add a suggestion';
-    const tgl = header.querySelector('[data-mfw-theme-toggle]');
-    header.insertBefore(sug, tgl || null);
     const m = location.pathname.replace(/\\/g, '/').match(/\/widgets\/([^/]+)\/(?:index\.html)?$/);
     const slug = m ? m[1] : null, root = m ? '../../' : '';
     const href = p => `${root}widgets/${p.slug}/index.html`;
@@ -856,15 +856,15 @@
     const menu = el('div', 'lesson-menu');
     const btn = el('button', 'lesson-btn', menu);
     btn.type = 'button'; btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-haspopup', 'true');
-    btn.innerHTML = cur ? `<span class="lesson-no">${cur.no}</span><span class="lesson-cur">${escH(cur.title)}</span><span class="lesson-chev" aria-hidden="true">▾</span>`
-      : '<span class="lesson-cur">Lessons</span><span class="lesson-chev" aria-hidden="true">▾</span>';
-    btn.setAttribute('aria-label', cur ? `Lesson: ${cur.title}. Switch lesson` : 'Switch lesson');
+    btn.innerHTML = (cur ? `<span class="lesson-no">${cur.no}</span><span class="lesson-cur">${escH(cur.title)}</span>` : '<span class="lesson-cur">Lessons</span>')
+      + `<span class="lesson-chev">${icon('down')}</span>`;
+    btn.setAttribute('aria-label', cur ? `Lesson ${cur.no}: ${cur.title}. Switch lesson` : 'Switch lesson');
     const pop = el('div', 'lesson-pop', menu);
     pop.hidden = true;
     pop.innerHTML = MODULES.map(md => `<div class="lesson-group" role="presentation"><span>${md.no}</span>${escH(md.title)}</div>`
       + md.pages.map(p => `<a href="${href(p)}"${p === cur ? ' aria-current="page"' : ''}><span class="lesson-no">${p.no}</span>`
         + `<span class="lesson-txt">${escH(p.title)}</span></a>`).join('')).join('')
-      + `<a class="lesson-all" href="${root}index.html">All simulations</a>`;
+      + `<a class="lesson-all" href="${root}index.html">Contents – all lessons</a>`;
     const close = () => { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
     btn.addEventListener('click', e => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); if (!pop.hidden) (pop.querySelector('[aria-current]') || pop.querySelector('a')).focus(); });
     document.addEventListener('click', e => { if (!menu.contains(e.target)) close(); });
@@ -874,32 +874,46 @@
       else if (!pop.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); links[(i + (e.key === 'ArrowDown' ? 1 : links.length - 1)) % links.length].focus(); }
     });
     const crumb = header.querySelector('.crumb');
-    if (crumb && cur) crumb.replaceWith(menu); else header.insertBefore(menu, header.querySelector('.header-spacer'));
+    if (crumb) crumb.replaceWith(menu); else header.insertBefore(menu, header.querySelector('.header-spacer'));
     // previous / next under the widget
     const app = document.getElementById('app');
     if (cur && app) {
       const nav = el('nav', 'lesson-pager');
       nav.setAttribute('aria-label', 'Previous and next lesson');
       const prev = PAGES[idx - 1], next = PAGES[idx + 1];
-      const link = (p, dir) => (p ? `<a class="pager-${dir}" href="${href(p)}"><small>${dir === 'prev' ? '← Previous' : 'Next →'} · ${escH(p.topic)}</small><span>${escH(p.title)}</span></a>`
-        : `<a class="pager-${dir} pager-hub" href="${root}index.html"><small>${dir === 'prev' ? '←' : '→'} Overview</small><span>All simulations</span></a>`);
+      const link = (p, dir) => (p ? `<a class="pager-${dir}" href="${href(p)}"><small>${dir === 'prev' ? 'Previous' : 'Next'} · ${p.no} ${escH(p.topic)}</small><span>${escH(p.title)}</span></a>`
+        : `<a class="pager-${dir} pager-hub" href="${root}index.html"><small>${dir === 'prev' ? 'Previous' : 'Next'}</small><span>Contents</span></a>`);
       nav.innerHTML = link(prev, 'prev') + link(next, 'next');
       app.insertAdjacentElement('afterend', nav);
     }
-    // overview page: sort the tiles into one section per module, numbered like the menu
+    // footer: work-in-progress note and the suggestion link (lesson pages get one, the overview has its own)
+    let foot = document.querySelector('.footer');
+    if (!foot) {
+      foot = el('footer', 'footer', document.querySelector('main') || document.body);
+      foot.innerHTML = '<p>Work in progress: lessons are still being added and checked. Every model cites its sources and states its limitations.</p>';
+    }
+    if (!foot.querySelector('.suggest-link')) {
+      const sug = el('a', 'suggest-link', foot);
+      sug.href = config.feedbackUrl; sug.target = '_blank'; sug.rel = 'noopener';
+      sug.textContent = 'Suggest a topic or report an error';
+    }
+    // overview page: sort the entries into one section per module, numbered like the menu
+    const count = document.querySelector('.contents-count');
+    if (count) count.textContent = `${PAGES.length} lessons in ${MODULES.length} modules`;
     const grid = !cur && document.querySelector('.grid');
     if (grid) {
       const tiles = new Map([...grid.querySelectorAll('a.tile')].map(t => [(t.getAttribute('href') || '').replace(/\/index\.html$/, '').split('/').pop(), t]));
       const frag = document.createDocumentFragment();
       MODULES.forEach(md => {
         const sec = el('section', 'module', frag);
-        sec.innerHTML = `<h3 class="module-title"><span class="module-no">${md.no}</span>${escH(md.title)}</h3>`;
+        sec.setAttribute('aria-labelledby', 'module-' + md.id);
+        sec.innerHTML = `<h3 class="module-title" id="module-${md.id}"><span class="module-no">Module ${md.no}</span>${escH(md.title)}</h3>`;
         const g = el('div', 'grid', sec);
         md.pages.forEach(p => {
           const t = tiles.get(p.slug);
           if (!t) return;
-          const meta = t.querySelector('.tile-meta span');
-          if (meta) meta.textContent = `${p.no} · ${md.title}`;
+          const no = t.querySelector('.tile-no');
+          if (no) no.textContent = p.no;
           g.appendChild(t);
         });
       });
@@ -1027,10 +1041,11 @@
       if ((cfg.tex || []).length && cfg.katex !== false) ensureKaTeX(() => this._renderTexAll());
       if (document.fonts) {
         if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { this.dirty = true; });
-        if (document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; });
+        if (document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; if (this.readoutEl) { this.readoutEl._mfwH = 0; this.readoutEl.style.minHeight = ''; } this._primeReadout(); });
       }
       this._keys();
       this._applyMode();
+      this._primeReadout();
       if (this.hasTour && cfg.startStep !== false) this.goStep(cfg.startStep || 0, { instant: true });
       else this._setExplain(resolveText(cfg.freeText || cfg.intro || this.S.free, this.values));
       widgets.add(this);
@@ -1059,6 +1074,7 @@
     /** Set the caption under the stage. fade = true only when the step changes; live value updates replace the text in place. */
     caption(text, fade = false) {
       const c = this.captionEl;
+      text = text || this.cfg.title || '';                             // no step caption: the figure's title
       if (this._cap === text) return;
       const first = this._cap === undefined;
       this._cap = text;
@@ -1105,7 +1121,7 @@
       const steps = this.cfg.steps || [];
       if (!steps.length) return;
       const token = ++this.playToken;
-      this.playing = true; this.playBtn.textContent = this.S.pause; this.playBtn.setAttribute('aria-pressed', 'true');
+      this.playing = true; this._playLabel();
       let i = this.step >= 0 && this.step < steps.length - 1 ? this.step + 1 : 0;
       if (this.step === steps.length - 1 || this.step < 0) { await this.goStep(0); i = 1; if (token !== this.playToken) return; await this._hold(steps[0], token); }
       for (; i < steps.length; i++) {
@@ -1134,7 +1150,7 @@
       this.playToken++; this.playing = false;
       if (this._holdCancel) { this._holdCancel(); this._holdCancel = null; }
       if (this.holdBar) { this.holdBar.style.transition = 'none'; this.holdBar.style.width = '0%'; }
-      if (this.playBtn) { this.playBtn.textContent = this.S.play; this.playBtn.setAttribute('aria-pressed', 'false'); }
+      this._playLabel();
     }
     setMode(mode) {
       if (mode === this.mode || !this.hasTour) return;
@@ -1163,8 +1179,25 @@
       this.canvas.setAttribute('role', 'img');
       this.canvas.setAttribute('aria-label', (typeof cfg.alt === 'string' && cfg.alt) || cfg.title || 'interactive illustration');
       this.ctx = this.canvas.getContext('2d');
-      this.captionEl = el('div', 'mfw-caption', this.stageWrap);
-      this.captionEl.setAttribute('aria-live', 'polite');
+      // figure caption "Fig. 3.2 …" below the plate, with the full-screen switch
+      const bar = el('div', 'mfw-figbar', this.stageWrap);
+      const cap = el('div', 'mfw-caption', bar);
+      const path = location.pathname.replace(/\\/g, '/');
+      const page = PAGES.find(p => path.includes(`/widgets/${p.slug}/`));
+      if (page) el('span', 'mfw-figno', cap, `Fig. ${page.no}`);
+      this.captionEl = el('span', 'mfw-captext', cap);
+      cap.setAttribute('aria-live', 'polite');
+      if (this.hasTour) {
+        for (const d of ['prev', 'next']) {
+          const b = el('button', 'mfw-nav mfw-fsnav', bar);
+          b.type = 'button'; b.innerHTML = d === 'prev' ? icon('left') + this.S.prev : this.S.next + icon('right');
+          b.addEventListener('click', () => (d === 'prev' ? this.prev() : this.next()));
+        }
+      }
+      this.fullBtn = el('button', 'mfw-full', bar);
+      this.fullBtn.type = 'button';
+      this.fullBtn.addEventListener('click', () => this.fullscreen(!this.isFull));
+      this._fullLabel();
       this.panel = el('div', 'mfw-panel', r);
       if (cfg.panel === false) this.panel.style.display = 'none';
     }
@@ -1182,12 +1215,18 @@
           this.tabBtns[m] = b;
         }
         this.tourBox = el('div', 'mfw-tour', this.panel);
+        const stepper = el('div', 'mfw-stepper', this.tourBox);
+        this.prevBtn = el('button', 'mfw-nav', stepper); this.prevBtn.type = 'button';
+        this.prevBtn.innerHTML = icon('left') + S.prev; this.prevBtn.addEventListener('click', () => this.prev());
+        const count = el('div', 'mfw-count', stepper);
+        this.countN = el('span', 'mfw-count-n', count); this.countT = el('span', 'mfw-count-t', count);
+        this.nextBtn = el('button', 'mfw-nav', stepper); this.nextBtn.type = 'button';
+        this.nextBtn.innerHTML = S.next + icon('right'); this.nextBtn.addEventListener('click', () => this.next());
         const row = el('div', 'mfw-transport', this.tourBox);
-        this.playBtn = el('button', 'mfw-play', row, S.play);
-        this.playBtn.type = 'button'; this.playBtn.setAttribute('aria-pressed', 'false');
+        this.playBtn = el('button', 'mfw-play', row);
+        this.playBtn.type = 'button';
         this.playBtn.addEventListener('click', () => (this.playing ? this.stop() : this.play()));
-        const pb = el('button', 'mfw-nav', row, S.prev); pb.type = 'button'; pb.addEventListener('click', () => this.prev());
-        const nb = el('button', 'mfw-nav', row, S.next); nb.type = 'button'; nb.addEventListener('click', () => this.next());
+        this._playLabel();
         const spl = el('label', 'mfw-speed', row);
         el('span', null, spl, S.speed);
         const sel = el('select', null, spl);
@@ -1196,7 +1235,13 @@
         sel.addEventListener('change', () => { this.speed = parseFloat(sel.value); store.set('mfw-speed', sel.value); });
         const track = el('div', 'mfw-holdtrack', this.tourBox);
         this.holdBar = el('div', 'mfw-holdbar', track);
-        const list = el('ol', 'mfw-steps', this.tourBox);
+      }
+      this.explainEl = el('div', 'mfw-explain', this.panel);
+      this.explainEl.setAttribute('aria-live', 'polite');
+      if (this.hasTour) {
+        this.stepsBox = el('details', 'mfw-stepsbox', this.panel);
+        el('summary', null, this.stepsBox, `${S.steps} (${cfg.steps.length})`);
+        const list = el('ol', 'mfw-steps', this.stepsBox);
         list.setAttribute('aria-label', S.steps);
         this.chips = cfg.steps.map((st, i) => {
           const li = el('li', null, list);
@@ -1208,8 +1253,11 @@
           return b;
         });
       }
-      this.explainEl = el('div', 'mfw-explain', this.panel);
-      this.explainEl.setAttribute('aria-live', 'polite');
+      if (cfg.readout) {
+        const chars = el('section', 'mfw-chars', this.panel);
+        el('h3', 'mfw-chars-h', chars).innerHTML = `${S.chars}<span>value</span>`;
+        this.readoutEl = el('div', 'mfw-readout', chars);
+      }
       const params = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
       if (params.length) {
         this.paramBox = el('div', 'mfw-params', this.panel);
@@ -1236,7 +1284,7 @@
             lab = el('label', 'mfw-param', box(d));
             const head = el('span', 'mfw-param-head', lab);
             el('span', null, head).innerHTML = richToHTML(d.label || name);
-            tag = el('span', 'mfw-lock', head, S.locked);
+            tag = el('span', 'mfw-lock', head); tag.innerHTML = icon('lock') + S.locked;
             inp = el('select', null, lab);
             for (const [v, text] of Object.entries(d.options)) { const o = el('option', null, inp, text); o.value = v; }
             inp.value = d.value;
@@ -1247,7 +1295,7 @@
             const nameEl = el('span', null, head);
             nameEl.innerHTML = richToHTML(d.label || name);
             val = el('span', 'mfw-val', head);
-            tag = el('span', 'mfw-lock', head, S.locked);
+            tag = el('span', 'mfw-lock', head); tag.innerHTML = icon('lock') + S.locked;
             inp = el('input', null, lab);
             const toIn = x => (d.log ? Math.log10(x) : x);
             Object.assign(inp, d.log
@@ -1265,7 +1313,7 @@
           this.panel.insertBefore(this.lockHint, this.paramBox);
         }
       }
-      this.readoutEl = el('div', 'mfw-readout', this.panel);
+      if (!this.readoutEl) this.readoutEl = el('div', 'mfw-readout', this.panel);
       if (cfg.source) {
         const det = el('details', 'mfw-source', this.panel);
         el('summary', null, det, S.source);
@@ -1277,6 +1325,7 @@
       this.root.setAttribute('data-mode', this.mode);
       if (this.tabBtns) for (const [m, b] of Object.entries(this.tabBtns)) b.setAttribute('aria-selected', String(m === this.mode));
       if (this.tourBox) this.tourBox.hidden = !tour;
+      if (this.stepsBox) this.stepsBox.hidden = !tour;
       if (this.lockHint) this.lockHint.hidden = !tour;
       for (const [name, c] of Object.entries(this.controls)) {
         const locked = tour && this._stepKeys.has(name);
@@ -1319,8 +1368,77 @@
     }
     _resetHeights() {
       for (const e of [this.explainEl, this.readoutEl]) if (e) { e._mfwH = 0; e.style.minHeight = ''; }
+      this._primeReadout();
     }
-    _markStep(i) { (this.chips || []).forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('is-done', j < i); }); }
+    /** The characteristics table sits above the sliders, so its height must not change while one is dragged: reserve
+        the tallest height it takes over the slider extremes, every option and a fixed random sample of states. */
+    _primeReadout() {
+      const e = this.readoutEl, cfg = this.cfg;
+      if (!cfg.readout || !e || !e.offsetParent) return;
+      const P0 = this.P, defs = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
+      const pick = (d, r) => (d.options ? Object.keys(d.options)[Math.floor(r * Object.keys(d.options).length)]
+        : typeof d.value === 'boolean' ? r < 0.5 : d.log ? 10 ** (Math.log10(d.min) + r * (Math.log10(d.max) - Math.log10(d.min))) : d.min + r * (d.max - d.min));
+      const states = [];
+      for (const [k, d] of defs) {
+        if (d.options) Object.keys(d.options).forEach(o => states.push({ ...P0, [k]: o }));
+        else if (typeof d.value === 'number' && d.min !== undefined) states.push({ ...P0, [k]: d.min }, { ...P0, [k]: d.max });
+      }
+      let seed = 12345;
+      const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+      for (let i = 0; i < 24; i++) {
+        const P = { ...P0 };
+        for (const [k, d] of defs) if (d.options || typeof d.value === 'boolean' || (typeof d.value === 'number' && d.min !== undefined)) P[k] = pick(d, rnd());
+        states.push(P);
+      }
+      const keep = e.innerHTML;
+      let h = 0;
+      for (const P of states) {
+        try { e.innerHTML = cfg.readout(withDerived(cfg, P, 0), this); h = Math.max(h, e.offsetHeight); } catch (err) { /* a state the model rejects */ }
+      }
+      e.innerHTML = keep;
+      h = Math.max(h, e.offsetHeight);
+      if (h > (e._mfwH || 0)) { e._mfwH = h; e.style.minHeight = h + 'px'; }
+    }
+    _markStep(i) {
+      (this.chips || []).forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('is-done', j < i); });
+      const steps = this.cfg.steps || [];
+      if (!this.countN || !steps[i]) return;
+      this.countN.textContent = `Step ${i + 1} / ${steps.length}`;
+      this.countT.textContent = steps[i].name || '';
+      this.prevBtn.disabled = i <= 0; this.nextBtn.disabled = i >= steps.length - 1;
+      this.root.querySelectorAll('.mfw-fsnav').forEach((b, k) => { b.disabled = k === 0 ? i <= 0 : i >= steps.length - 1; });
+    }
+    _playLabel() {
+      if (!this.playBtn) return;
+      this.playBtn.innerHTML = icon(this.playing ? 'pause' : 'play') + (this.playing ? this.S.pause : this.S.play);
+      this.playBtn.setAttribute('aria-pressed', String(!!this.playing));
+    }
+    _fullLabel() {
+      const t = this.isFull ? this.S.exitFull : this.S.full;
+      this.fullBtn.innerHTML = icon(this.isFull ? 'exit' : 'full') + `<span>${t}</span>`;
+      this.fullBtn.setAttribute('aria-label', t); this.fullBtn.title = t;
+    }
+    /** Figure alone on the whole screen (projector, phone in landscape). Uses the Fullscreen API where it exists,
+        otherwise (iPhone) a fixed overlay; Escape or the button leaves it. */
+    fullscreen(on) {
+      if (on === !!this.isFull) return;
+      this.isFull = on;
+      this.stageWrap.classList.toggle('is-full', on);
+      document.body.classList.toggle('mfw-noscroll', on);
+      const d = document, fsOk = d.fullscreenEnabled && this.stageWrap.requestFullscreen;
+      if (on) {
+        if (fsOk) this.stageWrap.requestFullscreen().catch(() => {});
+        this._fsEsc = e => { if (e.key === 'Escape') this.fullscreen(false); };
+        d.addEventListener('keydown', this._fsEsc);
+        this._fsChange = () => { if (!d.fullscreenElement && this.isFull) this.fullscreen(false); };
+        d.addEventListener('fullscreenchange', this._fsChange);
+      } else {
+        if (d.fullscreenElement === this.stageWrap) d.exitFullscreen().catch(() => {});
+        d.removeEventListener('keydown', this._fsEsc); d.removeEventListener('fullscreenchange', this._fsChange);
+      }
+      this._fullLabel();
+      this.fullBtn.focus();
+    }
     _userInput(name, value) {
       if (this.mode === 'tour' && this._stepKeys.has(name)) return;            // locked (should not happen: input disabled)
       if (this.playing) this.stop();

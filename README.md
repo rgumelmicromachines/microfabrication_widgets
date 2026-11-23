@@ -55,5 +55,6 @@ Course lecture slides used for cross-checking are kept locally in `source_predna
 
 ## Notes
 
-- Fonts (IBM Plex Sans) come from Google Fonts and KaTeX from jsDelivr. For a faculty server under GDPR you may prefer to self-host both (`MFW.config.katexBase`, and a local `@font-face`); the pages fall back to system fonts automatically.
+- The text font (Archivo, SIL Open Font License, `assets/fonts/`) is self-hosted; KaTeX still comes from jsDelivr. For a server under GDPR you may prefer to self-host KaTeX too (`MFW.config.katexBase`).
+- The contents page shows miniatures of each lesson's figure (`assets/thumbs/`, see the README there for how they were made); regenerate them when a figure changes visibly.
 - Theme and playback speed are remembered in `localStorage` (per browser only); nothing is sent anywhere.

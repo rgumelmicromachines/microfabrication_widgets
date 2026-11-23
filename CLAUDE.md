@@ -12,6 +12,11 @@ Interactive teaching simulations for microfabrication / semiconductor process te
 - **Every fact verified.** Each constant in `model.js` carries its source in a comment; each page lists references.
   Cite the original literature (textbooks, papers, datasheets), never lecture slides. If a value cannot be traced to
   a source, do not use it – say so instead of guessing.
+- **Lectures are the starting point, literature decides.** The course lectures (local, see below) define what the
+  pages should teach. Check every lecture value against the literature; where it is wrong, imprecise or unsourced,
+  use the verified value on the page and record the discrepancy (lecture, slide, what it says, what the sources say,
+  source, what the page uses) in `source_prednasky/NESROVNALOSTI.md` – a local Czech log for correcting the
+  lectures, never committed.
 - Every page states its model limitations ("Model & limitations" card). Schematic parts of a figure are labelled as
   schematic; to-scale parts as to scale.
 - Lecture slides used for cross-checking live in `source_prednasky/` locally. They are copyrighted and **must never be

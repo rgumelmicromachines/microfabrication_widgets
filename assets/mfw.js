@@ -831,7 +831,7 @@
     wip.innerHTML = '<strong>Work in progress</strong> – simulations and texts are still being added and checked.';
     header.parentNode.insertBefore(wip, header);
     const sug = el('a', 'suggest-link');
-    sug.href = 'https://github.com/feecUmel/microfabrication_widgets/issues/new';
+    sug.href = 'https://github.com/rgumelmicromachines/microfabrication_widgets/issues/new';
     sug.target = '_blank'; sug.rel = 'noopener';
     sug.innerHTML = '<span class="suggest-long">Missing content? </span>Add a suggestion';
     const tgl = header.querySelector('[data-mfw-theme-toggle]');

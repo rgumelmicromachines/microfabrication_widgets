@@ -1370,25 +1370,23 @@
       for (const e of [this.explainEl, this.readoutEl]) if (e) { e._mfwH = 0; e.style.minHeight = ''; }
       this._primeReadout();
     }
-    /** The characteristics table sits above the sliders, so its height must not change while one is dragged: reserve
-        the tallest height it takes over the slider extremes, every option and a fixed random sample of states. */
+    /** In the guided tour the characteristics table sits above the sliders. Sliders the tour does not set stay free,
+        so dragging one must not change the table's height: reserve the tallest height the current step takes over the
+        extremes (and options) of those free sliders. In Explore the table sits below the sliders and needs no reserve. */
     _primeReadout() {
       const e = this.readoutEl, cfg = this.cfg;
-      if (!cfg.readout || !e || !e.offsetParent) return;
-      const P0 = this.P, defs = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
-      const pick = (d, r) => (d.options ? Object.keys(d.options)[Math.floor(r * Object.keys(d.options).length)]
-        : typeof d.value === 'boolean' ? r < 0.5 : d.log ? 10 ** (Math.log10(d.min) + r * (Math.log10(d.max) - Math.log10(d.min))) : d.min + r * (d.max - d.min));
-      const states = [];
-      for (const [k, d] of defs) {
-        if (d.options) Object.keys(d.options).forEach(o => states.push({ ...P0, [k]: o }));
-        else if (typeof d.value === 'number' && d.min !== undefined) states.push({ ...P0, [k]: d.min }, { ...P0, [k]: d.max });
+      if (!cfg.readout || !e || !e.offsetParent || this.mode !== 'tour') return;
+      const P0 = { ...this.P };
+      if (this.step >= 0 && cfg.steps && cfg.steps[this.step]) {
+        const t = stepState(cfg, this.step).P;
+        this._stepKeys.forEach(k => { P0[k] = k in t ? t[k] : cfg.params[k].value; });
       }
-      let seed = 12345;
-      const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-      for (let i = 0; i < 24; i++) {
-        const P = { ...P0 };
-        for (const [k, d] of defs) if (d.options || typeof d.value === 'boolean' || (typeof d.value === 'number' && d.min !== undefined)) P[k] = pick(d, rnd());
-        states.push(P);
+      const states = [P0];
+      for (const [k, d] of Object.entries(cfg.params || {})) {
+        if (d.hidden || this._stepKeys.has(k)) continue;
+        if (d.options) Object.keys(d.options).forEach(o => states.push({ ...P0, [k]: o }));
+        else if (typeof d.value === 'boolean') states.push({ ...P0, [k]: !d.value });
+        else if (typeof d.value === 'number' && d.min !== undefined) states.push({ ...P0, [k]: d.min }, { ...P0, [k]: d.max });
       }
       const keep = e.innerHTML;
       let h = 0;
@@ -1482,10 +1480,15 @@
       });
     }
     _resize() {
-      const r = this.stage.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-      if (r.width < 2) return;
-      this.W = r.width; this.H = r.width / this.aspect;
-      this.canvas.width = Math.round(this.W * dpr); this.canvas.height = Math.round(this.H * dpr);
+      // drawable area = the stage's inner box (its border is not part of the canvas); the bitmap gets whole device
+      // pixels and the canvas is sized to exactly that, so one bitmap pixel lands on one screen pixel (no resampling blur)
+      const dpr = window.devicePixelRatio || 1, cw = this.stage.clientWidth;
+      if (cw < 2) return;
+      const bw = Math.round(cw * dpr), bh = Math.round(cw / this.aspect * dpr);
+      this.W = bw / dpr; this.H = bh / dpr;
+      if (this.canvas.width !== bw) this.canvas.width = bw;
+      if (this.canvas.height !== bh) this.canvas.height = bh;
+      this.canvas.style.width = this.W + 'px'; this.canvas.style.height = this.H + 'px';
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       this.painter.resize(this.W, this.H);
       this.stage.style.setProperty('--u', (this.W / config.frameWidth) + 'px');

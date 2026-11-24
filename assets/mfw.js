@@ -26,7 +26,9 @@
     katexBase: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/',
     font: '"Archivo", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif',
     frameWidth: 14.2222,                    // frame width in scene units (height follows the aspect ratio)
-    feedbackUrl: 'https://github.com/rgumelmicromachines/microfabrication_widgets/issues/new',   // suggestions and error reports
+    // suggestions and error reports: a Google Form (built by tools/feedback-form.gs), answerable without an account
+    feedbackUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc5zIALCEe9lJATwN3ree0lwJ5sQlf8_pxFW5qfSFTCvw30TQ/viewform',
+    feedbackLessonEntry: '1216151176',      // id of the form's "Lesson" question – pre-filled on every lesson page
   };
 
   // ================================================================ palettes
@@ -936,7 +938,9 @@
     }
     if (!foot.querySelector('.suggest-link')) {
       const sug = el('a', 'suggest-link', foot);
-      sug.href = config.feedbackUrl; sug.target = '_blank'; sug.rel = 'noopener';
+      let url = config.feedbackUrl;
+      if (cur && config.feedbackLessonEntry) url += (url.includes('?') ? '&' : '?') + `usp=pp_url&entry.${config.feedbackLessonEntry}=${encodeURIComponent(`${cur.no} ${cur.title}`)}`;
+      sug.href = url; sug.target = '_blank'; sug.rel = 'noopener';
       sug.textContent = 'Suggest a topic or report an error';
     }
     // overview page: sort the entries into one section per module, numbered like the menu

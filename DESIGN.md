@@ -293,5 +293,5 @@ A 16:9 miniature of the lesson's real figure (light and dark versions, swapped b
 
 Recorded as not yet done in the build:
 - The characteristics table is still two columns (Parameter | Value). The intended form is four columns, Parameter · Symbol · Value · Unit, with a conditions line above the table; neither exists yet.
-- The feedback link still points to GitHub issues; it will be replaced by a Google or Microsoft form link once one is provided.
+- The feedback link opens a Google Form (no account needed, built by `tools/feedback-form.gs`); on lesson pages the "Lesson" question is pre-filled with the lesson number and title.
 - The site name and the µ mark shown on phones are open decisions and should not be treated as fixed identity.

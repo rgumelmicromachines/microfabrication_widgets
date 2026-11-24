@@ -1139,14 +1139,25 @@
     /** Smallest value of the ascending list `list` that holds `need` – an axis range, a zoom step or a scale bar – with
         hysteresis, so a slider held near a step boundary cannot make the axis flip back and forth (flicker): the
         choice grows as soon as `need` no longer fits, and shrinks only when `need` is 10 % (o.h) below the next smaller
-        step. Without a list, the 1–1.5–2–3–4–5–6–8 series over all decades is used. */
+        step. Without a list, the 1–1.5–2–3–4–5–6–8 series over all decades is used.
+        While the user is dragging a slider the range only grows, and then with 2× headroom (o.grow), so a fast drag
+        gives a few deliberate zoom-outs instead of a sawtooth of small ones (the plotted point climbing, being pushed
+        down by the next step, climbing again – it reads as shaking); it settles to the tight fit once the slider rests. */
     nice(key, list, need, o = {}) {
       if (!list) list = NICE_SERIES;
       if (!isFinite(need)) return list[list.length - 1];
       const s = this._nice || (this._nice = new Map()), h = o.h === undefined ? 0.1 : o.h;
+      const cur = s.get(key);
+      if (cur !== undefined && this._dragging()) {
+        this._niceHeld = true;
+        if (need <= cur) return cur;                                             // no zoom-in while dragging
+        const g = list.find(n => n >= need * (o.grow || 2));
+        const v = g === undefined ? list[list.length - 1] : g;
+        s.set(key, v);
+        return v;
+      }
       const fit = list.find(n => n >= need);
       const pickV = fit === undefined ? list[list.length - 1] : fit;
-      const cur = s.get(key);
       if (cur !== undefined && cur > pickV && need <= cur) {
         const lower = list[list.indexOf(cur) - 1];
         if (lower !== undefined && need > lower * (1 - h)) return cur;          // still close to the boundary: keep
@@ -1154,6 +1165,8 @@
       s.set(key, pickV);
       return pickV;
     }
+    /** True while the user is moving a slider (an input in the last 350 ms); never in tests that settle (renderNow). */
+    _dragging() { return !this._settle && this._inputT !== undefined && now() - this._inputT < 350; }
     /** Value that glides towards target over a few frames (for auto-zoom and axis ranges, so the picture does not jump).
         Call it from draw() as w.smooth('key', target, {log: true}). */
     smooth(key, target, o = {}) {
@@ -1526,6 +1539,7 @@
     _userInput(name, value) {
       if (this.mode === 'tour' && this._stepKeys.has(name)) return;            // locked (should not happen: input disabled)
       if (this.playing) this.stop();
+      if (typeof value === 'number') this._inputT = now();                     // slider moving: ranges hold (see nice)
       this._editing = name;
       if (typeof value === 'number' && this.cfg.glide) this.animate({ [name]: value }, this.cfg.glide);
       else { this.tweens.delete(name); this.P[name] = value; this.dirty = true; this._syncControls(false); }
@@ -1606,6 +1620,7 @@
         if (u >= 1) { this.layerA[n] = tw.to; this.layerT.delete(n); tw.res(); }
         this.dirty = true;
       }
+      if (this._niceHeld && !this._dragging()) { this._niceHeld = false; this.dirty = true; }   // slider at rest: ranges settle
       if (this.dirty || this.cfg.loop) this._draw();
       this._raf = requestAnimationFrame(x => this._frame(x));
     }

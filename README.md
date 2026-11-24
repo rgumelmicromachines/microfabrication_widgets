@@ -46,7 +46,7 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
      Auto-zoom and changing axis ranges: `w.smooth('key', target, { log: true })` in `draw(p, v, w)` glides instead of jumping.
 4. Before publishing, in the browser console of the page:
    load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement), then `../../tests/flicker.js` and `MFWFlicker.run()` (no label or axis jumping back and forth).
-   Use `w.nice(key, list, need)` for any auto-zoomed range or scale bar (it has hysteresis) and `MFW.chars(rows)` for the characteristics table.
+   Use `w.nice(key, list, need)` for any auto-zoomed range or scale bar (it has hysteresis, and while a slider is dragged it only grows, with 2× headroom, then settles once – no sawtooth zooming) and `MFW.chars(rows)` for the characteristics table.
 5. Add a tile to `index.html`.
 
 ## Contributing

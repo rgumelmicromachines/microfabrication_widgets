@@ -52,7 +52,9 @@ function createFeedbackForm() {
   // a link instead of a file-upload question: file uploads would force every respondent to sign in to Google
   form.addTextItem()
     .setTitle('Link to a screenshot (optional)')
-    .setHelpText('Upload the screenshot anywhere that gives a link (an image host, a shared OneDrive or Google Drive file) and paste the link here.')
+    .setHelpText(
+      'Easiest way: save the screenshot to your Google Drive or OneDrive, choose Share → "Anyone with the link" (view only), ' +
+      'copy the link and paste it here. Please check that the screenshot shows no personal data (names, e-mails, other tabs).')
     .setValidation(FormApp.createTextValidation().requireTextIsUrl().build());
 
   form.addCheckboxItem()

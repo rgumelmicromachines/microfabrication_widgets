@@ -53,8 +53,8 @@ function createFeedbackForm() {
   form.addTextItem()
     .setTitle('Link to a screenshot (optional)')
     .setHelpText(
-      'Easiest way: save the screenshot to your Google Drive or OneDrive, choose Share → "Anyone with the link" (view only), ' +
-      'copy the link and paste it here. Please check that the screenshot shows no personal data (names, e-mails, other tabs).')
+      'No account needed: open postimages.org (or imgbb.com), upload the screenshot, copy the "Link" it gives you and paste it here. ' +
+      'Anyone with the link can see the image, so please check that it shows no personal data (names, e-mails, other tabs).')
     .setValidation(FormApp.createTextValidation().requireTextIsUrl().build());
 
   form.addCheckboxItem()

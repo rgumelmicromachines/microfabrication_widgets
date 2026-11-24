@@ -27,8 +27,8 @@
     font: '"Archivo", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif',
     frameWidth: 14.2222,                    // frame width in scene units (height follows the aspect ratio)
     // suggestions and error reports: a Google Form (built by tools/feedback-form.gs), answerable without an account
-    feedbackUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc5zIALCEe9lJATwN3ree0lwJ5sQlf8_pxFW5qfSFTCvw30TQ/viewform',
-    feedbackLessonEntry: '1216151176',      // id of the form's "Lesson" question – pre-filled on every lesson page
+    feedbackUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSe-EczZwjCC6slD2ZKSoyU2xk1jWASc6Fxq0zfSR-log9i6ig/viewform',
+    feedbackLessonEntry: '815581440',      // id of the form's "Lesson" question – pre-filled on every lesson page
   };
 
   // ================================================================ palettes

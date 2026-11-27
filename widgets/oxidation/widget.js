@@ -8,6 +8,7 @@
   const thk = um => (um < 1 ? `${fmt.sig(nm(um), 3)} nm` : `${fmt.sig(um, 3)} µm`);
   const tickT = h => (h < 1 ? `${Math.round(h * 60)} min` : `${h} h`);
   const tickX = um => (um < 1 ? `${Math.round(um * 1000)} nm` : `${um} µm`);
+  const barX = um => (um < 1 ? `${+(um * 1000).toPrecision(2)} nm` : `${+um.toPrecision(2)} µm`);   // scale bar: 0.4 nm, 4 nm, 40 nm …
 
   MFW.widget('#app', {
     title: 'Thermal oxidation of silicon',
@@ -44,13 +45,15 @@
       // ---------------------------------------------------------- wafer colour
       const [r, g, b] = v.rgb, wc = `rgb(${r},${g},${b})`;
       const cx = -4.35, cy = 1.25, R = 1.25;
-      p.circle(cx, cy, R, { fill: wc, stroke: C.greyB, width: 2 });
-      p.line(cx - 0.45, cy - R + 0.03, cx + 0.45, cy - R + 0.03, { color: C.bg, width: 6 });   // primary flat
+      const af = Math.asin(0.45 / R), wafer = [];                          // wafer outline with the primary flat at the bottom
+      for (let i = 0; i <= 90; i++) { const a = -Math.PI / 2 + af + (2 * Math.PI - 2 * af) * i / 90; wafer.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]); }
+      p.polygon(wafer, { fill: wc, stroke: C.greyB, width: 2 });
       p.text(`${thk(v.x)} SiO₂`, cx, cy, { size: 0.3, align: 'center', color: (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? '#111' : '#f4f4f4' });
       p.text('colour seen at normal incidence', cx, cy - R - 0.25, { size: 0.21, align: 'center', color: C.muted });
 
-      // ---------------------------------------------------------- cross-section (auto zoom in decades)
-      const spanT = w.nice('spanT', [0.1, 1, 10], v.x / 0.8);           // full height of the drawing in µm (decades)
+      // ---------------------------------------------------------- cross-section (auto zoom in 1–2–5 steps: the oxide
+      // always fills 30–80 % of the box, instead of shrinking to a sliver at every decade)
+      const spanT = w.nice('spanT', [0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20], v.x / 0.8);   // full height of the drawing in µm
       const span = w.smooth('span', spanT, { log: true });              // glide between zoom levels instead of jumping
       const x0 = -6.6, x1 = -2.1, yTopBox = -0.55, yBotBox = -2.95, h = yTopBox - yBotBox;
       const ySurf = yBotBox + 0.55 * h;                                   // original Si surface
@@ -76,7 +79,7 @@
       const sb = spanT / 5;
       p.line(x1 - 0.25, yBotBox + 0.2, x1 - 0.25, yBotBox + 0.2 + sb * k, { color: C.white, width: 3 });
       const yb0 = yBotBox + 0.2, yb1 = yBotBox + 0.2 + sb * k;
-      p.place(tickX(sb), [[x1 - 0.35, (yb0 + yb1) / 2, 'right'], [x1 - 0.35, yb1 - 0.02, 'right', 'top'], [x1 - 0.35, yb0 + 0.02, 'right', 'bottom'], [x1 - 0.35, yb1 + 0.06, 'right', 'bottom']],
+      p.place(barX(sb), [[x1 - 0.35, (yb0 + yb1) / 2, 'right'], [x1 - 0.35, yb1 - 0.02, 'right', 'top'], [x1 - 0.35, yb0 + 0.02, 'right', 'bottom'], [x1 - 0.35, yb1 + 0.06, 'right', 'bottom']],
         { size: 0.2, color: C.text, key: 'sbar', within: [x0, yBotBox, x1, yTopBox] });
       p.text('cross-section (to scale)', (x0 + x1) / 2, yBotBox - 0.22, { size: 0.21, align: 'center', color: C.muted });
 

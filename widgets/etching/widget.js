@@ -25,7 +25,9 @@
       mask: { value: 'si3n4', label: 'Mask material', options: MASKNAME },
       tm: { value: 100, min: 20, max: 3000, log: true, label: 'Mask thickness', format: x => `${fmt.sig(x, 3)} nm` },
       W: { value: 100, min: 5, max: 1000, log: true, label: 'Window width <i>W</i>', format: um },
-      t: { value: 30, min: 0, max: 480, step: 1, label: 'Etch time <i>t</i>', format: mins },
+      t: { value: 30, min: 0, max: 480, step: 1, label: 'Etch time <i>t</i>', format: mins, when: v => v.etch !== 'drie' },
+      // DRIE etches 1–15 µm/min, wet etches 0.15–1.5 µm/min: a separate, shorter time range keeps the slider usable
+      tD: { value: 30, min: 0, max: 120, step: 0.5, label: 'Etch time <i>t</i>', format: mins, when: v => v.etch === 'drie' },
       T: { value: 80, min: 50, max: 95, step: 1, label: 'Bath temperature', unit: '°C', digits: 0, when: v => E.ETCH[v.etch].kind === 'aniso' },
       rate: { value: 2, min: 1, max: 15, step: 0.1, label: 'DRIE Si etch rate', unit: 'µm/min', digits: 1, when: v => v.etch === 'drie' },
     },
@@ -33,11 +35,16 @@
     explore: { show: ['dims'] },
 
     derived(v) {
-      const s = E.etchState({ etch: v.etch, mask: v.mask, tm: v.tm, W: v.W, t: v.t, T: v.T, rate: v.rate });
-      const extentX = (s.top + Math.max(10, 0.25 * v.W)) * 2, extentY = Math.max(s.depth, (E.ETCH[v.etch].kind === 'aniso' ? Math.min(s.dmax, 1.2 * v.W) : v.W * 0.5)) * 1.25;
+      const t = v.etch === 'drie' ? v.tD : v.t, tEnd = v.etch === 'drie' ? 120 : 480;   // time and end of the time slider
+      const st = tt => E.etchState({ etch: v.etch, mask: v.mask, tm: v.tm, W: v.W, t: tt, T: v.T, rate: v.rate });
+      const s = st(t), sEnd = st(tEnd);
+      // isotropic and DRIE: the frame is set by the state at the END of the time range, so moving the time slider never
+      // rescales it (anisotropic etches are bounded by the self-terminating V-groove anyway)
+      const extentX = ((s.kind === 'aniso' ? s.top : Math.max(s.top, sEnd.top)) + Math.max(10, 0.25 * v.W)) * 2;   // KOH/TMAH widen only slowly
+      const extentY = (s.kind === 'aniso' ? Math.max(s.depth, Math.min(s.dmax, 1.2 * v.W)) : Math.max(s.depth, sEnd.depth, v.W * 0.5)) * 1.25;   // KOH/TMAH: the groove's own limit
       const need = Math.max(extentX / 9.2, extentY / 4.6) * 5;                    // µm per 5 scene units
       const zoom = ZOOM.find(z => z >= need) || 2000;
-      return { ...s, zoom, need, sel: s.mr > 0 ? s.R * 1000 / s.mr : Infinity };
+      return { ...s, t, tEnd, zoom, need, sel: s.mr > 0 ? s.R * 1000 / s.mr : Infinity };
     },
 
     draw(p, v, w) {
@@ -114,7 +121,7 @@
       });
 
       // ---------------------------------------------------------- depth vs time
-      const tmax = 480;
+      const tmax = v.tEnd;
       const depthAt = t => E.etchState({ etch: v.etch, mask: v.mask, tm: v.tm, W: v.W, t, T: v.T, rate: v.rate }).depth;
       const dEnd = Math.max(depthAt(tmax), v.depth) * 1.08;                         // depth never decreases with time
       const ymax = w.smooth('ymax', w.nice('ymax', [10, 20, 50, 100, 200, 300, 500, 600], dEnd), { log: true });
@@ -134,7 +141,8 @@
         : v.kind === 'aniso' && v.tClose < tmax && v.dClose < ymax ? { d: v.dClose, t: v.tClose, s: 'V-groove closed' } : null;
       if (flat) {
         const Yf = ax.Y(flat.d), Xr = ax.X(tmax) - 0.05;
-        ax.place(flat.s, [[Xr, Yf - 0.14, 'right', 'top'], [ax.X(flat.t) - 0.1, Yf + 0.12, 'right', 'bottom'], [Xr, Yf + 0.14, 'right', 'bottom'], [ax.X(Math.min(tmax, flat.t + 0.5 * (tmax - flat.t))), Yf - 0.14, 'center', 'top'], [Xr, Yf + 0.5, 'right', 'bottom'], [Xr, Yf - 0.5, 'right', 'top'], [ax.X(flat.t) + 0.15, Yf - 0.08, 'left', 'top']],
+        ax.place(flat.s, [[Xr, Yf - 0.14, 'right', 'top'], [ax.X(flat.t) - 0.1, Yf + 0.12, 'right', 'bottom'], [Xr, Yf + 0.14, 'right', 'bottom'], [ax.X(Math.min(tmax, flat.t + 0.5 * (tmax - flat.t))), Yf - 0.14, 'center', 'top'], [Xr, Yf + 0.5, 'right', 'bottom'], [Xr, Yf - 0.5, 'right', 'top'], [ax.X(flat.t) + 0.15, Yf - 0.08, 'left', 'top'],
+          ...(isFinite(v.tFail) && v.tFail < tmax ? [[ax.X(v.tFail) - 0.08, Yf - 0.14, 'right', 'top'], [ax.X(v.tFail) - 0.08, Yf + 0.14, 'right', 'bottom'], [ax.X(v.tFail) - 0.08, Yf - 0.5, 'right', 'top']] : [])],
           { color: C.muted, size: 0.18, key: 'flat' });
       }
       p.text(E.ETCH[v.etch].name, 3.55 + 3.25 / 2, 2.62, { size: 0.24, align: 'center', color: C.greyA });
@@ -168,7 +176,7 @@
         text: v => `TMAH contains no alkali ions (K⁺ contaminates CMOS gate oxides), so it is used when circuits are on the wafer. It is slower (${fmt.sig(v.R, 2)} µm/min), has a lower (100):(111) ratio, but etches SiO₂ about four orders of magnitude slower than Si – even 100 nm of oxide survives.` },
       { name: 'Isotropic etching', caption: 'Isotropic: undercut = depth, rounded profile', set: { etch: 'iso', mask: 'sio2', tm: 1000, t: 60 }, duration: 1.5,
         text: v => `An isotropic etch of the HNA type attacks every direction equally: HNO₃ oxidises the silicon and a fluoride dissolves the oxide (HF in classic HNA = HF + HNO₃ + acetic acid; NH₄F in the recipe used here). The cavity becomes rounded and the mask is undercut by as much as the depth (${um(v.undercut)}). Useful for releasing structures and rounding corners, useless for narrow deep features.` },
-      { name: 'Deep reactive ion etching', caption: 'Bosch DRIE: vertical walls, any crystal orientation', set: { etch: 'drie', mask: 'resist', tm: 2000, W: 20, t: 40, rate: 2 }, duration: 2,
+      { name: 'Deep reactive ion etching', caption: 'Bosch DRIE: vertical walls, any crystal orientation', set: { etch: 'drie', mask: 'resist', tm: 2000, W: 20, tD: 40, rate: 2 }, duration: 2,
         text: v => `The Bosch process alternates two short steps: C₄F₈ deposits a protective polymer everywhere; then, in the SF₆ step, ion bombardment first clears the polymer from the bottom only and fluorine etches the exposed silicon (Laermer &amp; Schilp). The walls stay vertical, with small "scallops" (exaggerated here). Depth ${um(v.depth)} in a ${um(v.W)} window – aspect ratio ${fmt.sig(v.depth / v.W, 2)}:1, independent of crystal orientation. Photoresist works as a mask (selectivity ~60:1). Explore the rest in <b>Explore</b>.` },
     ],
   });

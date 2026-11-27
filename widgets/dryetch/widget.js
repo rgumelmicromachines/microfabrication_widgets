@@ -83,17 +83,21 @@
       p.clip(sx0, sBot, sx1, sTop, () => {
         p.material('si', sx0, sBot, sx1, yI, { stroke: null });
         p.material('sio2', sx0, yI, sx1, yF, { stroke: null });
-        if (v.resist > 0) {
-          p.material('resist', sx0, yF, X(-v.W / 2), yF + v.resist * k, { stroke: null });
-          p.material('resist', X(v.W / 2), yF, sx1, yF + v.resist * k, { stroke: null });
-        }
         // etched cavity in the film (polygon from the edge function) and the recess in the substrate
+        // one open outline (wall, floor or recess, wall) – no line across the opening or across the floor of the film
         if (v.t > 0) {
           const ys = M.linspace(0, v.depth, 80), right = ys.map(y => [X(v.edge(y) ?? v.W / 2), yF - y * k]);   // top → bottom
           const left = right.map(([x, y]) => [2 * cxs - x, y]);                                                   // top → bottom
-          p.polygon([[X(-v.W / 2), yF + 0.02], ...left, ...right.slice().reverse(), [X(v.W / 2), yF + 0.02]], { fill: C.bg, stroke: MAT.sio2.stroke, width: 1.5 });
-          if (v.recess > 0) p.box(X(-v.floorHalf), yI, X(v.floorHalf), yI - v.recess * k, { fill: C.bg, stroke: MAT.si.stroke, width: 1.5 });
+          const rec = v.recess > 0 ? [[X(-v.floorHalf), yI - v.recess * k], [X(v.floorHalf), yI - v.recess * k]] : [];
+          const outline = [...left, ...rec, ...right.slice().reverse()];
+          p.polygon(outline, { fill: C.bg, stroke: null, noOcc: true });
+          p.path(outline, { color: MAT.sio2.stroke, width: 1.5, noOcc: true });
         }
+      });
+      // resist on top of the cavity, so its edge overhangs an undercut film
+      if (v.resist > 0) p.clip(sx0, sBot, sx1, sTop, () => {
+        p.material('resist', sx0, yF, X(-v.W / 2), yF + v.resist * k, { stroke: null });
+        p.material('resist', X(v.W / 2), yF, sx1, yF + v.resist * k, { stroke: null });
       });
       const yR = Math.min(sTop - 0.12, yF + Math.max(0, v.resist) * k + 0.14);
       if (v.resist > 0) p.place('resist', [[sx0 + 0.1, yR, 'left'], [sx1 - 0.1, yR, 'right']], { size: 0.19, color: C.text, key: 'resist' });

@@ -73,42 +73,47 @@
       const view = [X0, Yb, X1, 3.0];
       p.material('si', X0, Yb, X1, Ys);
       p.material(subMat, X0, Yb, X1, Ys, { stroke: null });
-      // implanted dopant: horizontal strips, opacity ∝ log(N/N_B)
-      const lo = Math.log(v.NB), hi = Math.log(Math.max(v.Np, v.NB * 1.0001));
-      const strips = 60, dz = zmax / strips;
-      const shade = (x0, x1, f) => {
-        for (let i = 0; i < strips; i++) {
-          const N = f((i + 0.5) * dz);
-          if (N <= v.NB) continue;
-          const a = M.clamp((Math.log(N) - lo) / (hi - lo), 0, 1);
-          p.box(x0, Ys - i * dz * k, x1, Ys - (i + 1) * dz * k - 0.002, { fill: dopCol, fillAlpha: 0.12 + 0.6 * a, stroke: null, noOcc: true });
-        }
+      // implanted dopant as filled iso-concentration contours, one shade per decade above N_B (darkest at the peak,
+      // buried at R_p). N(x, y) = N_win(y)·L(x) + N_mask(y)·(1 − L(x)): L is the lateral spread of the ions through
+      // the window, a Gaussian of the same σ as ΔR_p (assumed; the window width itself is schematic)
+      const wC = (wL + wR) / 2, sig = M.clamp(v.dRp * k, 0.02, 0.5), s2 = Math.SQRT2 * sig;
+      const Lx = x => 0.5 * (IM.erfc((x - wR) / s2) - IM.erfc((x - wL) / s2));
+      const Nw = y => IM.gauss(y, v.Q, v.Rp, v.dRp), Nm = y => IM.gauss(y + v.dm, v.Q, v.Rpm, v.dRpm);
+      const Nxy = (x, y) => { const l = Lx(x); return Nw(y) * l + Nm(y) * (1 - l); };
+      const xEdge = (y, c) => {                                         // left contour point at depth y (N(wC, y) ≥ c)
+        if (Nxy(X0 - 0.05, y) >= c) return X0 - 0.05;
+        let lo = X0 - 0.05, hi = wC;
+        for (let i = 0; i < 28; i++) { const m = (lo + hi) / 2; if (Nxy(m, y) >= c) hi = m; else lo = m; }
+        return hi;
       };
-      const lat = Math.min(0.5, v.dRp * k);                                                     // lateral straggle, schematic
-      p.clip(X0, Yb, X1, Ys, () => {
-        shade(wL - lat * 0.5, wR + lat * 0.5, x => IM.gauss(x, v.Q, v.Rp, v.dRp));
-        p.layer('mask', () => shade(X0, wL - lat * 0.5, x => IM.gauss(x + v.dm, v.Q, v.Rpm, v.dRpm)));
-        p.layer('mask', () => shade(wR + lat * 0.5, X1, x => IM.gauss(x + v.dm, v.Q, v.Rpm, v.dRpm)));
-      });
-      // junction contour(s)
-      p.layer('junction', () => {
-        p.clip(X0, Yb, X1, Ys, () => {
-          for (const xj of [v.xj1, v.xj2]) {
-            if (!xj) continue;
-            const y = Ys - xj * k;
-            p.line(wL - lat * 0.5, y, wR + lat * 0.5, y, { color: C.yellow, width: 2.5 });
-            if (!v.xj1) {                                                                       // junction reaches the surface at the window edges
-              p.line(wL - lat * 0.5, y, wL - lat * 0.5, Ys, { color: C.yellow, width: 2.5 });
-              p.line(wR + lat * 0.5, y, wR + lat * 0.5, Ys, { color: C.yellow, width: 2.5 });
-            }
-          }
-          if (v.xj1) {                                                                          // buried layer: close the box at the window edges
-            p.line(wL - lat * 0.5, Ys - v.xj1 * k, wL - lat * 0.5, Ys - v.xj2 * k, { color: C.yellow, width: 2.5 });
-            p.line(wR + lat * 0.5, Ys - v.xj1 * k, wR + lat * 0.5, Ys - v.xj2 * k, { color: C.yellow, width: 2.5 });
-          }
+      const yEdge = (y0, y1, c) => {                                    // depth between y0 and y1 where N(wC, y) = c
+        const in0 = Nxy(wC, y0) >= c;
+        for (let i = 0; i < 28; i++) { const m = (y0 + y1) / 2; if ((Nxy(wC, m) >= c) === in0) y0 = m; else y1 = m; }
+        return (y0 + y1) / 2;
+      };
+      const NS = 160, ys = M.linspace(0, zmax, NS + 1);
+      const contour = c => {                                            // runs of depth where N(wC, y) ≥ c → left boundary + flags
+        const runs = []; let cur = null;
+        ys.forEach((y, j) => {
+          const inside = Nxy(wC, y) >= c;
+          if (inside && !cur) { cur = { top: j === 0, pts: [] }; if (j > 0) { const ye = yEdge(ys[j - 1], y, c); cur.pts.push([wC, Ys - ye * k]); } }
+          if (inside) cur.pts.push([xEdge(y, c), Ys - y * k]);
+          if (!inside && cur) { const ye = yEdge(ys[j - 1], y, c); cur.pts.push([wC, Ys - ye * k]); runs.push(cur); cur = null; }
         });
+        if (cur) runs.push(cur);
+        return runs.map(r => ({ top: r.top, left: r.pts, right: r.pts.map(([x, y]) => [2 * wC - x, y]).reverse() }));
+      };
+      const levels = [v.NB];
+      for (let e = Math.floor(Math.log10(v.NB)) + 1; 10 ** e < v.Np; e++) levels.push(10 ** e);
+      const NBruns = contour(v.NB);
+      p.clip(X0, Yb, X1, Ys, () => levels.forEach((c, i) => (i ? contour(c) : NBruns).forEach(r =>
+        p.polygon([...r.left, ...r.right], { fill: dopCol, fillAlpha: i ? 0.17 : 0.22, stroke: null, noOcc: true }))));
+      // junction = the N = N_B contour (not drawn along the surface)
+      p.layer('junction', () => {
+        p.clip(X0, Yb, X1, Ys, () => NBruns.forEach(r => p.path([...r.left, ...r.right], { color: C.yellow, width: 2.5, closed: !r.top, noOcc: true })));
         if (v.xj2 && v.xj2 * k < Ys - Yb) {
-          const xd = wR + lat * 0.5 + 0.35, yd = Ys - v.xj2 * k;
+          const xRight = Math.max(wR, ...NBruns.flatMap(r => r.right.map(q => q[0])));            // right edge of the junction contour
+          const xd = Math.min(xRight + 0.25, X1 - 0.55), yd = Ys - v.xj2 * k;
           p.dim(xd, Ys, xd, yd, '');
           p.place('x_j', [[xd + 0.1, (Ys + yd) / 2, 'left'], [xd - 0.1, (Ys + yd) / 2, 'right']], { size: 0.24, color: C.greyA, within: view, key: 'xjdim' });
         }
@@ -141,7 +146,8 @@
       const sb = zmax / 4;
       p.line(X0 - 0.15, Ys, X0 - 0.15, Ys - sb * k, { color: C.text, width: 3 });
       p.text(nm(sb), X0 - 0.36, Ys - sb * k / 2, { size: 0.19, align: 'center', color: C.text, rotate: 90 });
-      p.text('depth to scale, window width schematic', (X0 + X1) / 2, Yb - 0.25, { size: 0.2, align: 'center', color: C.muted });
+      p.text('depth to scale · window width schematic', (X0 + X1) / 2, Yb - 0.22, { size: 0.19, align: 'center', color: C.muted });
+      p.text('shading: one step per decade above N_B', (X0 + X1) / 2, Yb - 0.47, { size: 0.19, align: 'center', color: C.muted });
 
       // ---------------------------------------------------------- profile plot
       const ax = p.axes({ x: 0.45, y: -2.75, w: 6.15, h: 5.15, xr: [0, zmax], yr: [1e14, 1e23], ylog: true, grid: true, size: 0.22,

@@ -51,16 +51,29 @@
       const x0 = -6.5, yc = 1.45, hs = side * k / 2, xc1 = x0 + side * k, xp1 = xc1 + v.l * k, hd = v.d * k / 2;
       p.box(x0, yc - hs, xc1, yc + hs, { fill: MFW.MAT.metal.fill, fillAlpha: 0.35, stroke: C.greyB, width: 2 });
       p.box(xc1, yc - hd, xp1, yc + hd, { fill: MFW.MAT.metal.fill, fillAlpha: 0.2, stroke: C.greyB, width: 2 });
-      // pump: circle with rotor blades
-      const pr = 0.38, pcx = xp1 + pr;
-      p.circle(pcx, yc, pr, { fill: C.greyD, stroke: C.greyB, width: 2 });
-      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + 0.3; p.line(pcx, yc, pcx + 0.3 * Math.cos(a), yc + 0.3 * Math.sin(a), { color: C.greyA, width: 2, noOcc: true }); }
-      p.place(`pump ${ls(v.S)}`, [[pcx, yc - pr - 0.2, 'center'], [pcx, yc + pr + 0.2, 'center'], [pcx + pr + 0.1, yc, 'left'], [pcx - 0.3, yc - pr - 0.45, 'center']], { size: 0.18, color: C.text, key: 'pump' });
+      // flanges: one where the pipe leaves the chamber, a bolted pair between the pipe and the pump inlet
+      const fw = 0.06, fh = hd + Math.min(0.15, Math.max(0.05, 0.35 * hd));
+      const flange = xa => p.box(xa, yc - fh, xa + fw, yc + fh, { fill: C.greyB, stroke: C.greyA, width: 1 });
+      flange(xc1); flange(xp1 - fw); flange(xp1);
+      // high-vacuum pump (turbomolecular, schematic size): housing on the inlet flange, rotor and stator blade rows,
+      // motor at the back, foreline to the backing pump at the bottom
+      const xb0 = xp1 + fw, xb1 = xb0 + 0.62, ph = Math.max(0.42, fh + 0.04);
+      p.box(xb0, yc - ph, xb1, yc + ph, { fill: C.greyD, stroke: C.greyB, width: 2 });
+      for (let i = 0; i < 4; i++) {
+        const xr = xb0 + 0.1 + i * 0.09, s = i % 2 ? -0.035 : 0.035;          // alternating blade angle: rotor, stator, …
+        for (let y = yc - ph + 0.1; y <= yc + ph - 0.1 + 1e-9; y += 0.08) p.line(xr - s, y - 0.03, xr + s, y + 0.03, { color: C.greyA, width: 1.5, noOcc: true });
+      }
+      p.box(xb1 - 0.17, yc - 0.17, xb1 - 0.05, yc + 0.17, { fill: C.greyB, stroke: null });   // motor
+      const xf = xb1 - 0.11;
+      p.box(xf - 0.05, yc - ph - 0.16, xf + 0.05, yc - ph, { fill: C.greyD, stroke: C.greyB, width: 1.5 });
+      p.arrow(xf, yc - ph - 0.12, xf, yc - ph - 0.42, { color: C.greyA, width: 1.5, head: 0.08 });
+      const pcx = (xb0 + xb1) / 2;
+      p.place(`pump ${ls(v.S)}`, [[xf + 0.12, yc - ph - 0.3, 'left'], [xf - 0.12, yc - ph - 0.3, 'right'], [xf + 0.12, yc - ph - 0.55, 'left']], { size: 0.18, color: C.text, key: 'pump' });
       // gas molecules: fewer dots at lower pressure (one per ~quarter decade above 10⁻¹⁰ Pa, schematic)
       const nd = Math.max(0, Math.min(DOTS.length, Math.round(4 * Math.log10(v.p / 1e-10))));
       p.clip(x0, yc - hs, xc1, yc + hs, () => DOTS.slice(0, nd).forEach(([a, b]) => p.circle(x0 + 0.08 + a * (side * k - 0.16), yc - hs + 0.08 + b * (2 * hs - 0.16), 0.03, { fill: C.blue, stroke: null })));
-      p.place(`${fmt.sig(v.V, 3)} L chamber (all to scale)`, [[x0, yc - hs - 0.2, 'left'], [x0, yc + hs + 0.2, 'left'], [x0, yc - hs - 0.45, 'left']], { size: 0.18, color: C.text, key: 'chamber' });
-      p.text(`pipe ${fmt.sig(v.d, 2)} × ${fmt.sig(v.l, 3)} cm`, xc1 + 0.08, yc + Math.max(hd, pr) + 0.25, { size: 0.17, color: C.muted });
+      p.place(`${fmt.sig(v.V, 3)} L chamber · chamber and pipe to scale`, [[x0, yc - hs - 0.2, 'left'], [x0, yc + hs + 0.2, 'left'], [x0, yc - hs - 0.45, 'left']], { size: 0.18, color: C.text, key: 'chamber' });
+      p.place(`pipe ${fmt.sig(v.d, 2)} × ${fmt.sig(v.l, 3)} cm`, [[xc1 + 0.12, yc + ph + 0.2, 'left'], [xc1 + 0.12, yc + ph + 0.45, 'left']], { size: 0.17, color: C.muted, key: 'pipe' });   // above pipe and pump
       p.text(`${v.regimeName} flow in the pipe: Kn = λ/d = ${fmt.sci(v.Kn, 1)}`, x0, -0.15, { size: 0.19, color: C.text });
       p.text(`λ = ${cm(v.lam)},  monolayer in ${dur(v.tml)}`, x0, -0.5, { size: 0.19, color: C.text });
 

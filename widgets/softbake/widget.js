@@ -148,18 +148,12 @@
   });
 
   // ------------------------------------------------------------ "Run bake" button on the stage
-  if (widget && widget.stage && typeof document !== 'undefined') {
-    const bar = document.createElement('div');
-    bar.className = 'mfw-stagebar mfw-stagebar-right';
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = '▶ Run bake'; b.title = 'Bake from the start to the set time'; b.setAttribute('aria-label', b.title);
-    b.addEventListener('click', () => {
+  if (widget && widget.stage && typeof document !== 'undefined') widget.stageBar([
+    { icon: '▶', label: 'Run bake', title: 'Bake from the start to the set time', onClick: () => {
       if (widget.mode === 'tour') widget.setMode('explore');
       const t = Math.max(30, widget.values.t);
       widget.set({ t: 5 });
       widget.animate({ t }, 6, 'linear');
-    });
-    bar.appendChild(b);
-    widget.stage.appendChild(bar);
-  }
+    } },
+  ], { right: true });
 }());

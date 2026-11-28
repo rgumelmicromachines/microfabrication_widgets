@@ -190,17 +190,13 @@
   });
 
   // ------------------------------------------------------------ "Run etch" / "Reset" buttons on the stage
-  if (widget && widget.stage && typeof document !== 'undefined') {
-    const bar = document.createElement('div');
-    bar.className = 'mfw-stagebar mfw-stagebar-right';
-    const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title); b.addEventListener('click', fn); bar.appendChild(b); return b; };
-    mk('▶ Run etch', 'Etch from the start to 30 % overetch', () => {
+  if (widget && widget.stage && typeof document !== 'undefined') widget.stageBar([
+    { icon: '▶', label: 'Run etch', title: 'Etch from the start to 30 % overetch', onClick: () => {
       if (widget.mode === 'tour') widget.setMode('explore');
       const v = widget.values;
       widget.set({ t: 0 });
       widget.animate({ t: Math.min(40, 1.3 * v.tc) }, 7, 'linear');
-    });
-    mk('↺ Reset', 'Back to the start of the etch', () => { if (widget.mode === 'tour') widget.setMode('explore'); widget.set({ t: 0 }); });
-    widget.stage.appendChild(bar);
-  }
+    } },
+    { icon: '↺', label: 'Reset', title: 'Back to the start of the etch', onClick: () => { if (widget.mode === 'tour') widget.setMode('explore'); widget.set({ t: 0 }); } },
+  ], { right: true });
 }());

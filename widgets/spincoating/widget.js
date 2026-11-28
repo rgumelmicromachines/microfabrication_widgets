@@ -342,18 +342,13 @@
 
   // ------------------------------------------------------------ Restart / Pause buttons on the stage (top left, above the animation)
   if (widget && widget.stage && typeof document !== 'undefined') {
-    const bar = document.createElement('div');
-    bar.className = 'mfw-stagebar';
-    const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title); b.addEventListener('click', fn); bar.appendChild(b); return b; };
-    mk('↻ Restart', 'Restart the coating run', () => { restart(); widget.dirty = true; });
-    const pb = mk('❚❚ Pause', 'Pause the coating run', () => { togglePause(); widget.dirty = true; });
+    const [, pb] = widget.stageBar([
+      { icon: '↻', label: 'Restart', title: 'Restart the coating run', onClick: () => { restart(); widget.dirty = true; } },
+      { icon: '❚❚', label: 'Pause', title: 'Pause the coating run', onClick: () => { togglePause(); widget.dirty = true; } },
+    ]);
     syncButtons = () => {
       const paused = pausedAt !== null;
-      pb.textContent = paused ? '▶ Play' : '❚❚ Pause';
-      pb.title = paused ? 'Continue the coating run' : 'Pause the coating run';
-      pb.setAttribute('aria-label', pb.title);
-      pb.setAttribute('aria-pressed', String(paused));
+      pb.set({ icon: paused ? '▶' : '❚❚', label: paused ? 'Play' : 'Pause', title: paused ? 'Continue the coating run' : 'Pause the coating run', pressed: paused });
     };
-    widget.stage.appendChild(bar);
   }
 }());

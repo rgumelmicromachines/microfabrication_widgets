@@ -40,6 +40,7 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
 2. Put the physics in `model.js` (no drawing code, cite every constant) and add checks to `tests/verify.js`.
 3. Describe the figure in `widget.js` with `MFW.widget('#app', { params, derived, draw, readout, steps, ... })`.
    - `params`: number → slider (`log: true` for a log slider), `options` → select, boolean → checkbox; `when: v => …` shows a control conditionally.
+   - A lesson opens in **Explore**; the guided tour is the second tab (`startMode: 'tour'` in the config, or `#tour` at the end of the address, opens the tour directly).
    - `steps`: the guided tour. Parameters a step `set`s are locked while the tour is active; everything else stays under the student's control. `text`/`caption` may be functions of the live values.
    - Use palette roles (`C.yellow`, `C.text`, `MFW.MAT.sio2` …), never literal colours – that is what makes light/dark mode work.
    - Labels whose position depends on the data: use `p.place(text, candidates)` / `ax.place`, `ax.labelCurve`, or `ax.legend` – they
@@ -48,6 +49,7 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
 4. Before publishing, in the browser console of the page:
    load `../../tests/overlap-audit.js` and run `MFWAudit.run()` (expect no issues), then `../../tests/stability.js` and `MFWStability.run()` (0 px movement), then `../../tests/flicker.js` and `MFWFlicker.run()` (no label or axis jumping back and forth).
    Use `w.nice(key, list, need)` for any auto-zoomed range or scale bar (it has hysteresis, and while a slider is dragged it only grows, with 2× headroom, then settles once – no sawtooth zooming) and `MFW.chars(rows)` for the characteristics table.
+   Buttons on the figure (run, restart, pause): `widget.stageBar([{ icon, label, title, onClick }], { right: true })` – on a narrow screen the bar moves below the figure by itself; the overlap audit reports anything drawn under such a button.
 5. Add a tile to `index.html`.
 
 ## Contributing

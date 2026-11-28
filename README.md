@@ -22,7 +22,7 @@ tests/flicker.js              browser: sweeps and wiggles every slider, reports 
 tests/contact-sheet.js        browser: renders many states on one canvas for visual review
 ```
 
-Pages, grouped into modules: Fundamentals (`semiconductor`, `vacuum`), Substrate (`segregation`), Lithography (`spincoating`, `softbake`, `lithography`), Doping (`diffusion`, `implant`), Thin films (`oxidation`, `cvd`, `pvd`, `stress`), Etching (`etching`, `dryetch`), Interconnects (`electromigration`), Characterization (`fourpoint`, `interference`). The modules and their pages are listed once, in `MODULES` in `assets/mfw.js`; the lesson menu, the numbering (e.g. 4.2), the previous/next links and the grouping of the tiles on the overview page are all built from it – to add a page, add it there and add a tile to `index.html`.
+Pages, grouped into modules: Fundamentals (`semiconductor`, `vacuum`), Substrate (`segregation`), Lithography (`spincoating`, `softbake`, `lithography`), Doping (`diffusion`, `implant`), Thin films (`oxidation`, `cvd`, `pvd`, `stress`), Etching (`etching`, `dryetch`), Interconnects (`electromigration`, `stressmigration`), Characterization (`fourpoint`, `interference`). The modules and their pages are listed once, in `MODULES` in `assets/mfw.js`; the lesson menu, the numbering (e.g. 4.2), the previous/next links and the grouping of the tiles on the overview page are all built from it – to add a page, add it there and add a tile to `index.html`.
 
 ## Run locally
 

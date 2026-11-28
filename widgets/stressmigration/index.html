@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stress migration · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<meta name="description" content="Interactive stress migration (stress-induced voiding) in interconnects: thermal stress against diffusion, the temperature of fastest voiding, the storage test and its weak acceleration.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=8649324c0b">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Interconnects</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Stress migration</h1>
+    <p class="lede">A metal line can break while the chip just sits on a shelf. Why is there a worst temperature – and why is a hotter test not a faster one?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>A metal line enclosed in its dielectric cannot shrink freely when it cools, because the metal contracts much more than the silicon and the dielectric around it. Below the stress-free temperature <span class="tex">T_0</span> it is under a tensile stress <span class="tex">\sigma \propto T_0 - T</span>. The stress makes vacancies collect into voids at the creep rate (McPherson &amp; Dunn)</p>
+      <div class="tex-display">R(T) = C\,(T_0 - T)^{N}\exp\!\left(-\frac{E_a}{kT}\right), \qquad TTF = C_0\,(T_0 - T)^{-N}\exp\!\left(\frac{E_a}{kT}\right)</div>
+      <p>with the creep exponent <span class="tex">N</span> and the activation energy <span class="tex">E_a</span> of the diffusion that feeds the voids. The stress factor falls and the diffusion factor rises with temperature, so the rate has a maximum at</p>
+      <div class="tex-display">\frac{N}{T_0 - T_{max}} = \frac{E_a}{k\,T_{max}^2} \qquad (T \text{ in kelvin})</div>
+      <p>An Arrhenius plot of measured failure times shows only an apparent activation energy,</p>
+      <div class="tex-display">E_{eff} = E_a - \frac{N\,k\,T^2}{T_0 - T}</div>
+      <p>which is smaller than <span class="tex">E_a</span>, zero at <span class="tex">T_{max}</span> and negative above it. The acceleration of a storage test at <span class="tex">T</span> against use at <span class="tex">T_{use}</span> is <span class="tex">AF = R(T)/R(T_{use})</span>.</p>
+      <table>
+        <tr><th>Structure</th><th>N</th><th>E<sub>a</sub> (eV)</th><th>T<sub>0</sub> (°C)</th><th>T<sub>max</sub> (°C)</th><th>Source</th></tr>
+        <tr><td>Cu damascene, via on a wide lead</td><td>3.2</td><td>0.74</td><td>≈ 270</td><td>≈ 190</td><td>Ogawa et al. 2002</td></tr>
+        <tr><td>Al–Si(1 %) lines, 3 µm wide</td><td>2.33</td><td>0.58</td><td>232</td><td>165*</td><td>McPherson &amp; Dunn 1987, as quoted by Ogawa et al.</td></tr>
+      </table>
+      <p class="note">* calculated here from the three parameters with the condition above; for aluminium alloys the maximum is generally found between 150 and 200 °C (McPherson 2019). Creep exponents of 2–4 are usual for metals.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>Check that 190 °C is the temperature of fastest voiding for the copper parameters.
+          <details><summary>Answer</summary>At 463.15 K: <span class="tex">N/(T_0 - T) = 3.2/80 = 0.040\ \mathrm{K^{-1}}</span> and <span class="tex">E_a/kT^2 = 0.74/(8.617\times10^{-5}\cdot463.15^2) = 0.040\ \mathrm{K^{-1}}</span> – equal, so the two factors change at the same relative rate in opposite directions.</details></li>
+        <li>How much faster does a copper structure void in a bake at 190 °C than in use at 105 °C?
+          <details><summary>Answer</summary>Stress factor: <span class="tex">(80/165)^{3.2} = 0.099</span>. Diffusion factor: <span class="tex">\exp[(0.74/k)(1/378.15 - 1/463.15)] = 64.5</span>. <span class="tex">AF = 0.099\cdot64.5 \approx 6.4</span>. A thousand hours in the oven stand for only about nine months of use.</details></li>
+        <li>Someone proposes to bake at 250 °C “to speed things up”. What happens?
+          <details><summary>Answer</summary>Only 20 K below <span class="tex">T_0</span> the stress factor collapses: <span class="tex">(20/165)^{3.2} = 0.0012</span>, while diffusion gains a factor 541. <span class="tex">AF \approx 0.63</span> – the test runs slower than the product in use and proves nothing.</details></li>
+        <li>Which apparent activation energy would an Arrhenius plot of Al–Si failure times show around 105 °C?
+          <details><summary>Answer</summary><span class="tex">E_{eff} = 0.58 - 2.33\cdot8.617\times10^{-5}\cdot378.15^2/127 = 0.58 - 0.23 = 0.35\ \mathrm{eV}</span> – well below the 0.58 eV of the diffusion itself. Activation energies read from stress-migration tests depend on the temperature range of the test.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>The model gives the temperature dependence only. The prefactor – and with it any absolute lifetime – depends on the geometry, the microstructure and the process; rates and times are therefore shown relative to their extreme value.</li>
+        <li>The parameter sets are fits to two specific structures (a via on a wide copper lead; 3 µm Al–Si lines). The aluminium values are taken from a later paper that quotes the original study. Other line widths, alloys, barriers and dielectrics give other values; narrow copper lines with vias showed no significant voiding in the same study.</li>
+        <li>The stress is taken as proportional to T<sub>0</sub> − T with a single stress-free temperature. Real lines relax part of their stress by plastic flow and creep during the test, and voids relieve the stress around them; the model has no time dependence of the stress.</li>
+        <li>No current flows in this test. In a product, electromigration and stress migration act together.</li>
+        <li>The picture is schematic: void shape and position, grain boundaries, vacancies and the length of the stress arrows only illustrate the two factors. The plots are computed.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>J. W. McPherson, C. F. Dunn, “A model for stress-induced metal notching and voiding in very large-scale-integrated Al–Si (1%) metallization”, <i>J. Vac. Sci. Technol. B</i> 5 (1987) 1321–1325.</li>
+        <li>E. T. Ogawa, J. W. McPherson, J. A. Rosal, K. J. Dickerson, T.-C. Chiu, L. Y. Tsung, M. K. Jain, T. D. Bonifield, J. C. Ondrusek, W. R. McKee, “Stress-induced voiding under vias connected to wide Cu metal leads”, <i>Proc. IEEE Int. Reliability Physics Symp.</i> 2002, 312–321.</li>
+        <li>J. W. McPherson, <i>Reliability Physics and Engineering: Time-To-Failure Modeling</i>, 3rd ed., Springer 2019, ch. 12, section on stress migration (maximum condition, test practice).</li>
+        <li>R. Blish, N. Durrant (eds.), <i>Semiconductor Device Reliability Failure Models</i>, International SEMATECH, Technology Transfer #00053955A-XFR, 2000, section F (stress migration).</li>
+        <li>R. E. Jones, M. L. Basehore, “Stress analysis of encapsulated fine-line aluminum interconnect”, <i>Appl. Phys. Lett.</i> 50 (1987) 725–727 (tensile stress after cooling from the passivation deposition).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=36e71e5d98"></script>
+<script src="model.js?v=e2b95b0097"></script>
+<script src="widget.js?v=e834e7b0fc"></script>
+</body>
+</html>

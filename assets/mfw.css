@@ -310,7 +310,8 @@ body.mfw-noscroll { overflow: hidden; }
 .mfw-readout .num.txt { white-space: normal; color: var(--text-2); }
 .mfw-readout .unit { white-space: nowrap; color: var(--text-2); padding-left: 6px !important; }
 .mfw-readout .sym { white-space: nowrap; color: var(--text); }
-.mfw-readout .par { width: 100%; }
+.mfw-readout .par { width: 52%; }
+.mfw-readout .num.txt { text-align: right; text-wrap: balance; }
 .mfw-cf, .mfw-cnote { display: block; font-size: 13px; line-height: 1.3; color: var(--muted); white-space: normal; }
 .mfw-readout .hl { color: var(--accent); font-weight: 700; }
 .mfw-readout .warn { color: var(--danger); }
@@ -514,3 +515,22 @@ body[data-module] .lesson-pager { margin-top: 36px; }
 .mfw-need b { padding: 3px 8px; background: var(--mod); color: var(--on-mod); font-weight: 700; font-stretch: 88%; }
 .mfw-need span { font-weight: 600; }
 .mfw .mfw-dot.has-points { border-style: dashed; border-width: 2px; border-color: var(--mod); }
+
+/* ---------------------------------------------------------------- course map: modules, and the lessons of the current module, under the header band */
+.course-map { background: var(--surface-2); border-bottom: 1px solid var(--line-strong); padding: 0 clamp(16px, 3vw, 40px); }
+.course-map ol { list-style: none; margin: 0 auto; padding: 0; max-width: 1680px; display: flex; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+.course-map ol::-webkit-scrollbar { display: none; }
+.course-map li { flex: none; }
+.course-map a { display: flex; align-items: baseline; gap: 7px; white-space: nowrap; padding: 8px 14px 6px; border-bottom: 3px solid transparent; color: var(--text-2); text-decoration: none; font-size: 14.5px; font-stretch: 90%; }
+.course-map a:hover { color: var(--text); border-bottom-color: var(--line-strong); }
+.course-map a span { font-weight: 700; font-stretch: 82%; color: var(--mod); font-variant-numeric: tabular-nums; }
+.course-map li:first-child a { padding-left: 0; }
+.map-modules li.is-current a { color: var(--text); font-weight: 650; border-bottom-color: var(--mod); }
+.map-lessons { border-top: 1px solid var(--line); }
+.map-lessons a { padding: 6px 14px 5px; font-size: 14px; }
+.map-lessons li.is-current a { color: var(--on-mod); background: var(--mod); font-weight: 650; padding-left: 12px; padding-right: 12px; }
+.map-lessons li.is-current a span { color: var(--on-mod); }
+.map-lessons li.is-current:first-child a { padding-left: 12px; }
+@media print { .course-map { display: none; } }
+/* a replay button under an answered prediction */
+.mfw .mfw-replay { justify-self: start; padding: 5px 12px; font-size: 14.5px; }

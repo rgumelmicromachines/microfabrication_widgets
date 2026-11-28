@@ -28,7 +28,10 @@
      Company, "Aluminum Etchant Type A" product data). Photoresist is not attacked: 0 nm/min in Al Etch A
      (K. R. Williams, K. Gupta, M. Wasilik, J. Microelectromech. Syst. 12 (2003) 761, Table II).
    Resistivity of aluminium: 2.650 × 10⁻⁸ Ω·m at 293 K, bulk (P. D. Desai, H. M. James, C. Y. Ho, J. Phys. Chem. Ref.
-     Data 13 (1984) 1131). A thin film has a higher resistivity; no thin-film value was verified, so the bulk value is
+     Data 13 (1984) 1131). A thin film has a higher resistivity: evaporated films on unheated glass about 60 % above
+     bulk at 296 K (A. F. Mayadas, J. Appl. Phys. 1968, doi:10.1063/1.1656954, abstract), sputtered films 7.9 to
+     4.8 µΩ·cm for 50 to 430 nm (C. A. Corrêa et al., RSC Adv. 14 (2024) 15220). Neither matches the film of the work
+     order, so the bulk value is kept as
      a lower bound and all resistances of the game are lower bounds in the same sense.
 
    SCENARIO (work order – chosen for the game, not measured data)

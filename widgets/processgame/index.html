@@ -131,7 +131,7 @@
         <li>The etch is isotropic. A 5.0 µm resist line covers the 500 nm film. What is the mean width of the aluminium line when the film has just cleared, and after 20 % more etch time?
           <details><summary>Answer</summary>The wall is a quarter circle of radius <span class="tex">r</span> around the resist edge. Just cleared, <span class="tex">r = h = 0.5\ \mathrm{\mu m}</span>: the mean undercut per side is <span class="tex">\pi r/4 = 0.39\ \mathrm{\mu m}</span>, mean width 4.21 µm. With <span class="tex">r = 0.6\ \mathrm{\mu m}</span> the mean undercut over the film thickness is 0.52 µm per side and the width 3.96 µm. That is where the 4.0 µm of the work order comes from.</details></li>
         <li>The soda-lime mask and the wafer are 1.5 K warmer than at the first exposure. How far off is a die 45 mm from the centre after perfect alignment, and how much of the 2 µm pad overlap is left for the alignment itself?
-          <details><summary>Answer</summary><span class="tex">M = (9.06 - 2.6)\cdot 1.5 = 9.7\ \mathrm{ppm}</span>, at 45 mm 0.44 µm. About 1.5 µm is left.</details></li>
+          <details><summary>Answer</summary><span class="tex">M = (9.0 - 2.6)\cdot 1.5 = 9.6\ \mathrm{ppm}</span>, at 45 mm 0.43 µm. About 1.5 µm is left.</details></li>
         <li>A four-point probe on the unpatterned film reads <span class="tex">V/I = 11.7\ \mathrm{m\Omega}</span>. What is the sheet resistance?
           <details><summary>Answer</summary><span class="tex">R_s = (\pi/\ln 2)\cdot V/I = 4.532 \cdot 11.7 = 53\ \mathrm{m\Omega/\square}</span>.</details></li>
       </ol>
@@ -147,7 +147,7 @@
         <li><b>Hard bake.</b> Positive resist starts to cross-link above about 140 °C, and solvents reach their limit as strippers from hard-bake temperatures of about 150–160 °C (MicroChemicals). In the game a hard bake at 150 °C or more leaves the pads covered and no die makes contact. The same note calls the resists stable in the etchant “at least after a sufficient hardbake”, without a number, so skipping the bake has no effect in the game.</li>
         <li><b>Developer on aluminium.</b> AZ Developer is made for minimal attack on aluminium; no rate is published and the game takes it as zero. 0.26 N TMAH: 10 nm/min from the Merck data sheet (the MicroChemicals product page quotes about 70 nm/min). NaOH- and KOH-based developers: 100 nm/min as a reference rate. The attack acts on the spaces, which are etched anyway, and sideways under the resist edge by the same amount, so its effect on the resistor is small.</li>
         <li><b>Etch.</b> Rates of 30 Å/s at 25 °C and 80 Å/s at 40 °C from the manufacturer of the etchant; real baths age and hydrogen bubbles make the etch uneven. The etch is taken as ideally isotropic and uniform, and the resist as unaffected by it.</li>
-        <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces; no thin-film value was verified, so every resistance here is a lower bound. Contact resistance is not modelled.</li>
+        <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces, and the value depends on how the film was made: evaporated films on unheated glass were measured about 60 % above bulk at room temperature (Mayadas 1968), a sputtered film 430 nm thick at 4.8 × 10⁻⁸ Ω·m (Corrêa et al. 2024). No value for a film like the one in the work order was found, so the game keeps the bulk value and every resistance here is a lower bound. Contact resistance is not modelled.</li>
         <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
         <li><b>Inspection.</b> After development the figure shows a resolution pattern (groups of equal lines and spaces of 5, 3, 2, 1.5 and 1 µm) printed with the same resist, dose, gap and development as the resistor, and the two overlay marks with the resist cross. Each group is calculated with the same model as the resistor lines. A group counts as resolved when its line width is within 20 % of the nominal width.</li>
         <li><b>Clock.</b> Development and etch run live: the clock of the developer runs eight times and that of the etchant ten times faster than real time, and the top view follows the model at every moment. On a real wafer the resist pattern cannot be measured while it is in the developer.</li>
@@ -165,6 +165,8 @@
         <li>K. R. Williams, K. Gupta, M. Wasilik, “Etch rates for micromachining processing – part II”, <i>J. Microelectromech. Syst.</i> 12 (2003) 761.</li>
         <li>C. A. Mack, “Development of positive photoresists”, <i>J. Electrochem. Soc.</i> 134 (1987) 148.</li>
         <li>P. D. Desai, H. M. James, C. Y. Ho, “Electrical resistivity of aluminum and manganese”, <i>J. Phys. Chem. Ref. Data</i> 13 (1984) 1131.</li>
+        <li>A. F. Mayadas, “Intrinsic resistivity and electron mean free path in aluminum films”, <i>J. Appl. Phys.</i> (1968), <a href="https://doi.org/10.1063/1.1656954">doi:10.1063/1.1656954</a> (abstract: resistivity at 296 K about 60 % above bulk).</li>
+        <li>C. A. Corrêa, J. More-Chevalier, P. Hruška et al., “Microstructure and physical properties of black-aluminum antireflective films”, <i>RSC Adv.</i> 14 (2024) 15220–15231 (reflective Al films, magnetron sputtered, 50–430 nm: 7.9 to 4.8 µΩ·cm at 298 K).</li>
         <li>SÜSS MicroTec, <i>MJB4 Mask Aligner</i>, product brochure 02/2010 (printing modes, proximity gap).</li>
         <li>The references of the lessons <a href="../softbake/index.html">Soft bake</a>, <a href="../lithography/index.html">Lithography resolution</a>, <a href="../development/index.html">Development</a>, <a href="../alignment/index.html">Alignment &amp; overlay</a>, <a href="../pvd/index.html">Evaporation &amp; sputtering</a>, <a href="../dryetch/index.html">Dry etching</a> and <a href="../fourpoint/index.html">Four-point probe</a>.</li>
       </ul>
@@ -176,12 +178,12 @@
 <script src="../softbake/model.js?v=8f3bdfc3b0"></script>
 <script src="../lithography/model.js?v=694ee77c66"></script>
 <script src="../development/model.js?v=0856a9851a"></script>
-<script src="../alignment/model.js?v=b3a2e34d48"></script>
+<script src="../alignment/model.js?v=fadbe4dc0f"></script>
 <script src="../pvd/model.js?v=1981604d34"></script>
 <script src="../oxidation/model.js?v=de9bcd22fc"></script>
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
-<script src="model.js?v=b732b6f557"></script>
+<script src="model.js?v=e7be71a1c1"></script>
 <script src="widget.js?v=c3bab9e588"></script>
 </body>
 </html>

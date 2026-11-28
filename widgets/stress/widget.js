@@ -52,7 +52,8 @@
       const yHi = Math.max(yAt(X0), yAt(xc)) + tf;                                          // highest point of the film
       p.text(`${v.f.name}, ${um(v.hf)}`, X0, 2.62, { size: 0.2, color: C.text });
       p.text(`${kind(v.sig)} film`, X1, 2.62, { size: 0.21, align: 'right', color: Math.abs(v.sig) < 5 ? C.muted : v.sig > 0 ? C.red : C.blue, bold: true });
-      p.text(`Si wafer ${v.D} mm, ${v.hs} µm`, xc, Math.min(yAt(xc), yAt(X1)) - th - 0.25, { size: 0.19, align: 'center', color: C.text });
+      p.text(`Si wafer ${v.D} mm, ${v.hs} µm`, xc, y0 - 0.375 - th - 0.25,   // below the lowest position of the wafer: the label stays put when the bow changes sign
+        { size: 0.19, align: 'center', color: C.text });
       // stress arrows above the film: tensile pulls inward (→ ←), compressive pushes outward (← →)
       if (Math.abs(v.sig) >= 5) for (const xa of [X0 + 0.75, X1 - 0.75]) {
         const inward = (xa < xc ? 1 : -1) * (v.sig > 0 ? 1 : -1), y = yHi + 0.45;

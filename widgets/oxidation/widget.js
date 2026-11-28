@@ -101,7 +101,8 @@
       ax.dot(v.t, v.x, { r: 0.11 });
       // legend in the lower right corner: no oxide is that thin after hours, so no curve can pass there
       ax.legend([
-        { label: `Deal–Grove, ${AMB[v.amb]}${v.amb === 'dry' && v.x0 < 0.025 ? ' (from 25 nm)' : ''}`, color: C.yellow, width: 4 },
+        { label: `Deal–Grove, ${AMB[v.amb]}${v.amb === 'dry' ? ' (≥ 25 nm)' : ''}`,   // same text for every starting oxide: the legend keeps its width
+          color: C.yellow, width: 4 },
         { label: 'linear (B/A)(t+τ)', color: C.teal, dash: DASH_LIN, alpha: p.vis('limits') },
         { label: 'parabolic √(B(t+τ))', color: C.purple, dash: DASH_PAR, alpha: p.vis('limits') },
         { label: `${v.amb === 'dry' ? 'wet' : 'dry'}, for comparison`, color: C.grey, textColor: C.greyA, alpha: p.vis('compare') },

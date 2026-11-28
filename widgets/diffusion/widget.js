@@ -84,11 +84,11 @@
       p.layer('junction', () => {
         if (v.xj2 > 0) {
           p.text(pType ? 'p⁺' : 'n⁺', (wL + wR) / 2, Ytop - Math.min(xj / 2, 0.5), { size: 0.3, align: 'center', color: C.white });
-          const xd = Math.min(wR + lat + 0.25, X1 - 0.12), yd = Math.max(Ytop - xj, Ybot + 0.05);
+          // x_j is measured under the window, where the junction is flat: inside the diffused region there is always
+          // room for the dimension and its label, whatever the lateral spread
+          const xd = wR - 0.3, yd = Math.max(Ytop - xj, Ybot + 0.05);
           p.dim(xd, Ytop, xd, yd, '');
-          const ym = (Ytop + yd) / 2;
-          p.place('x_j', [[xd + 0.1, Ytop - 0.25, 'left'], [xd - 0.1, Ytop - 0.25, 'right'], [xd + 0.1, ym, 'left'], [xd - 0.1, ym, 'right']],   // top-anchored first: does not move with the zoom
-            { size: 0.24, color: C.greyA, within: [X0, Ybot, X1, Ytop], key: 'xjdim' });
+          p.text('x_j', xd + 0.1, Math.max(Ytop - 0.4, (Ytop + yd) / 2), { size: 0.24, color: C.white });   // near the surface: does not move with the zoom
           if (lat > 0.25 && Ytop - xj - 0.3 > Ybot + 0.5) p.text('lateral spread ≈ 0.8 x_j', X0 + 0.1, Ytop - xj - 0.25, { size: 0.19, color: C.text, bg: true });
         }
         p.text(pType ? 'n-type substrate' : 'p-type substrate', X1 - 0.1, Ybot + 0.25, { size: 0.22, align: 'right', color: C.text });

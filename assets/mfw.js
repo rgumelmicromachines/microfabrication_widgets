@@ -1016,25 +1016,32 @@
       if (!AC) return;
       audio = audio || new AC();
       if (audio.state === 'suspended') audio.resume();
-      const t0 = audio.currentTime, notes = kind === 'badge' ? [[659.25, 0], [987.77, 0.11], [1318.5, 0.22]] : [[880, 0]];
+      const t0 = audio.currentTime, notes = kind === 'badge' ? [[659.25, 0], [987.77, 0.11], [1318.5, 0.22]] : kind === 'warn' ? [[311.13, 0], [233.08, 0.12]] : kind === 'tick' ? [[1567.98, 0]] : [[880, 0]];
       for (const [f, dt] of notes) {
-        const o = audio.createOscillator(), g = audio.createGain(), len = kind === 'badge' ? 0.55 : 0.16;
+        const o = audio.createOscillator(), g = audio.createGain(), len = kind === 'badge' ? 0.55 : kind === 'warn' ? 0.28 : kind === 'tick' ? 0.05 : 0.16;
         o.type = 'sine'; o.frequency.value = f;
         g.gain.setValueAtTime(0.0001, t0 + dt);
-        g.gain.exponentialRampToValueAtTime(kind === 'badge' ? 0.12 : 0.07, t0 + dt + 0.012);
+        g.gain.exponentialRampToValueAtTime(kind === 'badge' ? 0.12 : kind === 'tick' ? 0.03 : 0.07, t0 + dt + 0.012);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + len);
         o.connect(g); g.connect(audio.destination); o.start(t0 + dt); o.stop(t0 + dt + len + 0.02);
       }
     } catch (e) { /* no sound: fine */ }
   }
+  /** Sound for a page's own events ('point', 'badge', 'warn', 'tick'); silent when the reader muted or hid the layer. */
+  progress.sound = kind => { if (!isBrowser) return; const st = progress.load(); if (!st.off && !st.mute) chime(kind); };
   let toastBox = null;
   const badge = (a, on = true) => `<span class="badge${on ? ' is-on' : ''}" data-family="${a.family}" aria-hidden="true"><span>${escH(a.mark)}</span></span>`;
-  function toast(title, text, a) {
+  // pop-ups wait in a queue and at most two are on screen, so a run that earns several badges does not cover the page
+  const toastQ = []; let toastShown = 0;
+  function toast(title, text, a) { toastQ.push([title, text, a]); pumpToasts(); }
+  function pumpToasts() {
+    if (toastShown >= 2 || !toastQ.length) return;
+    const [title, text, a] = toastQ.shift();
     if (!toastBox) { toastBox = document.createElement('div'); toastBox.className = 'mfw-toasts'; toastBox.setAttribute('role', 'status'); toastBox.setAttribute('aria-live', 'polite'); document.body.appendChild(toastBox); }
     const t = document.createElement('div'); t.className = 'mfw-toast';
     t.innerHTML = `${a ? badge(a) : ''}<div><b>${escH(title)}</b><span>${escH(text)}</span></div>`;
-    toastBox.appendChild(t);
-    setTimeout(() => { t.classList.add('is-leaving'); setTimeout(() => t.remove(), 400); }, 7000);
+    toastBox.appendChild(t); toastShown++;
+    setTimeout(() => { t.classList.add('is-leaving'); setTimeout(() => { t.remove(); toastShown--; pumpToasts(); }, 400); }, toastQ.length ? 3200 : 6500);
   }
   /** Header chip, hub section and tile marks – redrawn after every change. */
   progress.refresh = () => {
@@ -1157,6 +1164,9 @@
     }
     header.insertAdjacentElement('afterend', map);
     for (const row of map.children) { const c = row.querySelector('.is-current'); if (c) row.scrollLeft = Math.max(0, c.offsetLeft - (row.clientWidth - c.offsetWidth) / 2); }
+    // the mark: µ as an etched trench under a mask opening (assets/logo.svg); on the band it is a light tile
+    const brand = header.querySelector('.brand');
+    if (brand && !brand.querySelector('.brand-mark')) brand.insertAdjacentHTML('afterbegin', '<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#ffffff"/><path fill="#b35a00" d="M4 4h8v3H4zM18 4h10v3H18z"/><path fill="#1d3f73" d="M8 9h4v10h6V9h4v10h3.5v4H12v5H8z"/></svg>');
     const crumb = header.querySelector('.crumb');
     if (crumb) crumb.replaceWith(menu); else header.insertBefore(menu, header.querySelector('.header-spacer'));
     // previous / next under the widget
@@ -1320,9 +1330,9 @@
       this._stepKeys = new Set(); this._stepLayers = new Set();
       steps.forEach(s => { Object.keys(s.set || {}).forEach(k => this._stepKeys.add(k));
         (s.show || []).concat(s.hide || []).forEach(n => this._stepLayers.add(n)); });
-      // a lesson opens in its tour of challenges; Explore (every slider free, nothing asked) is the second tab.
-      // `startMode: 'explore'` in the config or `#explore` at the end of the address opens Explore directly.
-      const wantTour = cfg.startMode !== 'explore' && !(typeof location !== 'undefined' && location.hash === '#explore');
+      // a lesson opens in Explore (every slider free, nothing asked); Challenges is the second tab.
+      // `startMode: 'tour'` in the config or `#tour` at the end of the address opens the challenges directly.
+      const wantTour = cfg.startMode === 'tour' || (typeof location !== 'undefined' && location.hash === '#tour');
       this.mode = this.hasTour && wantTour ? 'tour' : 'explore';
       const sp = parseFloat(store.get('mfw-speed'));
       this.speed = SPEEDS.includes(sp) ? sp : 1;
@@ -1673,7 +1683,7 @@
         const tabs = el('div', 'mfw-tabs', this.panel);
         tabs.setAttribute('role', 'tablist');
         this.tabBtns = {};
-        for (const m of ['tour', 'explore']) {
+        for (const m of ['explore', 'tour']) {
           const b = el('button', 'mfw-tab', tabs, m === 'tour' ? S.tour : S.explore);
           b.type = 'button'; b.setAttribute('role', 'tab');
           b.addEventListener('click', () => this.setMode(m));

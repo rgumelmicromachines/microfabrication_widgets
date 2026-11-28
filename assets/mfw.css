@@ -243,6 +243,25 @@ body.mfw-noscroll { overflow: hidden; }
 .mfw .mfw-play { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; min-width: 96px; justify-content: center; }
 .mfw .mfw-play:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 88%, var(--text)); }
 .mfw-speed { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: 14.5px; color: var(--muted); }
+/* interactive tour: numbered dots, question / task box */
+.mfw-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.mfw .mfw-dot { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 14px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; }
+.mfw .mfw-dot.is-done { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
+.mfw .mfw-dot[aria-current="step"] { border-color: var(--accent); background: var(--accent); color: var(--bg); }
+.mfw-task { display: grid; gap: 8px; }
+.mfw-task:empty { display: none; }
+.mfw-q { margin: 0; font-size: 16.5px; line-height: 1.5; font-weight: 600; color: var(--text); }
+.mfw-opts { display: grid; gap: 6px; }
+.mfw .mfw-opt { text-align: left; padding: 8px 12px; font-size: 15.5px; line-height: 1.35; }
+.mfw .mfw-opt:disabled { cursor: default; transform: none; opacity: 0.6; }
+.mfw .mfw-opt.is-right { opacity: 1; border-color: var(--accent); background: var(--accent-soft); color: var(--text); font-weight: 600; }
+.mfw .mfw-opt.is-right::before { content: "✓ "; }
+.mfw .mfw-opt.is-wrong { opacity: 1; border-color: var(--danger); color: var(--danger); }
+.mfw .mfw-opt.is-wrong::before { content: "✗ "; }
+.mfw-verdict { margin: 0; min-height: 1.4em; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.mfw-taskrow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.mfw-status { font-size: 15px; color: var(--muted); }
+.mfw-status.is-done { color: var(--accent); font-weight: 650; }
 .mfw-holdtrack { height: 2px; background: var(--line); overflow: hidden; }
 .mfw-holdbar { height: 100%; width: 0; background: var(--accent); }
 .mfw-stepsbox > summary { cursor: pointer; font-size: 15px; color: var(--link); width: max-content; }

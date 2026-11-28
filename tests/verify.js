@@ -228,6 +228,12 @@ section('Dry etching (geometric etch front, laser-interferometric end point)');
   check('complete anisotropic etch: B = 0', an.B, 0, 0, 1e-12);
   check('anisotropic etch: vertical wall (edge at top = edge at bottom)', an.edge(0), an.edge(999), 1e-12);
   check('isotropic etch: rounded wall – at the film bottom the edge is back at the mask edge', iso.edge(1000), o.W / 2, 1e-9);
+  // partly anisotropic: a wall point at depth y is etched sideways only for t − y/R_v (Huygens envelope)
+  { const pa = DE.state({ ...o, Rv: 100, Rl: 30, t: 10 }), a = 0.3;
+    check('tapered wall: undercut at 600 nm depth = (D − y)·a/√(1 − a²) (nm)', pa.edge(600) - o.W / 2, 400 * a / Math.sqrt(1 - a * a), 1e-12);
+    check('tapered wall: continuous where the circle meets the taper (y = a·r)', pa.edge(90 - 1e-7), pa.edge(90 + 1e-7), 1e-6);
+    check('tapered wall: full undercut R_l·t only at the top (nm)', pa.edge(0) - o.W / 2, 300, 1e-12);
+    check('tapered wall: reaches the mask edge at the floor', pa.edge(1000), o.W / 2, 1e-9); }
   check('bare Si reflectance at 632.8 nm (Green 2008: n = 3.88, k = 0.016)', DE.reflectance(0), ((3.877 - 1) ** 2 + 0.0163 ** 2) / ((3.877 + 1) ** 2 + 0.0163 ** 2), 1e-3);
   check('one fringe per λ/2n: R(d + λ/2n) = R(d)', DE.reflectance(400 + s.period), DE.reflectance(400), 1e-9);
   check('fringe period for SiO₂ at 632.8 nm (nm)', s.period, 217.2, 1e-3);
@@ -356,6 +362,16 @@ section('Vacuum: conductance, pump-down, outgassing');
   check('page task 1: C (L/s)', VA.molecularConductance(4, 50), 14.0, 0.002); check('page task 1: S_eff (L/s)', VA.sEff(500, VA.molecularConductance(4, 50)), 13.6, 0.003);
   check('page task 2: t = τ ln 1000 (s)', 0.5 * Math.log(1000), 3.45, 0.002);
   check('page task 3: Q from 9e-8 mbar·L/(s·cm²) on 1 m² (Pa·L/s)', 9e-8 * 1e4 * 100, 0.09, 1e-9);
+}
+
+section('Edge cases found in the audit');
+{
+  const SC = W('semiconductor'), IM = W('implant'), FP = W('fourpoint');
+  const j = SC.junction(1e14, 1e14, 0, 500);
+  n++; { const ok = j.Vbi > 0 && j.Vbi < 0.05; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  V_bi stays positive when n_i exceeds the doping (1e14, 500 K): ${j.Vbi.toFixed(4)} V`); }
+  check('V_bi unchanged for N ≫ n_i (1e17/1e16, 300 K) (V)', SC.junction(1e17, 1e16, 0, 300).Vbi, SC.kT(300) * Math.log(1e33 / SC.ni(300) ** 2), 1e-9);
+  check('implant: no mask needed when the peak is below N_B (nm)', IM.mask(1e11, IM.range('B', 'resist', 200), 50, 1e18).need, 0, 0, 1e-12);
+  n++; { const ok = Number.isNaN(FP.measure({ dop: 'B', N: 1e16, w: 1, d: 3, s: 1.59, I: 1e-3 }).C); if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  four-point: no correction factor when the probe does not fit (d < 3s)`); }
 }
 
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);

@@ -116,7 +116,7 @@
       const tf = 0.12, offU = v.off * sk;                                    // film thickness drawn, offset in units
       const film = { fill: MAT_METAL(), stroke: null };
       p.box(ZX0, ZYs + rh, gap0, ZYs + rh + tf, film); p.box(gap1, ZYs + rh, ZX1, ZYs + rh + tf, film);
-      const x0 = Math.max(gap0 - uc, gap0 + offU), x1 = Math.min(gap1 + uc, gap1 + offU);
+      const x0 = Math.max(gap0 - uc, gap0 + offU), x1 = Math.min(gap1 + uc, gap1 + 0.45 * offU);   // right side: the ray grazes the lower corner of the overhang, at 0.45·s
       if (x1 > x0) p.box(x0, ZYs, x1, ZYs + tf, film);
       const fs = 1 - v.f0;                                                    // scattered fraction → sidewall coverage
       if (fs > 0.02) p.alpha(Math.min(1, fs * 1.2), () => {
@@ -135,8 +135,8 @@
 
     readout: v => MFW.chars([
       ['edge thickness', 't(R)/t(0)', pct(v.tEdge), undefined, { hl: true, note: `non-uniformity ${pct(v.nonU)}` }],
-      ['distance for ±5 % (edge ≥ 95 %)', '', cm(v.h5)],
-      [`mean free path (${PV.GAS[v.gas].name}, 20 °C)`, 'λ', cm(v.lam)],
+      ['distance for 5 % non-uniformity (edge ≥ 95 %)', '', cm(v.h5)],
+      [`mean free path (${PV.GAS[v.gas].name}, 22 °C)`, 'λ', cm(v.lam)],
       ['atoms arriving without a gas collision', '', pct(v.f0), undefined, { f: 'e<sup>−h/λ</sup>' }],
       ['angle of incidence at the zoomed step', 'θ', fmt.num(v.theta, 1), '°'],
       ['shadow offset', '', um(v.off), undefined, { f: 's·tan θ' }]]),
@@ -149,13 +149,13 @@
       { name: 'Point or surface source', caption: 'The emission pattern changes the exponent', show: ['other'], duration: 1,
         text: v => `An ideal point source emits equally in all directions and gives t/t(0) = [1 + (r/h)²]^(−3/2) – a little more uniform than the cosine source (dashed grey). Real crucibles and e-beam hearths are closer to the cosine source or even more forward-directed.` },
       { name: 'Distance buys uniformity', caption: 'Larger h → more uniform, but most of the vapour misses the wafer', set: { h: 60 }, duration: 2.5,
-        text: v => `Moving the wafer away flattens the distribution: at ${cm(v.h)} the edge gets ${pct(v.tEdge)}; ±5 % needs h ≥ ${cm(v.h5)}. The price: a cosine source sends only R²/(R² + h²) = ${pct(v.collected)} of its vapour onto the wafer. Production evaporators therefore put many wafers on a large spherical dome (planetary): with the source on the same sphere, the cosine law gives the same thickness everywhere on it (Knudsen; Ohring eq. 3-20).` },
+        text: v => `Moving the wafer away flattens the distribution: at ${cm(v.h)} the edge gets ${pct(v.tEdge)}; an edge within 5 % of the centre needs h ≥ ${cm(v.h5)}. The price: a cosine source sends only R²/(R² + h²) = ${pct(v.collected)} of its vapour onto the wafer. Production evaporators therefore put many wafers on a large spherical dome (planetary): with the source on the same sphere, the cosine law gives the same thickness everywhere on it (Knudsen; Ohring eq. 3-20).` },
       { name: 'Pressure and mean free path', caption: 'λ = kT/(√2·π·d²·p): at sputtering pressures atoms collide on the way', set: { p: 0.5, gas: 'Ar' }, duration: 2.5,
         text: v => `The mean free path is inversely proportional to the pressure. Sputtering runs a glow discharge in argon at a few to 100 mTorr (about 0.5–13 Pa; Ohring 1992); at ${pa(v.p)} λ = ${cm(v.lam)}, much shorter than the ${cm(v.h)} path, and only ${pct(v.f0)} of the atoms arrive without a collision. They reach the wafer from many directions – the deposition is no longer line of sight.` },
       { name: 'Shadowing and lift-off', caption: 'Directional deposition leaves the resist sidewalls bare', set: { p: 1e-4, gas: 'air', rpos: 1, h: 40 }, duration: 2,
         text: v => `For lift-off the metal is evaporated onto a patterned resist with an overhanging (undercut) edge, and the resist is then dissolved, taking the metal on top with it. That works only if the film is interrupted at the resist edge – line-of-sight evaporation does that. At the wafer edge the atoms arrive at θ = ${fmt.num(v.theta, 1)}°, so the deposit is shifted by s·tan θ = ${um(v.off)} behind a ${um(v.s)} step. Raise the pressure (or think of sputtering): scattered atoms coat the sidewalls too, and lift-off fails.` },
       { name: 'Your turn', caption: 'Find a geometry that is both uniform and directional', duration: 1,
-        text: 'Switch to <b>Explore</b>: choose the source, the distance and the wafer size for ±5 % uniformity, then check how low the pressure must be for straight-line transport, and how large the shadow is at the wafer edge.' },
+        text: 'Switch to <b>Explore</b>: choose the source, the distance and the wafer size for an edge within 5 % of the centre, then check how low the pressure must be for straight-line transport, and how large the shadow is at the wafer edge.' },
     ],
   });
 

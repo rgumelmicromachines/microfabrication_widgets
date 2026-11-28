@@ -87,7 +87,7 @@
           const xd = Math.min(wR + lat + 0.25, X1 - 0.12), yd = Math.max(Ytop - xj, Ybot + 0.05);
           p.dim(xd, Ytop, xd, yd, '');
           const ym = (Ytop + yd) / 2;
-          p.place('x_j', [[xd + 0.1, ym, 'left'], [xd - 0.1, ym, 'right'], [xd + 0.1, Ytop - 0.25, 'left'], [xd - 0.1, Ytop - 0.25, 'right']],
+          p.place('x_j', [[xd + 0.1, Ytop - 0.25, 'left'], [xd - 0.1, Ytop - 0.25, 'right'], [xd + 0.1, ym, 'left'], [xd - 0.1, ym, 'right']],   // top-anchored first: does not move with the zoom
             { size: 0.24, color: C.greyA, within: [X0, Ybot, X1, Ytop], key: 'xjdim' });
           if (lat > 0.25 && Ytop - xj - 0.3 > Ybot + 0.5) p.text('lateral spread ≈ 0.8 x_j', X0 + 0.1, Ytop - xj - 0.25, { size: 0.19, color: C.text, bg: true });
         }
@@ -100,7 +100,7 @@
       p.text('depth and lateral spread to scale, window width schematic', (X0 + X1) / 2, Ybot - 0.25, { size: 0.21, align: 'center', color: C.muted });
 
       // ---------------------------------------------------------- profile plot
-      const ax = p.axes({ x: 0.15, y: -2.7, w: 6.5, h: 5.4, xr: [0, xmax], yr: [1e14, 1e21], ylog: true, grid: true, size: 0.24,
+      const ax = p.axes({ x: 0.15, y: -2.7, w: 6.5, h: 5.4, xr: [0, xmax], yr: [1e14, 1e22], ylog: true, grid: true, size: 0.24,
         xlabel: 'depth x (µm)', ylabel: 'concentration (cm⁻³, log scale)', ylabelOffset: 1.05 }).draw();
       const DASH_PRE = [0.1, 0.08], DASH_G = [0.03, 0.07], DASH_NB = [0.08, 0.08];
       p.clip(ax.x, ax.y - 0.05, ax.x + ax.w, ax.y + ax.h + 0.05, () => {

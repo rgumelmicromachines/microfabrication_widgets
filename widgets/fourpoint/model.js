@@ -78,7 +78,8 @@
     // o: { dop, N, w (µm), d (mm), s (mm), I (A) }
     const r = rho(o.dop, o.N), Rs = r / (o.w * 1e-4);
     const ds = o.d / o.s, ws = o.w * 1e-3 / o.s;
-    const C = ds > 1.8 ? cCircle(ds) : NaN, F = fThick(ws);
+    const C = ds > 3 ? cCircle(ds) : NaN;     // the array is 3s long: it only fits on the sample for d > 3s
+    const F = fThick(ws);
     const V = o.I * Rs / (C * F);                        // R_s = (V/I)·C·F (Smits 1958)
     return { rho: r, Rs, C, F, ds, ws, V, naive: K_INF * V / o.I, rec: recCurrent(r) };
   }

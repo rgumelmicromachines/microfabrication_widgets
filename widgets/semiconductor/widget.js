@@ -126,9 +126,10 @@
       ['depletion width', 'W', um(v.W), undefined, { f: `x<sub>p</sub> + x<sub>n</sub> = ${um(v.xp)} + ${um(v.xn)}` }],
       ['maximum field', 'E<sub>max</sub>', `${fmt.sig(v.Emax / 1000, 3)} kV/cm`],
       ['junction capacitance', 'C<sub>j</sub>', `${fmt.sig(v.Cj * 1e9, 3)} nF/cm²`, undefined, { f: 'ε<sub>s</sub>/W' }],
-      ['avalanche breakdown, one-sided', 'V<sub>B</sub>', `≈ ${fmt.sig(v.VB[0], 2)}–${fmt.sig(v.VB[1], 2)} V`, undefined, { f: `N<sub>B</sub> = ${fmt.sci(Math.min(v.NA, v.ND), 1)} cm⁻³` }],
+      ['avalanche breakdown, one-sided', 'V<sub>B</sub>', v.VB[1] < 4 * v.Eg ? `below ${fmt.sig(4 * v.Eg, 2)} V: tunnelling (Zener), not avalanche` : `≈ ${fmt.sig(v.VB[0], 2)}–${fmt.sig(v.VB[1], 2)} V`, undefined, { f: `N<sub>B</sub> = ${fmt.sci(Math.min(v.NA, v.ND), 1)} cm⁻³` }],
       Math.max(v.NA, v.ND) > 1.4e18 && { warn: 'Doping above ~10¹⁸ cm⁻³: the Fermi level approaches the band edge; Boltzmann statistics and full ionisation become inaccurate.' },
-      -v.V > v.VB[0] && { warn: 'The reverse voltage exceeds the estimated avalanche breakdown voltage: a real junction would break down and conduct.' },
+      v.ni > 0.1 * Math.min(v.NA, v.ND) && { warn: 'n<sub>i</sub> is no longer small against the doping: the lightly doped side is turning intrinsic, the junction fades and the depletion approximation is only a rough guide.' },
+      -v.V > v.VB[0] && v.VB[1] >= 4 * v.Eg && { warn: 'The reverse voltage exceeds the estimated avalanche breakdown voltage: a real junction would break down and conduct.' },
       !v.valid && { warn: 'Forward bias close to V<sub>bi</sub>: the depletion approximation no longer holds (high injection).' }]),
 
     steps: [

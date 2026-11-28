@@ -112,6 +112,8 @@
           p.dim(X(-v.W / 2), yd, X(v.W / 2), yd, `d_m = ${nmS(v.W)}`, { size: 0.18, offset: 0.17 });
           if (v.U * k > 0.03) {
             const yb = yI - Math.max(v.recess * k, 0) - 0.22;
+            // d_f is the width at the top of the film (the wall tapers inwards below): witness lines down to the dimension
+            for (const sg of [-1, 1]) p.line(X(sg * (v.W / 2 + v.U)), yF - 0.04, X(sg * (v.W / 2 + v.U)), yb - 0.08, { color: C.muted, width: 1, dash: [0.04, 0.05] });
             p.dim(X(-v.W / 2 - v.U), yb, X(v.W / 2 + v.U), yb, `d_f = ${nmS(v.cd)}`, { size: 0.18, offset: -0.2 });
           }
         }

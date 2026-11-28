@@ -21,7 +21,7 @@
       dop: { value: 'B', label: 'Dopant', options: { B: 'Boron (p-type)', P: 'Phosphorus (n-type)' } },
       N: { value: 1e16, min: 1e14, max: 1e20, log: true, label: 'Doping <i>N</i> (uniform in the layer)', format: conc },
       w: { value: 525, min: 0.1, max: 1000, log: true, label: 'Layer thickness <i>w</i>', format: lenS },
-      d: { value: 100, min: 3, max: 300, log: true, label: 'Sample diameter <i>d</i>', format: x => `${fmt.sig(x, 3)} mm` },
+      d: { value: 100, min: 8, max: 300, log: true, label: 'Sample diameter <i>d</i>', format: x => `${fmt.sig(x, 3)} mm` },
       s: { value: 1.59, min: 0.5, max: 2.5, step: 0.01, label: 'Probe spacing <i>s</i>', format: x => `${fmt.num(x, 2)} mm`, group: 'Probe and van der Pauw' },
       I: { value: 1e-3, min: 1e-6, max: 0.1, log: true, label: 'Test current <i>I</i>', format: amps, group: 'Probe and van der Pauw' },
       r: { value: 1, min: 1, max: 10, step: 0.1, label: 'Van der Pauw: ratio R_A/R_B of the irregular sample', format: x => fmt.num(x, 1), group: 'Probe and van der Pauw' },
@@ -84,15 +84,15 @@
       });
 
       // ---------------------------------------------------------- correction factor C(d/s)
-      const ax = p.axes({ x: 1.0, y: 0.6, w: 5.6, h: 2.1, xr: [2, 300], xlog: true, yr: [0, 5], grid: true, size: 0.19,
+      const ax = p.axes({ x: 1.0, y: 0.6, w: 5.6, h: 2.1, xr: [3, 300], xlog: true, yr: [0, 5], grid: true, size: 0.19,
         xticks: [2, 5, 10, 20, 50, 100, 200], xfmt: x => String(x), yticks: [0, 1, 2, 3, 4, 5], xlabel: 'd/s (log)', ylabel: 'C', ylabelOffset: 0.55 }).draw();
       p.clip(ax.x, ax.y, ax.x + ax.w, ax.y + ax.h, () => {
         ax.hline(P.K_INF, { color: C.muted, dash: [0.06, 0.06] });
         ax.plot(x => P.cCircle(x), { color: C.yellow, width: 3.5, samples: 160 });
       });
-      if (v.ds >= 2 && v.ds <= 300) ax.dot(v.ds, v.C, { r: 0.08 });
+      if (v.ds >= 3 && v.ds <= 300) ax.dot(v.ds, v.C, { r: 0.08 });
       ax.place('π/ln 2 = 4.532 (infinite sheet)', [[ax.x + ax.w - 0.1, ax.Y(P.K_INF) + 0.12, 'right', 'bottom'], [ax.x + ax.w - 0.1, ax.Y(P.K_INF) - 0.12, 'right', 'top']], { color: C.muted, size: 0.17, key: 'kinf' });
-      if (v.ds >= 2 && v.ds <= 300) ax.place(`C = ${fmt.num(v.C, 3)}`, ax.around(v.ds, v.C, 0.15).concat(ax.around(v.ds, v.C, 0.4)), { color: C.yellow, size: 0.18, key: 'cdot' });
+      if (v.ds >= 3 && v.ds <= 300) ax.place(`C = ${fmt.num(v.C, 3)}`, ax.around(v.ds, v.C, 0.15).concat(ax.around(v.ds, v.C, 0.4)), { color: C.yellow, size: 0.18, key: 'cdot' });
 
       // ---------------------------------------------------------- resistivity vs doping
       const bx = p.axes({ x: 1.0, y: -2.75, w: 5.6, h: 2.45, xr: [1e14, 1e20], xlog: true, yr: [1e-4, 1e3], ylog: true, grid: true, size: 0.19,
@@ -130,9 +130,9 @@
       { name: 'Thick samples', caption: 'w comparable to s: the thickness correction F(w/s)', set: { d: 300, w: 1000 }, show: ['thick'], duration: 2,
         text: v => `For a layer much thinner than the probe spacing the current spreads in two dimensions. A whole wafer is not thin: here w/s = ${fmt.sig(v.ws, 2)} and the thickness factor is F = ${fmt.num(v.F, 3)} (Uhlir 1955; Smits Table III). For w ≪ s, F → 1; for a very thick block the formula turns into ρ = 2πs·V/I. Below w/s ≈ 0.5 the correction is under 0.3 %.` },
       { name: 'From resistivity to doping', caption: 'ρ(N) depends on the mobility – boron and phosphorus differ', set: { w: 525, d: 100, N: 1e16 }, duration: 2,
-        text: v => `The resistivity of a uniformly doped wafer gives its doping through the measured ρ–N curves (Thurber et al. 1981, ASTM F723): ${ohmcm(v.rho)} means ${conc(v.N)} of ${NAME[v.dop]}. Holes are less mobile than electrons, so boron-doped silicon is about 2.5–3× more resistive than phosphorus-doped silicon at the same density.` },
+        text: v => `The resistivity of a uniformly doped wafer gives its doping through the measured ρ–N curves (Thurber et al. 1981, ASTM F723): ${ohmcm(v.rho)} means ${conc(v.N)} of ${NAME[v.dop]}. Holes are less mobile than electrons, so boron-doped silicon is about 2.5–3× more resistive than phosphorus-doped silicon at the same density up to about 10¹⁷ cm⁻³ (only about 1.5× above 10¹⁹ cm⁻³, where both mobilities are limited by the dopant ions).` },
       { name: 'The test current', caption: 'Large enough for a clean signal, small enough to avoid heating', duration: 1,
-        text: v => `The standard recommends a current by resistivity range – ${amps(v.rec)} for ${ohmcm(v.rho)} (ASTM F84, after NBS TN 555). At ten times the recommended current the probes heat the wafer and ρ reads about 1 % high; at a tenth the signal gets noisy. Carrier injection at the probes can also distort high-resistivity readings.` },
+        text: v => `The standard recommends a current by resistivity range – ${amps(v.rec)} for ${ohmcm(v.rho)} (ASTM F84, after NBS TN 555). At ten times the recommended current the probes can heat the wafer measurably and the resistivity of silicon changes with temperature; at a tenth the signal gets noisy. Carrier injection at the probes can also distort high-resistivity readings.` },
       { name: 'Van der Pauw', caption: 'Any shape, four contacts on the edge: exp(−πR_A/R_s) + exp(−πR_B/R_s) = 1', set: { r: 4 }, show: ['vdp'], duration: 2,
         text: v => `For test structures of arbitrary shape van der Pauw (1958) showed that two four-terminal resistances – current through A–B and voltage across C–D, then rotated by one contact – fix the sheet resistance through exp(−πR<sub>A</sub>/R<sub>s</sub>) + exp(−πR<sub>B</sub>/R<sub>s</sub>) = 1. The sample must be uniform, without holes, with small contacts on its edge. Here R<sub>A</sub>/R<sub>B</sub> = ${fmt.num(v.r, 1)}: simply averaging would give ${ohmsq(v.vdpNaive)} instead of ${ohmsq(v.Rs)}. Now switch to <b>Explore</b>.` },
     ],

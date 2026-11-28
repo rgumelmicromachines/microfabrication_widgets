@@ -8,7 +8,7 @@
    reproduced in DTU Nanolab, Litho Tool Package – Spin coating) with α = ½ – the speed exponent that follows from
    spin-off with solvent evaporation (D. Meyerhofer, J. Appl. Phys. 49 (1978) 3993) and that DTU Nanolab reports for
    low- and medium-viscosity resists. k = 90 and the k = 80–100 band are illustrative: with t in Å they give
-   1–2 µm at 3000–6000 rpm for p ≈ 20 %. The absolute value needs a measured spin curve for each resist and spinner.
+   about 1.3–2.3 µm at 3000–6000 rpm for p ≈ 20 %. The absolute value needs a measured spin curve for each resist and spinner.
 
    Soft bake: after coating the film still holds roughly 10–35 % solvent, most of which the soft bake removes, so the
    film thins further (MicroChemicals, application notes "Spin-coating of photoresists" and "Softbake of

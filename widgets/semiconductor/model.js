@@ -41,7 +41,9 @@
   }
   /** Abrupt pn junction: N_A on the p side, N_D on the n side, applied voltage V (forward positive). */
   function junction(NA, ND, V, T) {
-    const n_i = ni(T), Vbi = kT(T) * Math.log(NA * ND / (n_i * n_i));
+    // V_bi = (kT/q)·ln(n_n·p_p/n_i²): equal to (kT/q)·ln(N_A·N_D/n_i²) while N ≫ n_i, and it goes to zero (never
+    // negative) when n_i reaches the doping
+    const n_i = ni(T), Vbi = carriers(ND, 0, T).EFi - carriers(0, NA, T).EFi;
     const Vj = Math.max(Vbi - V, 1e-4);                                              // depletion approximation needs V < V_bi
     const Wcm = Math.sqrt(2 * EPS_S * Vj * (NA + ND) / (Q * NA * ND));
     const xn = Wcm * NA / (NA + ND), xp = Wcm * ND / (NA + ND);

@@ -869,6 +869,7 @@
       { slug: 'segregation', title: 'Dopant segregation' }] },
     { id: 'litho', title: 'Lithography', pages: [
       { slug: 'spincoating', title: 'Spin coating' },
+      { slug: 'softbake', title: 'Soft bake' },
       { slug: 'lithography', title: 'Lithography resolution' }] },
     { id: 'doping', title: 'Doping', pages: [
       { slug: 'diffusion', title: 'Diffusion & junction depth' },
@@ -881,8 +882,11 @@
     { id: 'etch', title: 'Etching', pages: [
       { slug: 'etching', title: 'Etching silicon' },
       { slug: 'dryetch', title: 'Dry etching' }] },
+    { id: 'metal', title: 'Interconnects', pages: [
+      { slug: 'electromigration', title: 'Electromigration' }] },
     { id: 'char', title: 'Characterization', pages: [
-      { slug: 'fourpoint', title: 'Four-point probe' }] },
+      { slug: 'fourpoint', title: 'Four-point probe' },
+      { slug: 'interference', title: 'Film colour & reflectometry' }] },
   ].filter(m => m.pages.length);
   const PAGES = [];
   MODULES.forEach((m, i) => { m.no = i + 1; m.pages.forEach((p, j) => { p.topic = m.title; p.module = m; p.no = `${m.no}.${j + 1}`; PAGES.push(p); }); });

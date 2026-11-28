@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Film colour &amp; reflectometry · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<meta name="description" content="Interactive thin-film interference: why oxide and nitride films on silicon are coloured, the colour chart, the effect of the viewing angle, antireflection coatings and thickness measurement by reflectometry.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=0602449fc7">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Characterization</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Film colour and reflectometry</h1>
+    <p class="lede">Why does a transparent film make a wafer blue, gold or pink – and how does the same effect measure its thickness to a nanometre?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>A film of index <span class="tex">n_1</span> and thickness <span class="tex">d</span> on silicon reflects light at its top and at its bottom. The wave reflected at the bottom is delayed by the phase <span class="tex">2\beta</span>, and all multiple reflections add up to (Airy formula)</p>
+      <div class="tex-display">r = \frac{r_{01} + r_{12}\,e^{2i\beta}}{1 + r_{01}\,r_{12}\,e^{2i\beta}}, \qquad \beta = \frac{2\pi}{\lambda}\,n_1 d\cos\theta_1, \qquad R = |r|^2</div>
+      <p>with the Fresnel coefficients of the two interfaces, at normal incidence <span class="tex">r_{ij} = (N_i - N_j)/(N_i + N_j)</span>, and Snell’s law <span class="tex">\sin\theta_0 = n_1\sin\theta_1</span>. For air &lt; film &lt; silicon both reflections flip the phase, so</p>
+      <div class="tex-display">2\,n_1 d\cos\theta_1 = \left(m + \tfrac12\right)\lambda \;\Rightarrow\; \text{minimum}, \qquad 2\,n_1 d\cos\theta_1 = m\,\lambda \;\Rightarrow\; \text{maximum} \;(R = R_{\text{bare Si}})</div>
+      <p>The same phase returns when the film is thicker by <span class="tex">\Delta d = \lambda/(2 n_1\cos\theta_1)</span>. A quarter-wave film, <span class="tex">d = \lambda/(4 n_1)</span>, gives the first minimum; it is exactly zero when <span class="tex">n_1^2 = n_0\,n_2</span> (antireflection coating).</p>
+      <p>Two neighbouring minima at <span class="tex">\lambda_1 > \lambda_2</span> differ by one order, which gives the thickness without knowing the order (normal incidence, <span class="tex">n_i = n_1(\lambda_i)</span>):</p>
+      <div class="tex-display">d = \frac{\lambda_1\,\lambda_2}{2\,(n_2\lambda_1 - n_1\lambda_2)}</div>
+      <table>
+        <tr><th>Material</th><th>n at 450 nm</th><th>n at 550 nm</th><th>n at 650 nm</th><th>Δd at 550 nm</th></tr>
+        <tr><td>SiO₂</td><td>1.466</td><td>1.460</td><td>1.457</td><td>188 nm</td></tr>
+        <tr><td>Si₃N₄</td><td>2.050</td><td>2.023</td><td>2.009</td><td>136 nm</td></tr>
+        <tr><td>Si (n; k)</td><td>4.69; 0.086</td><td>4.08; 0.028</td><td>3.84; 0.014</td><td>–</td></tr>
+      </table>
+      <p class="note">SiO₂: Malitson (1965). Si₃N₄: Philipp (1973), fit of Bååk (1982). Si: Green (2008).</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>What is the thinnest SiO₂ film with a reflectance minimum at 550 nm, and the next one? Check both with the thickness slider.
+          <details><summary>Answer</summary><span class="tex">d = \lambda/(4n_1) = 550/(4\cdot1.460) = 94\ \mathrm{nm}</span> (m = 0), then <span class="tex">3\lambda/(4n_1) = 283\ \mathrm{nm}</span> (m = 1). Their difference is <span class="tex">\lambda/(2n_1) = 188\ \mathrm{nm}</span>.</details></li>
+        <li>The reflectance spectrum of an oxide film has neighbouring minima at 647 nm and 531 nm. How thick is the film?
+          <details><summary>Answer</summary>With a constant index, <span class="tex">d = \lambda_1\lambda_2/[2n_1(\lambda_1-\lambda_2)] = 647\cdot531/(2\cdot1.46\cdot116) \approx 1014\ \mathrm{nm}</span>. With the dispersion (n = 1.457 at 647 nm, 1.461 at 531 nm) the formula above gives 1000 nm: the small change of the index between the two minima matters, because the denominator is a difference of two nearly equal numbers.</details></li>
+        <li>A wafer with 300 nm of oxide is tilted to 60°. Which way does the colour shift, and which thickness would look similar at normal incidence?
+          <details><summary>Answer</summary><span class="tex">\sin\theta_1 = \sin 60°/1.46</span>, so <span class="tex">\theta_1 = 36.4°</span> and <span class="tex">\cos\theta_1 = 0.805</span>: the path difference is that of a <span class="tex">300\cdot0.805 \approx 241\ \mathrm{nm}</span> film. The minimum moves from 583 nm to 472 nm, towards the blue. (The match is not exact: at 60° the two polarisations reflect differently.)</details></li>
+        <li>Which nitride thickness gives the lowest reflection at 600 nm, and why is it so much better than an oxide film?
+          <details><summary>Answer</summary><span class="tex">d = 600/(4\cdot2.015) = 74\ \mathrm{nm}</span>. The minimum is zero when <span class="tex">n_1^2 = n_{Si}</span>: for nitride <span class="tex">2.015^2 = 4.06</span> against <span class="tex">n_{Si} = 3.94</span> – almost perfect, R ≈ 0.02 % instead of 35 % for bare silicon. A quarter-wave oxide (<span class="tex">1.458^2 = 2.13</span>) still reflects 9 %.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Ideal, flat, homogeneous, non-absorbing film on thick silicon; coherent, unpolarised light. Roughness, graded or absorbing films (silicon-rich nitride, polysilicon, dyed resist) and film stacks need a full multilayer calculation.</li>
+        <li>Optical constants are those of fused silica and of stoichiometric CVD nitride. Deposited films differ: PECVD nitride and oxide vary in index with composition and density, which shifts the colours. Silicon data are tabulated every 50 nm between 400 and 700 nm and interpolated; outside this range the end values are used, which affects only the faint violet and deep-red ends of the colour calculation.</li>
+        <li>Colour: CIE 1931 standard observer, daylight (a 6504 K black body), converted to sRGB and brightened by a fixed factor as a camera exposure would. Real impressions depend on the lamp, on the surroundings and on your display.</li>
+        <li>Viewing angle: the same angle of incidence is assumed for the whole wafer (a distant observer and light source). The outline of the wafer is foreshortened by cos θ₀.</li>
+        <li>The ray sketch is schematic (film thickness not to scale; at normal incidence the rays are drawn slightly tilted so that they can be told apart). The colour strips and the spectrum are computed.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>M. Born, E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press 1999, §1.6 and §14.4 (reflection from a film on an absorbing substrate).</li>
+        <li>E. Hecht, <i>Optics</i>, 5th ed., Pearson 2017, ch. 9 (thin-film interference, antireflection coatings).</li>
+        <li>I. H. Malitson, “Interspecimen comparison of the refractive index of fused silica”, <i>J. Opt. Soc. Am.</i> 55 (1965) 1205.</li>
+        <li>H. R. Philipp, “Optical properties of silicon nitride”, <i>J. Electrochem. Soc.</i> 120 (1973) 295.</li>
+        <li>T. Bååk, “Silicon oxynitride; a material for GRIN optics”, <i>Appl. Opt.</i> 21 (1982) 1069 (Sellmeier fit for Si₃N₄).</li>
+        <li>M. A. Green, “Self-consistent optical parameters of intrinsic silicon at 300 K including temperature coefficients”, <i>Sol. Energy Mater. Sol. Cells</i> 92 (2008) 1305.</li>
+        <li>A. G. Aberle, “Overview on SiN surface passivation of crystalline silicon solar cells”, <i>Sol. Energy Mater. Sol. Cells</i> 65 (2001) 239–248 (silicon nitride as antireflection coating).</li>
+        <li>W. A. Pliskin, E. E. Conrad, “Nondestructive determination of thickness and refractive index of transparent films”, <i>IBM J. Res. Dev.</i> 8 (1964) 43 (oxide colour chart).</li>
+        <li>C. Wyman, P.-P. Sloan, P. Shirley, “Simple analytic approximations to the CIE XYZ color matching functions”, <i>J. Comput. Graph. Tech.</i> 2 (2013) 1.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=2670dc8de6"></script>
+<script src="../oxidation/model.js?v=de9bcd22fc"></script>
+<script src="model.js?v=318eb2837a"></script>
+<script src="widget.js?v=d97e08e1de"></script>
+</body>
+</html>

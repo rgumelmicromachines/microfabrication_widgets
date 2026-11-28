@@ -374,5 +374,77 @@ section('Edge cases found in the audit');
   n++; { const ok = Number.isNaN(FP.measure({ dop: 'B', N: 1e16, w: 1, d: 3, s: 1.59, I: 1e-3 }).C); if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  four-point: no correction factor when the probe does not fit (d < 3s)`); }
 }
 
+section('Thin-film interference (Airy formula, colour, reflectometry)');
+{
+  const TF = W('interference');
+  check('normal incidence equals the oxidation-page formula (300 nm SiO₂, 550 nm)', TF.reflectance('sio2', 300, 550, 0), OX.reflectance(300, 550), 1e-12);
+  check('s and p agree at normal incidence', TF.stack('sio2', 300, 550, 0).Rs, TF.stack('sio2', 300, 550, 0).Rp, 1e-12);
+  check('no film: bare Si, R = |(N − 1)/(N + 1)|² at 550 nm (Green 2008: 4.077 + 0.028i)', TF.reflectance('sio2', 0, 550), ((4.077 - 1) ** 2 + 0.028 ** 2) / ((4.077 + 1) ** 2 + 0.028 ** 2), 1e-9);
+  check('half-wave film is absent: R = R(bare Si)', TF.reflectance('sio2', 550 / (2 * OX.nSiO2(550)), 550), TF.reflectance('sio2', 0, 550), 1e-9);
+  check('n(Si₃N₄) at 632.8 nm (Philipp 1973: 2.01)', TF.nSi3N4(632.8), 2.01, 0.002);
+  // quarter-wave film on a (nearly) real substrate: R = ((n₀n₂ − n₁²)/(n₀n₂ + n₁²))²
+  { const n1 = TF.nSi3N4(600), n2 = OX.nkSi(600)[0]; check('quarter-wave nitride at 600 nm vs closed form (k of Si neglected)', TF.reflectance('si3n4', TF.quarterWave('si3n4', 600), 600), ((n2 - n1 * n1) / (n2 + n1 * n1)) ** 2, 0, 2e-4); }
+  // Brewster angle of bare Si at 650 nm: tan θ_B = n → R_p almost zero (k is small)
+  { const thB = Math.atan(OX.nkSi(650)[0]) * 180 / Math.PI; n++; const rp = TF.stack('sio2', 0, 650, thB).Rp; const ok = rp < 1e-4; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  bare Si at the Brewster angle ${thB.toFixed(1)}°: R_p = ${rp.toExponential(1)} < 1e-4`); }
+  check('energy: R_s ≥ R_p at oblique incidence (bare Si, 60°)', Math.sign(TF.stack('sio2', 0, 550, 60).Rs - TF.stack('sio2', 0, 550, 60).Rp), 1, 0);
+  { const e = TF.extrema('sio2', 1000).min; check('reflectometry: two neighbouring minima return the thickness (nm)', TF.thicknessFromPair('sio2', e[0].lambda, e[1].lambda), 1000, 1e-9);
+    check('minima of the 1000 nm oxide (nm)', e[0].lambda, 647.4, 2e-4); check('… second', e[1].lambda, 531.2, 2e-4);
+    // the analytic minimum is a minimum of the computed spectrum (the dispersion of Si shifts it by < 2 nm)
+    let lm = 0, rm = 1; for (let l = 600; l <= 690; l += 0.1) { const r = TF.reflectance('sio2', 1000, l); if (r < rm) { rm = r; lm = l; } }
+    check('numerical minimum of R(λ) vs interference condition (nm)', lm, e[0].lambda, 0, 2); }
+  check('page task 1: λ/4n at 550 nm, SiO₂ (nm)', TF.quarterWave('sio2', 550), 94.2, 1e-3);
+  check('page task 2: constant-index estimate (nm)', 647 * 531 / (2 * 1.46 * 116), 1014, 1e-3);
+  check('page task 3: cos θ₁ at 60° in SiO₂', TF.stack('sio2', 300, 550, 60).cos1, 0.805, 1e-3);
+  check('page task 3: minimum moves 583 → 472 nm', TF.extrema('sio2', 300, 60).min[0].lambda, 472, 2e-3);
+  check('page task 4: quarter-wave nitride for 600 nm (nm)', TF.quarterWave('si3n4', 600), 74.4, 1e-3);
+  check('page task 4: quarter-wave oxide still reflects 9 %', TF.reflectance('sio2', TF.quarterWave('sio2', 600), 600), 0.09, 0.02);
+  // Pliskin & Conrad colour chart: ~100 nm oxide is violet/blue (blue channel dominant), ~200 nm light gold (blue lowest)
+  { const a = TF.rgb('sio2', 100), b = TF.rgb('sio2', 200); n++; const ok = a[2] > a[0] && a[2] > a[1] && b[2] < b[0] && b[2] < b[1]; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  colour chart: 100 nm bluish (${a}), 200 nm yellowish (${b})`); }
+}
+
+section('Electromigration (Black, lognormal, Blech)');
+{
+  const EM = W('electromigration');
+  check('n = 2: twice the current density, a quarter of the life', EM.accel(0.84, 2, 2, 250, 1, 250), 4, 1e-12);
+  check('temperature term 250 → 125 °C, 0.84 eV (hand: exp(9748·(1/398.15 − 1/523.15)))', EM.accel(0.84, 2, 1, 250, 1, 125), Math.exp(0.84 / 8.617333e-5 * (1 / 398.15 - 1 / 523.15)), 1e-12);
+  check('page task 1: acceleration factor', EM.accel(0.84, 2, 2, 250, 0.2, 125), 3.47e4, 2e-3);
+  check('Φ⁻¹(0.001) = −3.0902', EM.PhiInv(0.001), -3.0902, 1e-4);
+  check('Φ(Φ⁻¹(0.3)) = 0.3', EM.Phi(EM.PhiInv(0.3)), 0.3, 1e-6);
+  check('lognormal: half failed at t50', EM.failed(100, 100, 0.5), 0.5, 1e-7);
+  check('lognormal: Φ(1) = 0.8413 failed at t50·e^σ', EM.failed(100 * Math.exp(0.5), 100, 0.5), 0.8413, 1e-4);
+  const e = EM.evaluate({ metal: 'alLarge', jT: 2, TT: 250, t50T: 100, jU: 0.2, TU: 125, sigma: 0.5, L: 100, F: 0.001, life: 10 });
+  check('page task 1: median life in use (years)', e.t50U / EM.HOURS_PER_YEAR, 396, 2e-3);
+  check('page task 2: 0.1 % life (years)', e.tFU / EM.HOURS_PER_YEAR, 84.5, 2e-3);
+  check('page task 2: j_max for 10 years (MA/cm²)', e.jMax, 0.58, 5e-3);
+  check('j_max really gives the target life', EM.timeAt(0.001, EM.t50At(0.84, 2, 100, 2, 250, e.jMax, 125), 0.5), 10 * EM.HOURS_PER_YEAR, 1e-9);
+  const f = EM.evaluate({ metal: 'alFine', jT: 2, TT: 250, t50T: 100, jU: 0.2, TU: 125, sigma: 0.5, L: 100, F: 0.001, life: 10 });
+  check('page task 3: fine-grained Al, temperature factor', f.AFT, 28.3, 2e-3);
+  check('page task 3: 0.1 % life (years)', f.tFU / EM.HOURS_PER_YEAR, 6.9, 5e-3);
+  check('page task 4: Blech length Cu at 1 MA/cm² (µm)', EM.blechLength(3700, 1), 37, 1e-12);
+  check('page task 4: Blech length Al at 0.2 MA/cm² (µm)', EM.blechLength(1260, 0.2), 63, 1e-12);
+  check('j·L of 0.2 MA/cm² × 100 µm (A/cm)', EM.jL(0.2, 100), 2000, 1e-12);
+}
+
+section('Soft bake (residual solvent, PAC decomposition)');
+{
+  const SB = W('softbake');
+  check('D(70 °C) from E_d = 5.62 kcal/mol vs fitted 8.22e-11 cm²/s', SB.diffusivity(70), 8.22e-11, 0.03);
+  check('D(110 °C) vs fitted 1.94e-10 cm²/s', SB.diffusivity(110), 1.94e-10, 0.03);
+  check('desorbable solvent at 90 °C (wt%)', SB.desorbable(90), 12.3, 1e-12);
+  check('slab desorption: series and √t limit agree where they meet', SB.slabFraction(1e-10, 1.3), SB.slabFraction(1e-10, 1.35), 0.03);
+  check('slab desorption: complete for t ≫ l²/D', SB.slabFraction(1.32e-10, 5000), 1, 1e-9);
+  // the law against the measured points of Gardiner et al. 1997, Fig. 2 (read from the figure, ±0.5 wt%)
+  for (const [T, mn, w] of [[90, 1, 18.2], [90, 2.5, 16.3], [90, 7, 15.6], [110, 1, 13.2], [110, 2.5, 11.7], [70, 1, 22], [70, 6, 20]]) check(`solvent after ${mn} min at ${T} °C vs measurement (wt%)`, SB.solvent(T, mn * 60), w, 0, T === 70 ? 1.5 : 0.8);
+  check('PAC lost in a 30 min oven bake at 100 °C (Inside PROLITH: 11 %)', 1 - SB.pacLeft(100, 1800), 0.11, 0.02);
+  check('page task 1: solvent after 60 s at 100 °C (wt%)', SB.solvent(100, 60), 15.6, 5e-3);
+  check('page task 1: relative thickness', SB.thickness(15.6), 0.853, 1e-3);
+  check('page task 2: K_T at 100 °C (1/min)', SB.kPac(100) * 60, 3.8e-3, 0.02);
+  check('page task 2: 1 min at 100 °C (%)', 100 * (1 - SB.pacLeft(100, 60)), 0.38, 0.02);
+  check('page task 3: rate ratio 110/100 °C', SB.kPac(110) / SB.kPac(100), 2.9, 0.01);
+  check('page task 4: plateau at 70 °C (wt%)', SB.state({ mode: 'hotplate', T: 70, t: 600 }).plateau, 21.2, 2e-3);
+  check('oven: nothing happens during the warm-up', SB.state({ mode: 'oven', T: 90, t: 200, warmup: 300 }).w, SB.W0, 1e-12);
+  check('as-spun film: relative thickness 1', SB.thickness(SB.W0), 1, 1e-12);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

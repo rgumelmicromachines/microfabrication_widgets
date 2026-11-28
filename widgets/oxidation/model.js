@@ -86,13 +86,15 @@
   }
   /** sRGB colour (0..255 triplet) of SiO2 of thickness d (nm) on Si viewed at normal incidence in daylight.
       exposure > 1 brightens the image (as a camera would); hue is unaffected unless channels clip. */
-  function oxideRGB(dnm, exposure = 1.6) {
-    const [X, Y, Z] = xyzOf(l => reflectance(dnm, l)).map(v => v * exposure);
+  const oxideRGB = (dnm, exposure = 1.6) => rgbOf(l => reflectance(dnm, l), exposure);
+  /** sRGB colour (0..255 triplet) of any surface with spectral reflectance R(λ nm) in daylight. */
+  function rgbOf(R, exposure = 1.6) {
+    const [X, Y, Z] = xyzOf(R).map(v => v * exposure);
     const lin = [3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.2040 * Y + 1.0570 * Z];
     const m = Math.max(...lin);
     const scaled = m > 1 ? lin.map(v => v / m) : lin;                // keep hue if a channel would clip
     return scaled.map(v => Math.round(255 * gamma(Math.min(1, Math.max(0, v)))));
   }
 
-  return { DG, ORIENT, SI_CONSUMED, rates, tauOf, thickness, timeTo, startThickness, nSiO2, nkSi, reflectance, oxideRGB };
+  return { DG, ORIENT, SI_CONSUMED, rates, tauOf, thickness, timeTo, startThickness, nSiO2, nkSi, reflectance, oxideRGB, rgbOf, xyzOf, cmf: { xbar, ybar, zbar } };
 }));

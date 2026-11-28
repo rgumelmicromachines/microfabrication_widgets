@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electromigration · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<meta name="description" content="Interactive electromigration lifetime: Black's equation, acceleration factor from a stress test to use conditions, lognormal failure statistics, aluminium and copper lines and the Blech length.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=0602449fc7">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Interconnects</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Electromigration</h1>
+    <p class="lede">The current itself wears out a metal line. How does a stress test of a few days predict a lifetime of ten years?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>The conduction electrons transfer momentum to the metal atoms (“electron wind”) and move them towards the anode. The median time to failure of a line follows Black’s equation</p>
+      <div class="tex-display">t_{50} = A\,j^{-n}\exp\!\left(\frac{E_a}{kT}\right)</div>
+      <p>with the current density <span class="tex">j</span>, the activation energy <span class="tex">E_a</span> of the fastest diffusion path and an exponent <span class="tex">n \approx 2</span> when the nucleation of a void takes most of the time, <span class="tex">n \approx 1</span> when its growth does. The prefactor <span class="tex">A</span> depends on the film and the geometry, so lifetimes are measured in an accelerated test and scaled with the acceleration factor</p>
+      <div class="tex-display">AF = \frac{t_{50,\,use}}{t_{50,\,test}} = \left(\frac{j_{test}}{j_{use}}\right)^{\!n}\exp\!\left[\frac{E_a}{k}\left(\frac{1}{T_{use}}-\frac{1}{T_{test}}\right)\right]</div>
+      <p>Failure times are lognormally distributed, <span class="tex">F(t) = \Phi\!\left[\ln(t/t_{50})/\sigma\right]</span>, so a fraction <span class="tex">F</span> has failed at</p>
+      <div class="tex-display">t_F = t_{50}\,e^{\sigma\,\Phi^{-1}(F)}, \qquad t_{0.1\,\%} = t_{50}\,e^{-3.09\,\sigma}</div>
+      <p>Blech effect: the stress built up by the displaced atoms drives them back. A line does not fail when</p>
+      <div class="tex-display">j\,L < (j\,L)_c = \frac{\Omega\,\Delta\sigma}{Z^{*}e\,\rho}</div>
+      <p>(<span class="tex">\Omega</span> atomic volume, <span class="tex">\Delta\sigma</span> the stress difference the line can sustain, <span class="tex">Z^{*}e</span> effective charge, <span class="tex">\rho</span> resistivity).</p>
+      <table>
+        <tr><th>Metallisation</th><th>E<sub>a</sub> (eV)</th><th>n</th><th>(j·L)<sub>c</sub> (A/cm)</th><th>Source</th></tr>
+        <tr><td>Al, fine-grained (1.2 µm)</td><td>0.48</td><td>2</td><td rowspan="3">1260 (350 °C)</td><td rowspan="3">Black 1969; Blech 1976</td></tr>
+        <tr><td>Al, large-grained (8 µm)</td><td>0.84</td><td>2</td></tr>
+        <tr><td>Al, large-grained, SiO₂-covered</td><td>1.2</td><td>2</td></tr>
+        <tr><td>Cu damascene, dielectric cap</td><td>0.9 (0.85–1.1)</td><td>1.2 (1.1–1.3)</td><td>3700 (340–400 °C)</td><td>Hu 2004; Filippi 2009; Lee 2001</td></tr>
+      </table>
+      <p class="note">These numbers describe the films of the cited studies. The activation energy follows the fastest path: grain boundaries in polycrystalline aluminium, the capped top interface in damascene copper, the lattice only when all faster paths are blocked (1.48 eV for aluminium, as quoted by Black).</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A large-grained aluminium line (E<sub>a</sub> = 0.84 eV, n = 2) has a median life of 100 h at 2 MA/cm² and 250 °C. What is the acceleration factor to 0.2 MA/cm² and 125 °C, and the median life in use?
+          <details><summary>Answer</summary>Current: <span class="tex">(2/0.2)^2 = 100</span>. Temperature: <span class="tex">\exp[(0.84/8.617\times10^{-5})(1/398.15 - 1/523.15)] = 347</span>. <span class="tex">AF = 3.47\times10^{4}</span>, so <span class="tex">t_{50} = 3.47\times10^{6}\ \mathrm{h} \approx 396</span> years.</details></li>
+        <li>With σ = 0.5, when have 0.1 % of these lines failed? Is a 10-year requirement met, and up to which current density?
+          <details><summary>Answer</summary><span class="tex">t_{0.1\,\%} = 396\cdot e^{-3.09\cdot0.5} = 396\cdot0.213 \approx 84</span> years – met. The life scales as <span class="tex">j^{-2}</span>, so the limit is <span class="tex">j_{max} = 0.2\cdot\sqrt{84/10} \approx 0.58\ \mathrm{MA/cm^2}</span>.</details></li>
+        <li>The same test result is obtained on a fine-grained film with E<sub>a</sub> = 0.48 eV. What changes?
+          <details><summary>Answer</summary>The temperature part of the acceleration factor drops from 347 to 28, so the median life in use is only about 32 years and the 0.1 % life about 6.9 years – the requirement is missed. A test result means little without the activation energy; it has to be measured at several temperatures.</details></li>
+        <li>Up to which length is a copper line “immortal” at 1 MA/cm², and an aluminium line at 0.2 MA/cm²?
+          <details><summary>Answer</summary><span class="tex">L_c = (jL)_c/j</span>: copper <span class="tex">3700/10^{6}\ \mathrm{cm} = 37\ \mathrm{\mu m}</span>; aluminium <span class="tex">1260/(2\times10^{5})\ \mathrm{cm} = 63\ \mathrm{\mu m}</span>.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Black’s equation is an empirical extrapolation law. It assumes the same failure mechanism in the test and in use; if the mechanism changes between the two (another diffusion path, Joule heating of the test line, stress-induced voiding), the extrapolation is wrong. Joule heating is not modelled: the temperatures are those of the metal.</li>
+        <li>Activation energy and exponent are taken from the cited studies and held fixed for each metallisation. Real values depend on grain size and texture, alloying (copper in aluminium), cap and barrier layers, and line width (“bamboo” lines narrower than the grains behave differently). They must be measured for each technology.</li>
+        <li>Lognormal statistics with a single shape parameter σ, which you set – no typical value is implied. Real populations can be bimodal (for example early failures at vias). The 0.1 % quantile and the 10-year target are examples of a reliability requirement, not a standard.</li>
+        <li>Blech threshold: one value per metal from the cited measurements; published values for copper range from about 2000 to 10 000 A/cm depending on the dielectric and the cap, and the threshold depends on temperature and encapsulation. Below the threshold the page reports no failure, although real lines may still degrade slowly.</li>
+        <li>The picture of the line is schematic: void and hillock shapes, their positions and the moving electrons only illustrate the direction of the transport. The two plots are computed.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>J. R. Black, “Electromigration – a brief survey and some recent results”, <i>IEEE Trans. Electron Devices</i> ED-16 (1969) 338–347.</li>
+        <li>I. A. Blech, “Electromigration in thin aluminum films on titanium nitride”, <i>J. Appl. Phys.</i> 47 (1976) 1203–1208.</li>
+        <li>J. R. Lloyd, “Black’s law revisited – nucleation and growth in electromigration failure”, <i>Microelectron. Reliab.</i> 47 (2007) 1468–1472.</li>
+        <li>J. Lienig, S. Rothe, M. Thiele, <i>Fundamentals of Electromigration-Aware Integrated Circuit Design</i>, 2nd ed., Springer 2025, ch. 2.</li>
+        <li>C.-K. Hu et al., “Effects of overlayers on electromigration reliability improvement for Cu/low K interconnects”, <i>Proc. IEEE Int. Reliability Physics Symp.</i> 2004, 222–228.</li>
+        <li>R. G. Filippi et al., “The effect of a threshold failure time and bimodal behavior on the electromigration lifetime of copper interconnects”, <i>Proc. IEEE Int. Reliability Physics Symp.</i> 2009, 444–451.</li>
+        <li>K.-D. Lee, E. T. Ogawa, H. Matsuhashi, P. R. Justison, K.-S. Ko, P. S. Ho, V. A. Blaschke, “Electromigration critical length effect in Cu/oxide dual-damascene interconnects”, <i>Appl. Phys. Lett.</i> 79 (2001) 3236–3238.</li>
+        <li>I. Ames, F. M. d’Heurle, R. E. Horstmann, “Reduction of electromigration in aluminum films by copper doping”, <i>IBM J. Res. Dev.</i> 14 (1970) 461–463.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=2670dc8de6"></script>
+<script src="model.js?v=6054961dae"></script>
+<script src="widget.js?v=affa1bdd49"></script>
+</body>
+</html>

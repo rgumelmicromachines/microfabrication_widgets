@@ -1077,7 +1077,10 @@
       this._stepKeys = new Set(); this._stepLayers = new Set();
       steps.forEach(s => { Object.keys(s.set || {}).forEach(k => this._stepKeys.add(k));
         (s.show || []).concat(s.hide || []).forEach(n => this._stepLayers.add(n)); });
-      this.mode = this.hasTour ? 'tour' : 'explore';
+      // a lesson opens in Explore (every slider free); the guided tour is the second tab. `startMode: 'tour'` in the
+      // config or `#tour` at the end of the address opens the tour directly (handy for a link in a course page).
+      const wantTour = cfg.startMode === 'tour' || (typeof location !== 'undefined' && location.hash === '#tour');
+      this.mode = this.hasTour && wantTour ? 'tour' : 'explore';
       const sp = parseFloat(store.get('mfw-speed'));
       this.speed = SPEEDS.includes(sp) ? sp : 1;
       this.step = -1; this.playing = false; this.playToken = 0; this.dirty = true; this.t0 = now();
@@ -1103,8 +1106,13 @@
       this._keys();
       this._applyMode();
       this._primeReadout();
-      if (this.hasTour && cfg.startStep !== false) this.goStep(cfg.startStep || 0, { instant: true });
-      else this._setExplain(resolveText(cfg.freeText || cfg.intro || this.S.free, this.values));
+      if (this.mode === 'tour' && cfg.startStep !== false) this.goStep(cfg.startStep || 0, { instant: true });
+      else {
+        const ex = cfg.explore || {};
+        (ex.show || []).forEach(n => { this.layerA[n] = 1; });
+        (ex.hide || []).forEach(n => { this.layerA[n] = 0; });
+        this._setExplain(resolveText(cfg.freeText || cfg.intro || this.S.free, this.values));
+      }
       widgets.add(this);
       this._raf = requestAnimationFrame(t => this._frame(t));
     }
@@ -1240,6 +1248,34 @@
       if (this.holdBar) { this.holdBar.style.transition = 'none'; this.holdBar.style.width = '0%'; }
       this._playLabel();
     }
+    /** Buttons on the figure (run, restart, pause …). items: [{ icon, label, title, onClick }]; o.right puts the bar in
+        the upper right corner. On a narrow screen the bar moves below the figure, so it never covers the drawing.
+        Returns one handle per button: { el, set({ icon, label, title, pressed }) }. */
+    stageBar(items, o = {}) {
+      const bar = el('div', 'mfw-stagebar' + (o.right ? ' mfw-stagebar-right' : ''), this.stage);
+      const figbar = this.stageWrap.querySelector('.mfw-figbar'), mq = window.matchMedia('(max-width: 700px)');
+      const dock = () => {
+        const below = mq.matches && !!figbar;
+        bar.classList.toggle('is-below', below);
+        (below ? figbar : this.stage).appendChild(bar);
+      };
+      if (mq.addEventListener) mq.addEventListener('change', dock); else mq.addListener(dock);
+      dock();
+      return items.map(it => {
+        const b = el('button', null, bar); b.type = 'button';
+        const ic = el('span', 'mfw-sb-ico', b), tx = el('span', 'mfw-sb-txt', b);
+        ic.setAttribute('aria-hidden', 'true');
+        const set = s => {
+          if (s.icon !== undefined) ic.textContent = s.icon;
+          if (s.label !== undefined) tx.textContent = ' ' + s.label;
+          if (s.title !== undefined) { b.title = s.title; b.setAttribute('aria-label', s.title); }
+          if (s.pressed !== undefined) b.setAttribute('aria-pressed', String(s.pressed));
+        };
+        set(it);
+        if (it.onClick) b.addEventListener('click', it.onClick);
+        return { el: b, set };
+      });
+    }
     setMode(mode) {
       if (mode === this.mode || !this.hasTour) return;
       this.stop();
@@ -1297,7 +1333,7 @@
         const tabs = el('div', 'mfw-tabs', this.panel);
         tabs.setAttribute('role', 'tablist');
         this.tabBtns = {};
-        for (const m of ['tour', 'explore']) {
+        for (const m of ['explore', 'tour']) {
           const b = el('button', 'mfw-tab', tabs, m === 'tour' ? S.tour : S.explore);
           b.type = 'button'; b.setAttribute('role', 'tab');
           b.addEventListener('click', () => this.setMode(m));

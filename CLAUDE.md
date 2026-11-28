@@ -38,8 +38,9 @@ Interactive teaching simulations for microfabrication / semiconductor process te
    - load `../../tests/overlap-audit.js`, run `MFWAudit.run({ random: 40 })` in **both** themes
      (`MFW.setTheme('light'|'dark')`) – expect no issues;
    - load `../../tests/stability.js`, run `await MFWStability.run(20)` – expect 0 px movement.
-   - load `../../tests/flicker.js`, run `MFWFlicker.run()` – no label, box or axis may jump back and forth while a
-     slider moves (flashing text is an accessibility hazard). Auto-zoomed ranges go through `w.nice(...)`.
+   - load `../../tests/flicker.js`, run `MFWFlicker.run()` – expect an empty list: no label, box or axis may jump back
+     and forth while a slider moves (flashing text is an accessibility hazard). Labels that merely appear at a slider
+     threshold are listed apart in `result.thresholds` and are fine. Auto-zoomed ranges go through `w.nice(...)`.
    - Animated pages: freeze time for the audit, e.g. spin coating `window.MFW_SPIN_TP = <seconds>` at several times.
 3. Look at it: screenshots of a few states (Playwright or the preview browser), also at ~375 px width.
 4. `python tools/cache-bust.py` after editing any `.js`/`.css` (stamps `?v=<hash>` into the pages).

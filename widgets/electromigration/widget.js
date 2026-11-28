@@ -172,15 +172,11 @@
   });
 
   // ------------------------------------------------------------ "Run test" button on the stage
-  if (widget && widget.stage && typeof document !== 'undefined') {
-    const bar = document.createElement('div');
-    bar.className = 'mfw-stagebar mfw-stagebar-right';
-    const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.title = title; b.setAttribute('aria-label', title); b.addEventListener('click', fn); bar.appendChild(b); return b; };
-    mk('▶ Run test', 'Stress the line until the median line fails', () => {
+  if (widget && widget.stage && typeof document !== 'undefined') widget.stageBar([
+    { icon: '▶', label: 'Run test', title: 'Stress the line until the median line fails', onClick: () => {
       if (widget.mode === 'tour') widget.setMode('explore');
       widget.set({ life: 0 });
       widget.animate({ life: 1.2 }, 7, 'linear');
-    });
-    widget.stage.appendChild(bar);
-  }
+    } },
+  ], { right: true });
 }());

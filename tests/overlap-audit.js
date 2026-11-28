@@ -5,7 +5,8 @@
      MFWAudit.run()            // → { states, issues: [{sig, kind, a, b, count, example}] }
    It records every canvas text box, stroked segment and dot (Painter.rec), plus the KaTeX overlays,
    for every tour step and for sweeps / random combinations of the parameters in Explore mode, and reports
-   text–text, text–line, text–dot, overlay–anything overlaps and text outside the stage. */
+   text–text, text–line, text–dot, overlay–anything overlaps, text or formulas under a button on the figure and text
+   outside the stage. */
 (function () {
   'use strict';
   const norm = s => String(s || '').replace(/[−-]?\d[\d.,]*/g, '#').replace(/\s+/g, ' ').trim().slice(0, 60);
@@ -36,7 +37,9 @@
         overlays.push({ kind: 'tex', str: it.last, x0: r.left - cr.left, x1: r.right - cr.left, y0: r.top - cr.top, y1: r.bottom - cr.top });
       }
     });
-    return { rec, overlays, W: cr.width, H: cr.height };
+    // buttons on the figure (run, restart …) are HTML above the canvas: nothing may lie under them
+    const buttons = [...w.stage.querySelectorAll('.mfw-stagebar button')].filter(b => b.offsetParent).map(b => { const r = b.getBoundingClientRect(); return { str: b.title || b.textContent, x0: r.left - cr.left, x1: r.right - cr.left, y0: r.top - cr.top, y1: r.bottom - cr.top }; });
+    return { rec, overlays, buttons, W: cr.width, H: cr.height };
   }
 
   function check(snap) {
@@ -64,6 +67,7 @@
       for (const [c] of hits) out.push({ kind: (t.kind === 'tex' ? 'formula' : t.bg ? 'text(bg)' : 'text') + '–line', a: t.str, b: 'line ' + c });
       for (const d of dots) if (inter(r, d, 0.5)) out.push({ kind: (t.kind === 'tex' ? 'formula' : 'text') + '–dot', a: t.str, b: 'dot' });
     }
+    for (const bt of snap.buttons || []) for (const t of boxes) if (inter(bt, shrink(t, 1), 0.5)) out.push({ kind: 'button–' + (t.kind === 'tex' ? 'formula' : 'text'), a: 'button ' + bt.str, b: t.str });
     for (const bx of reserved) {
       const r = shrink(bx, 1);
       for (const t of boxes) if (inter(r, t, 0.5)) out.push({ kind: 'legend–text', a: 'legend', b: t.str });

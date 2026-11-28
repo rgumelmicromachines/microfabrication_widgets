@@ -516,6 +516,8 @@ section('Development (Dill exposure, Mack rate, front propagation)');
   check('page task 6: Al lost in 65 s at 10 nm/min (nm)', DV.alLoss('mif', 65)[0], 11, 0.02);
   check('page task 6: Al lost in 65 s at 70 nm/min (nm)', DV.alLoss('mif', 65)[1], 76, 0.01);
   check('AZ Developer: no attack on Al', DV.alLoss('azdev', 600)[1], 0, 0, 0);
+  truth('a saturating dose gives m = 0 at every depth, not NaN', DV.pacProfile(1e5, 1.2, 40).every(m => m === 0));
+  truth('no dose clears the film in zero time, or faster than d/r_max: dose to clear is infinite', DV.doseToClear(1.2, 0, S) === Infinity && DV.doseToClear(1.2, 30, S2) === Infinity && isNaN(DV.contrast(1.2, 0, S).gamma));
 }
 
 section('Alignment and overlay (linear model, two marks, thermal run-out)');
@@ -651,6 +653,11 @@ section('Progress: points and achievements (engine, kept in the browser)');
   for (let i = 0; i < 5; i++) P.record(st, { type: 'source', slug: 'p' + i });
   truth('five source notes opened → fine print', P.earned(st).includes('fine-print'));
   truth('achievement ids are unique', new Set(P.ACHIEVEMENTS.map(a => a.id)).size === P.ACHIEVEMENTS.length);
+  truth('ranks: Visitor at 0, Trainee from 100, top rank has no next', P.rank(0).name === 'Visitor' && P.rank(99).name === 'Visitor' && P.rank(100).name === 'Trainee' && P.rank(1e6).next === null && P.rank(1e6).frac === 1);
+  check('rank bar: 200 points are halfway from Trainee to Operator', P.rank(200).frac, 0.5, 1e-12);
+  check('most points of a tour with two predictions and one task', P.lessonMax([{}, { ask: 1 }, { ask: 1 }, { goal: 1 }]), 2 * PT.right + PT.solved + PT.tour, 0, 0);
+  check('a tour without questions gives no points', P.lessonMax([{}, {}]), 0, 0, 0);
+  truth('every badge has a mark and a colour family', P.ACHIEVEMENTS.every(a => a.mark && a.family));
 }
 
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);

@@ -51,7 +51,7 @@
   const mSurface = (E, D = DILL) => Math.exp(-D.C * E);
   /** PAC profile m(z) at nz + 1 equally spaced depths 0…d for the surface dose E (RK4 on the reduced Dill equation). */
   function pacProfile(E, d, nz = 40, D = DILL) {
-    const f = m => (m >= 1 ? 0 : m * (D.A * (1 - m) - D.B * Math.log(m)));
+    const f = m => (m >= 1 || m <= 0 ? 0 : m * (D.A * (1 - m) - D.B * Math.log(m)));   // m = 0: fully bleached, stays so
     const out = new Float64Array(nz + 1), h = d / nz;
     let m = mSurface(E, D);
     out[0] = m;

@@ -18,6 +18,7 @@ tests/verify.js               physics regression checks against textbook values 
 tests/overlap-audit.js        browser: finds overlapping labels/lines/formulas over all tour steps and random slider states
 tests/stability.js            browser: drags every slider, reports any layout movement and the slowest frame
 tests/flicker.js              browser: sweeps and wiggles every slider, reports labels, boxes or axes that jump back and forth
+                              (labels that merely appear at a slider threshold are listed apart, in `result.thresholds`)
 tests/contact-sheet.js        browser: renders many states on one canvas for visual review
 ```
 

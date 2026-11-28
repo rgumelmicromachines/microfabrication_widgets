@@ -15,6 +15,17 @@
   .pg-text { margin: 0; font-size: 16px; line-height: 1.55; color: var(--text-2); }
   .pg-text a { color: var(--link); }
   .mfw .mfw-explain { min-height: 0; }
+  .pg-strip { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .pg-strip li { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-strong); font-size: 14px; font-weight: 650; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pg-strip li.is-done { border-color: var(--mod); background: color-mix(in srgb, var(--mod) 14%, transparent); color: var(--text); }
+  .pg-strip li.is-now { border-color: var(--mod); background: var(--mod); color: var(--on-mod); }
+  .pg-box { display: grid; gap: 10px; padding: 12px 14px 14px; border: 1px solid var(--line-strong); border-left: 6px solid var(--mod); }
+  .pg-box h4 { margin: 0; font-size: 16px; font-weight: 700; font-stretch: 90%; color: var(--text); }
+  .pg-hint { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--muted); }
+  .pg-nudge { display: grid; gap: 6px; }
+  .pg-nrow { display: grid; grid-template-columns: 4.6em repeat(4, minmax(0, 1fr)) 2.6em; gap: 6px; align-items: center; font-size: 15px; color: var(--text); }
+  .mfw .pg-nrow button { padding: 6px 0; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .pg-nunit { color: var(--muted); font-size: 14px; }
   .pg-qs { display: grid; gap: 10px; }
   .pg-q { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; font-size: 15.5px; color: var(--text); }
   .pg-q-in { display: inline-flex; align-items: baseline; gap: 6px; }
@@ -69,10 +80,10 @@
       <tr><td>Mask</td><td>Soda-lime glass; meander of 5 µm lines and 5 µm spaces, 60 mm long; pads overlap the windows by 2 µm; two alignment marks 60 mm apart</td></tr>
       <tr><td>Target</td><td>795 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</td></tr>
       <tr><td>Resist</td><td>AZ 1500 series, 1.3–1.6 µm after soft bake</td></tr>
-      <tr><td>Tools</td><td>Spin coater, hotplate, mask aligner (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C</td></tr>
+      <tr><td>Tools</td><td>Spin coater, hotplate, mask aligner with dose control (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C, microscope</td></tr>
       <tr><td>Documents</td><td><a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf" target="_blank" rel="noopener">AZ 1500 series data sheet</a> (Merck, PDF at microchemicals.com) · <a href="https://transene.com/aluminum/" target="_blank" rel="noopener">aluminium etchant Type A</a> (Transene)</td></tr>
     </table>
-    <p class="note">At each station you set the tool and enter the values the station asks for from these documents. The first answer counts. You can strip the resist and coat again at any time before the etch; after the etch only a new wafer helps.</p>
+    <p class="note">Each station has two parts: values to look up in these documents, and the settings of the tool. Then you run the station. The microscope view above the cross-section shows the resistor after every step. You can strip the resist and coat again at any time before the etch; after the etch only a new wafer helps.</p>
   </section>
 
   <div id="app"></div>
@@ -97,8 +108,8 @@
       <ol>
         <li>Check the target resistance of the work order. Use the bulk resistivity of aluminium, <span class="tex">\rho = 2.65\times10^{-8}\ \Omega\,\mathrm{m}</span>.
           <details><summary>Answer</summary><span class="tex">R = \rho L/(w h) = 2.65\times10^{-8}\cdot 0.06 / (4\times10^{-6}\cdot 5\times10^{-7}) = 795\ \Omega</span>. The sheet resistance is <span class="tex">\rho/h = 53\ \mathrm{m\Omega/\square}</span> and the meander has 15 000 squares.</details></li>
-        <li>The lamp delivers 8.5 mW/cm² at 365 nm. Which dose does a 15 s exposure give?
-          <details><summary>Answer</summary><span class="tex">8.5\ \mathrm{mW/cm^2}\cdot 15\ \mathrm{s} = 128\ \mathrm{mJ/cm^2}</span>.</details></li>
+        <li>The lamp delivers 8.5 mW/cm² at 365 nm. How long does the aligner expose for a dose of 128 mJ/cm²?
+          <details><summary>Answer</summary><span class="tex">128\ \mathrm{mJ/cm^2} / 8.5\ \mathrm{mW/cm^2} = 15\ \mathrm{s}</span>.</details></li>
         <li>An etchant removes 80 Å/s. How long does it take to clear 500 nm at the wafer centre, and the 473 nm at the edge?
           <details><summary>Answer</summary>80 Å/s = 480 nm/min. Centre: <span class="tex">500/480 = 62.5\ \mathrm{s}</span>. Edge: 59 s. Every second after that is overetch.</details></li>
         <li>The etch is isotropic. A 5.0 µm resist line covers the 500 nm film. What is the mean width of the aluminium line when the film has just cleared, and after 20 % more etch time?
@@ -123,7 +134,7 @@
         <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces; no thin-film value was verified, so every resistance here is a lower bound. Contact resistance is not modelled.</li>
         <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
         <li><b>Scenario.</b> Wafer, film, mask layout, temperature offset, test limit and scoring are chosen for the game. The film thickness across the wafer follows the cosine law for a small planar source 30 cm away. The mask sits up to 3 µm and 120 µrad off before alignment, at random for each wafer.</li>
-        <li>The cross-section is drawn with an enlarged vertical scale and a schematic oxide thickness. The alignment marks are to scale in their frames.</li>
+        <li>The top view is what a microscope would show at the wafer centre, with a simplified layout: a few turns instead of the full meander. The pads, their offset against the contact windows and the detail of three lines are to scale. The cross-section is drawn with an enlarged vertical scale and a schematic oxide thickness; after exposure it shows the latent image, which cannot be seen on a real wafer. The alignment marks (a 2 µm cross on the mask in a 4 µm channel on the wafer) are an example, to scale in their frames.</li>
       </ul>
     </article>
 
@@ -152,7 +163,7 @@
 <script src="../oxidation/model.js?v=de9bcd22fc"></script>
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
-<script src="model.js?v=b3df2dd016"></script>
-<script src="widget.js?v=068a2e3c6d"></script>
+<script src="model.js?v=6ad2edf5c4"></script>
+<script src="widget.js?v=124b49cf75"></script>
 </body>
 </html>

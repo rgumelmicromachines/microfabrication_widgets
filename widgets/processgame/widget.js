@@ -59,7 +59,7 @@
     title: 'Lithography run: aluminium meander resistor',
     alt: v => `Process game, ${v.st} of 8 stations done: ${STATE[v.st]}.${v.st >= 1 ? ` Resist ${um(v.res.L.d)}.` : ''}${v.st >= 5 ? ` Resist line ${cdText(v.res.L)}.` : ''}${v.st >= 7 ? ` After the etch: ${etchText(v.res, v.st)}.` : ''}${v.st >= 8 ? ` Test: ${v.res.count.pass} of ${v.res.n} dies pass, mean resistance ${ohm(v.res.Rmean)}, target ${ohm(G.R_TARGET)}.` : ''}`,
     source: 'Every station uses the model of its lesson: soft bake (residual solvent, decomposition of the photoactive compound), contact and proximity image, exposure and development (Dill; Mack with the rate parameters of AZ 1350J in AZ Developer 1:1 as a stand-in for AZ 1500), linear overlay with thermal run-out, cosine law for the thickness of the evaporated film, isotropic etch front, four-point probe factor π/ln 2. Product data: Merck data sheet of the AZ 1500 series (spin curve read from the graph), MicroChemicals application notes, Transene data of aluminium etchant Type A, Williams et al. 2003. Resistances use the bulk resistivity of aluminium (Desai et al. 1984) and are lower bounds for a thin film. The top view shows a simplified layout with a few turns; its detail, the pad offset and the alignment marks are to scale. The cross-section has an enlarged vertical scale.',
-    freeText: v => (v.st < 8 ? `<b>Station ${v.st + 1} of 8: ${STATIONS[v.st].name}</b>` : '<b>The wafer is tested</b>'),
+    freeText: v => (v.st === 5 && v.insp > 0.5 ? '<b>Inspection after development</b>' : v.st < 8 ? `<b>Station ${v.st + 1} of 8: ${STATIONS[v.st].name}</b>` : '<b>The wafer is tested</b>'),
 
     params: {
       resist: { value: 'az1518', label: 'Resist', options: Object.fromEntries(Object.entries(G.TDS.resists).map(([k, x]) => [k, x.name])), when: at(0) },
@@ -80,7 +80,9 @@
       tet: { value: 60, min: 0, max: 300, step: 0.5, label: 'Etch time', unit: 's', digits: 1, when: () => SHOW_ALL },
       stage: { value: 0, min: 0, max: 8, step: 1, hidden: true },
       prog: { value: 1, min: 0, max: 1, step: 0.01, hidden: true },          // progress of the animation of the station just run
-      live: { value: 0, min: 0, max: 1, step: 1, hidden: true },             // 1 while the developer or the etchant is on the wafer
+      live: { value: 0, min: 0, max: 1, step: 1, hidden: true },
+      peek: { value: 1, min: 0, max: 1, step: 1, hidden: true },             // 1: the top view shows the target, not the wafer
+      insp: { value: 0, min: 0, max: 1, step: 1, hidden: true },             // 1: the inspection after development is on screen             // 1 while the developer or the etchant is on the wafer
       ox: { value: 1.6, min: -3, max: 3, step: 0.01, hidden: true },
       oy: { value: -2.1, min: -3, max: 3, step: 0.01, hidden: true },
       oth: { value: 70, min: -120, max: 120, step: 1, hidden: true },
@@ -101,20 +103,23 @@
         field = !K.open ? MFW.mix(cRes, cMetal, 0.5) : K.cleared ? cOx : cMetal;
         lines = K.resist ? cRes : K.line ? cMetal : null;
       }
+      const target = v.peek > 0.5 && !v.isLive;                             // show what the finished resistor should look like
+      if (target) { field = cOx; lines = cMetal; }
       const lineStroke = lines === cRes ? MAT.resist.stroke : MAT.metal.stroke;
 
       // ======================================================== microscope: top view of one die (layout simplified)
       const TX0 = X0, TX1 = -2.25, TY0 = 1.0, TY1 = 3.05, cxv = (TX0 + TX1) / 2, cyv = (TY0 + TY1) / 2, upm = 0.36 / 7;
-      p.text('microscope, wafer centre: top view of one resistor', X0, 3.62, { size: 0.2, color: C.greyA });
-      p.text(v.isLive ? (st === 5 ? `now: in the developer, ${fmt.num(v.tdev, 0)} s` : `now: in the etchant, ${fmt.num(v.tet, 0)} s`) : `now: ${STATE[st]}`, X0, 3.3, { size: 0.19, color: v.isLive ? C.red : C.text, bold: v.isLive });
-      const dxy = st >= 2 ? [res.centre.dx * upm, res.centre.dy * upm] : [0, 0];
+      p.text(target ? 'target: the finished resistor, top view' : 'microscope, wafer centre: top view of one resistor', X0, 3.62, { size: 0.2, color: C.greyA });
+      p.text(v.isLive ? (st === 5 ? `now: in the developer, ${fmt.num(v.tdev, 0)} s` : `now: in the etchant, ${fmt.num(v.tet, 0)} s`) : target ? `aluminium lines ${fmt.num(O.wTarget, 1)} µm wide on oxide, pads over the contact windows, ${ohm(G.R_TARGET)}` : `now: ${STATE[st]}`, X0, 3.3, { size: 0.19, color: v.isLive ? C.red : C.text, bold: v.isLive });
+      const dxy = st >= 2 && !target ? [res.centre.dx * upm, res.centre.dy * upm] : [0, 0];
       p.rect(TX0, TY0, TX1 - TX0, TY1 - TY0, { fill: field, stroke: C.axis, width: 1.5, noOcc: true });
       p.clip(TX0, TY0, TX1, TY1, () => {
         {
           // layout: eight full-height runs with line = space, joined alternately at top and bottom, a pad at each end
           const lw = 0.17, xs = M.linspace(cxv - 1.2, cxv + 1.2, 8), yb = cyv - 0.75, yt = cyv + 0.75, padY = yb - lw / 2 + 0.36;
           // before the pattern is on the wafer: the mask layout as a faint ghost, so the target is visible from the start
-          const ghost = !lines && st < 5, colr = lines || MFW.mix(field, C.white, 0.16);
+          // mask loaded and not yet developed: the chrome pattern of the mask lies dark over the wafer
+          const ghost = !lines && st >= 2 && st < 5, colr = lines || MFW.mix(field, MAT.chrome.fill, 0.7);
           if (lines || ghost) {
             const R = (x0, y0, x1, y1) => p.box(x0 + dxy[0], y0 + dxy[1], x1 + dxy[0], y1 + dxy[1], { fill: colr, stroke: null, noOcc: true });
             xs.forEach((x, k) => {
@@ -128,14 +133,14 @@
           if (st === 4 && pr < 1) p.rect(TX0, TY0, TX1 - TX0, TY1 - TY0, { fill: C.purple, fillAlpha: 0.55 * (1 - pr), stroke: null, noOcc: true });   // UV flash of the exposure
         }
       });
-      p.text(st < 5 ? 'faint: the pattern on the mask, not yet on the wafer · dashed: contact windows' : 'dashed: contact windows under the film · turns reduced, pads to scale', X0, TY0 - 0.2, { size: 0.16, color: C.muted });
+      p.text(target ? 'dashed: contact windows · the button at the top right switches between target and wafer' : st < 2 ? 'dashed: contact windows under the film · no pattern on the wafer yet' : st < 5 ? 'dark: chrome pattern of the mask over the wafer · dashed: contact windows' : 'dashed: contact windows under the film · turns reduced, pads to scale', X0, TY0 - 0.2, { size: 0.16, color: C.muted });
       // detail of three lines, to scale (20 µm wide)
       const DX0 = -1.95, DX1 = X1, DY0 = 1.45, DY1 = 3.05, ud = (DX1 - DX0) / 20, dc = (DX0 + DX1) / 2;
       p.rect(DX0, DY0, DX1 - DX0, DY1 - DY0, { fill: field, stroke: C.axis, width: 1.5, noOcc: true });
-      let detail = st < 5 ? 'no pattern yet' : K.lost ? 'no resist left' : !K.open && st < 7 ? 'spaces not open' : '';
+      let detail = target ? `Al ${fmt.num(O.wTarget, 1)} µm` : st < 5 ? 'no pattern yet' : K.lost ? 'no resist left' : !K.open && st < 7 ? 'spaces not open' : '';
       if (lines) p.clip(DX0, DY0, DX1, DY1, () => {
         const isRes = lines === cRes, ok = sec && sec.cleared;
-        const wOut = isRes ? L.cd : ok ? sec.bottom : 10, wIn = isRes ? L.cd : ok ? sec.top : 10;
+        const wOut = target ? O.wTarget + 0.5 : isRes ? L.cd : ok ? sec.bottom : 10, wIn = target ? O.wTarget - 0.5 : isRes ? L.cd : ok ? sec.top : 10;
         for (const c of [-10, 0, 10]) {
           p.rect(dc + (c - wOut / 2) * ud, DY0, wOut * ud, DY1 - DY0, { fill: isRes ? cRes : MFW.mix(cMetal, cOx, 0.45), stroke: null, noOcc: true });
           if (wIn > 0) p.rect(dc + (c - wIn / 2) * ud, DY0, wIn * ud, DY1 - DY0, { fill: lines, stroke: null, noOcc: true });
@@ -215,19 +220,52 @@
         p.text(title, x0, y0 + S + 0.2, { size: 0.18, color: C.greyA });
         p.rect(x0, y0, S, S, { fill: ground, stroke: C.axis, width: 1.5, noOcc: true });
         p.clip(x0, y0, x0 + S, y0 + S, () => {
-          p.polygon(crossPts(xc, yc, 2, 8, u), { fill: MFW.mix(ground, C.white, 0.14), stroke: MAT.metal.stroke, width: 1.5, noOcc: true });
+          p.polygon(crossPts(xc, yc, 2, 8, u), { fill: MFW.mix(ground, C.bg, 0.55), stroke: C.white, width: 2, noOcc: true });
           // mask: a chrome cross 2 µm wide and 14 µm long – 1 µm of gap all round when aligned
-          if (st >= 2) p.polygon(crossPts(xc + dd.dx * u, yc + dd.dy * u, 1, 7, u), { fill: MAT.chrome.fill, fillAlpha: 0.92, stroke: null, noOcc: true });
+          if (st >= 2 && st < 5) p.polygon(crossPts(xc + dd.dx * u, yc + dd.dy * u, 1, 7, u), { fill: MAT.chrome.fill, stroke: null, noOcc: true });
+          else if (st >= 5 && K.pattern) p.polygon(crossPts(xc + dd.dx * u, yc + dd.dy * u, 1, 7, u), { fill: K.resist ? MAT.resist.stroke : cMetal, stroke: K.resist ? null : MAT.metal.stroke, width: 1.5, noOcc: true });   // the printed cross
         });
-        p.text(st >= 2 ? `vernier: Δx ${sg(rd[0])}, Δy ${sg(rd[1])} µm` : 'mask not loaded', x0, y0 - 0.2, { size: 0.18, color: C.text });
+        p.text(st >= 2 ? `Δx ${sg(rd[0])}, Δy ${sg(rd[1])} µm` : 'mask not loaded', x0, y0 - 0.2, { size: 0.18, color: C.text });
       };
+      if (v.st === 5 && v.insp > 0.5) {                                       // inspection after development: resolution pattern and overlay marks
+        const gx0 = 0.25, gx1 = 6.9, gy0 = 1.4, gy1 = 3.0, gap = 4, total = res.reso.reduce((a, g) => a + 7 * g.hp + gap, gap), ug = (gx1 - gx0) / total;
+        p.text('inspection: resolution pattern on the wafer', gx0, 3.22, { size: 0.19, color: C.greyA });
+        p.rect(gx0, gy0, gx1 - gx0, gy1 - gy0, { fill: cMetal, stroke: C.axis, width: 1.5, noOcc: true });
+        let gx = gx0 + gap * ug, best = null;
+        for (const g of res.reso) {
+          const wg = 7 * g.hp * ug, lost5 = K.lost || g.gone;
+          p.clip(gx0, gy0, gx1, gy1, () => {
+            if (!lost5 && g.notOpen) p.rect(gx, gy0 + 0.15, wg, gy1 - gy0 - 0.3, { fill: MFW.mix(cRes, cMetal, 0.5), stroke: null, noOcc: true });   // spaces closed: resist left between the lines
+            for (let k = 0; k < 4; k++) {
+              const xc = gx + (2 * k + 0.5) * g.hp * ug, wl = (lost5 ? g.hp : Math.min(g.cd, g.notOpen ? g.hp : 2 * g.hp)) * ug;
+              if (lost5) p.rect(xc - wl / 2, gy0 + 0.15, wl, gy1 - gy0 - 0.3, { stroke: C.axis, width: 1, dash: [0.04, 0.04], noOcc: true });
+              else p.rect(xc - wl / 2, gy0 + 0.15, wl, gy1 - gy0 - 0.3, { fill: cRes, stroke: MAT.resist.stroke, width: 1, noOcc: true });
+            }
+          });
+          p.text(`${fmt.num(g.hp, g.hp % 1 ? 1 : 0)} µm`, gx + wg / 2, gy0 - 0.2, { size: 0.18, align: 'center', color: C.text });
+          p.text(lost5 ? 'gone' : g.notOpen ? 'closed' : fmt.num(g.cd, 2), gx + wg / 2, gy0 - 0.46, { size: 0.16, align: 'center', color: lost5 || g.notOpen ? C.red : C.muted });
+          if (!lost5 && !g.notOpen && Math.abs(g.cd - g.hp) <= 0.2 * g.hp) best = g.hp;
+          gx += wg + gap * ug;
+        }
+        p.text(best === null ? 'No group is printed within 20 % of its width.' : `Smallest group printed within 20 % of its width: ${fmt.num(best, best % 1 ? 1 : 0)} µm.`, gx0, 0.45, { size: 0.19, color: C.text });
+        p.text('Spaces closed in the fine groups: too little dose or development.', gx0, 0.14, { size: 0.17, color: C.muted });
+        p.text('Fine lines thin or gone: too much of either.', gx0, -0.12, { size: 0.17, color: C.muted });
+        view(0.25, -2.6, 1.9, 'left overlay mark', res.mk.left, [res.read.lx, res.read.ly]);
+        view(2.7, -2.6, 1.9, 'right overlay mark', res.mk.right, [res.read.rx, res.read.ry]);
+        p.text('The resist cross printed', 5.0, -1.0, { size: 0.17, color: C.muted });
+        p.text('from the mask sits in the', 5.0, -1.25, { size: 0.17, color: C.muted });
+        p.text('outline on the wafer.', 5.0, -1.5, { size: 0.17, color: C.muted });
+        p.text(`Largest die error ${um(res.need)},`, 5.0, -1.95, { size: 0.17, color: C.text });
+        p.text(`the pads allow ${um(O.enclosure, 1)}.`, 5.0, -2.2, { size: 0.17, color: C.text });
+        return;
+      }
       if (st === 2) {                                                         // the alignment station: marks large, no wafer map
-        view(0.25, 0.55, 2.95, 'left alignment mark', res.mk.left, [res.read.lx, res.read.ly]);
-        view(3.55, 0.55, 2.95, 'right alignment mark', res.mk.right, [res.read.rx, res.read.ry]);
-        p.text('Centre each dark cross inside the outline on the wafer: the same gap all round.', 0.25, -0.2, { size: 0.19, color: C.text });
-        p.text('Drag a cross, or use the arrow keys; Q and E rotate. Each view is 20 µm wide.', 0.25, -0.55, { size: 0.17, color: C.muted });
-        p.text('A difference in Δy between the marks is a rotation; a difference in Δx is run-out and stays.', 0.25, -0.85, { size: 0.17, color: C.muted });
-        if (res.read.off) p.text('A mark is off the vernier scale (more than 2.5 µm).', 0.25, -1.2, { size: 0.17, color: C.red });
+        view(0.25, 0.45, 2.6, 'left alignment mark', res.mk.left, [res.read.lx, res.read.ly]);
+        view(3.2, 0.45, 2.6, 'right alignment mark', res.mk.right, [res.read.rx, res.read.ry]);
+        p.text('Centre each dark cross inside the outline on the wafer: the same gap all round.', 0.25, -0.3, { size: 0.19, color: C.text });
+        p.text('Drag a cross, or use the arrow keys; Q and E rotate. Each view is 20 µm wide.', 0.25, -0.65, { size: 0.17, color: C.muted });
+        p.text('A difference in Δy between the marks is a rotation; a difference in Δx is run-out and stays.', 0.25, -0.95, { size: 0.17, color: C.muted });
+        if (res.read.off) p.text('A mark is off the vernier scale (more than 2.5 µm).', 0.25, -1.3, { size: 0.17, color: C.red });
         return;
       }
       view(0.25, 1.25, 2.0, 'left alignment mark', res.mk.left, [res.read.lx, res.read.ly]);
@@ -266,6 +304,7 @@
         st >= 1 && ['resist thickness', 'd', um(L.d), undefined, { note: `order: ${O.thick[0]}–${O.thick[1]} µm`, warn: L.d < O.thick[0] - 1e-9 || L.d > O.thick[1] + 1e-9 }],
         st >= 4 && ['exposure', 'E', `${fmt.num(L.E, 0)} mJ/cm²`, undefined, { note: `${fmt.num(L.tExp, 1)} s at ${G.LAMP} mW/cm²` }],
         st >= 5 && ['microscope after development: resist line', '', cdText(L), undefined, { note: `mask ${O.line} µm`, warn: L.stick || L.notOpen || L.gone }],
+        st >= 5 && ['smallest lines resolved (inspection)', '', (() => { const ok = r.reso.filter(g => !g.gone && !g.notOpen && Math.abs(g.cd - g.hp) <= 0.2 * g.hp && !L.stick); return ok.length ? `${fmt.num(Math.min(...ok.map(g => g.hp)), 1)} µm` : 'none'; })()],
         st >= 7 && ['microscope after the etch', '', etchText(r, st), '', { warn: etchText(r, st) !== 'spaces clear' }],
         st >= 7 && ['etch time against the time to clear the centre', '', `${fmt.num(v.tet, 1)} s / ${fmt.num(r.tc0, 1)} s`],
         st >= 8 && v.pr >= 1 && ['sheet resistance, four-point probe', 'R<sub>s</sub>', `${fmt.num(r.Rs * 1000, 1)} mΩ/□`, undefined, { f: `(π/ln 2)·V/I, V/I = ${fmt.num(r.VI * 1000, 2)} mΩ` }],
@@ -317,7 +356,7 @@
   const logList = el('ol', null, logBox);
   const report = document.getElementById('report');
 
-  const state = { graded: {}, reworks: 0, scraps: 0, wafers: 1, log: [], checks: {}, live: null, revealing: false };
+  const state = { graded: {}, last: {}, reworks: 0, scraps: 0, wafers: 1, log: [], checks: {}, live: null, revealing: false };
   const allQ = () => G.questions(widget.values.rc);
   function renderQs() {
     const st = widget.values.st;
@@ -328,6 +367,7 @@
       const box = el('span', 'pg-q-in', row), inp = el('input', null, box);
       inp.type = 'number'; inp.step = 'any'; inp.placeholder = '?'; inp.inputMode = 'decimal'; inp.dataset.q = q.id; inp.setAttribute('aria-label', `${q.text} (${q.unit})`);
       el('span', 'pg-q-u', box, q.unit);
+      if (!g && state.last[q.id] !== undefined) inp.value = state.last[q.id];
       if (g) { inp.value = g.given === undefined ? '' : g.given; inp.disabled = true; el('span', 'pg-q-v', row, g.ok ? '✓ matches the document' : `✗ the document gives ${num3(g.want)} ${q.unit}`); }
     }
     qSec.hidden = !qBox.children.length;
@@ -357,15 +397,18 @@
       li.title = STATIONS[i].name + (i < st && state.checks[i] ? (state.checks[i] === 'good' ? ': inspection passed' : ': inspection found a problem') : '');
       if (i === st) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
     });
-    runBtn.textContent = st >= 8 ? (state.revealing ? 'Probing …' : 'Tested') : st === 7 ? 'Strip the resist and test' : st === 4 && !SHOW_ALL ? 'Start the development' : st === 6 && !SHOW_ALL ? 'Start the etch' : `Run station ${st + 1}: ${STATIONS[st].name.toLowerCase()}`;
+    const inspecting = st === 5 && v.insp > 0.5;
+    runBtn.textContent = inspecting ? 'Accept the wafer and go on' : st >= 8 ? (state.revealing ? 'Probing …' : 'Tested') : st === 7 ? 'Strip the resist and test' : st === 4 && !SHOW_ALL ? 'Start the development' : st === 6 && !SHOW_ALL ? 'Start the etch' : `Run station ${st + 1}: ${STATIONS[st].name.toLowerCase()}`;
     runBtn.disabled = st >= 8;
     if (st < 8) scoreBox.hidden = true;
     againBtn.hidden = st === 0;
     againBtn.textContent = st >= 7 ? 'Start a new wafer (−10 points)' : 'Strip and recoat (−5 points)';
-    setSec.hidden = st >= 7 && !SHOW_ALL;
+    setSec.hidden = (st >= 7 || inspecting) && !SHOW_ALL;
     nudge.hidden = !(st === 2 || SHOW_ALL);
-    textBox.innerHTML = st < 8 ? STATIONS[st].text : 'The map shows every die, and the report with your score is below the figure. If the result is off, decide which station caused it and run another wafer.';
+    textBox.innerHTML = inspecting ? 'Before the wafer goes on, look at it under the microscope. The mask also carries a resolution pattern: groups of lines and spaces from 5 µm down to 1 µm. It shows whether dose and development were right, and the two marks show the overlay that was reached. If something is wrong, this is the last cheap moment: strip the resist and coat again.' : st < 8 ? STATIONS[st].text : 'The map shows every die, and the report with your score is below the figure. If the result is off, decide which station caused it and run another wafer.';
     renderQs(); renderLog();
+    if (inspecting && !SHOW_ALL) qSec.hidden = true;
+    peekBtn.set({ label: v.peek > 0.5 ? 'Show the wafer' : 'Show the target', pressed: v.peek > 0.5 });
     const done = Object.values(state.graded), right = done.filter(g => g.ok).length, eco = Math.max(0, 15 - 5 * state.reworks - 10 * state.scraps);
     ptsBox.innerHTML = `<b>Points so far</b> documents: ${right} of ${done.length} checked values right (${fmt.num(20 * right / 9, 0)} of 20) · economy: ${eco} of 15 · resistance (35) and yield (30) are decided at the test`;
     ptsBox.hidden = st >= 8;
@@ -386,7 +429,7 @@
     const v = widget.values;
     gradeStation(st);
     state.log.push(`<b>${STATIONS[st].name}:</b> ${STATIONS[st].done(v)}`);
-    widget.set({ stage: st + 1, live: 0, prog: st === 0 || st === 3 || st === 7 ? 0 : 1 });
+    widget.set({ stage: st + 1, live: 0, peek: 0, insp: st === 4 ? 1 : 0, prog: st === 0 || st === 3 || st === 7 ? 0 : 1 });
     if (st === 0) widget.animate({ prog: 1 }, 1.6, 'smooth');                // the resist spreads
     if (st === 3) widget.animate({ prog: 1 }, 1.4, 'smooth');                // UV flash, the latent image forms
     const after = widget.values, L = after.res.L, rd = after.res.read;
@@ -454,6 +497,7 @@
     const st = widget.values.st;
     if (st >= 8 || state.revealing) return;
     if (state.live !== null) { stopLive(); return; }
+    if (st === 5 && widget.P.insp > 0.5) { widget.set({ insp: 0 }); msg.className = 'pg-msg'; msg.textContent = 'Wafer accepted. It goes on to the hard bake.'; sync(); return; }
     if ((st === 4 || st === 6) && !SHOW_ALL) { gradeStation(st); renderQs(); startLive(st); return; }
     doRun(st);
   });
@@ -461,7 +505,7 @@
   const nudgeBy = (key, d, digits) => { const pd = widget.cfg.params[key]; widget.set({ [key]: +Math.min(pd.max, Math.max(pd.min, widget.P[key] + d)).toFixed(digits) }); };
   let drag = null;
   const cv = widget.canvas;
-  const perMicron = () => widget.painter.k * 2.95 / 20;                        // px per µm in the large mark views
+  const perMicron = () => widget.painter.k * 2.6 / 20;                        // px per µm in the large mark views
   cv.addEventListener('pointerdown', e => {
     if (widget.values.st !== 2) return;
     const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
@@ -489,8 +533,10 @@
     state.wafers++;
     const wf = G.newWafer(Math.random(), Math.random(), Math.random());
     state.checks = {}; msg.className = 'pg-msg';
-    widget.set({ stage: 0, prog: 1, live: 0, ox: wf.ox, oy: wf.oy, oth: wf.oth, ax: 0, ay: 0, ath: 0 });
-    msg.textContent = 'Your settings are kept. Change what you think went wrong and run the stations again. The mask has to be aligned anew.';
+    for (const g of Object.values(state.graded)) if (g.given !== undefined) state.last[g.id] = g.given;   // a new wafer is a new attempt: the fields open again, filled with the last answers
+    state.graded = {};
+    widget.set({ stage: 0, prog: 1, live: 0, peek: 0, insp: 0, ox: wf.ox, oy: wf.oy, oth: wf.oth, ax: 0, ay: 0, ath: 0 });
+    msg.textContent = 'Your settings and answers are kept and can be changed. Correct what you think went wrong and run the stations again. The mask has to be aligned anew.';
     sync();
   });
 
@@ -540,6 +586,8 @@
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
   }
+  // a button on the figure switches the top view between the wafer as it is and the target
+  const [peekBtn] = widget.stageBar([{ icon: '', label: 'Show the wafer', title: 'Switch the top view between the target and the wafer as it is now', onClick: () => { widget.set({ peek: widget.P.peek > 0.5 ? 0 : 1 }); sync(); } }], { right: true });
   sync();
   window.MFW_GAME_UI = { state, sync, grades };
 }());

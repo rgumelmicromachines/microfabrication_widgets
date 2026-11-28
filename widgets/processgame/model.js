@@ -129,6 +129,19 @@
     return { d, w, pac, stick: w > W_STICK + 1e-9, gap, E, tExp: E / LAMP, I, R, prof: DV.profile(R, rc.tdev), foot, cd,
       notOpen: foot <= 0, gone: foot >= ORDER.line, dark: Math.min(d, S_DEV.rmin * rc.tdev), tOpen, alLoss: AL_DEV[rc.dev] * tOpen / 60 };
   }
+  /** Resolution pattern on the mask: groups of equal lines and spaces of the given widths (µm), printed with the same
+      resist, dose, gap and development as the resistor. For each group: width of the resist line at the film, whether
+      the spaces stayed closed, whether the lines were developed away. */
+  const RESO = [5, 3, 2, 1.5, 1];
+  function resolution(rc, L) {
+    return RESO.map(hp => {
+      if (hp === ORDER.line) return { hp, cd: L.cd, notOpen: L.notOpen, gone: L.gone || L.stick };   // the resistor lines themselves
+      const n = 41, xs = []; for (let i = 0; i < n; i++) xs.push(hp * i / (n - 1));
+      const I = LI.aerialImage({ mode: 'proximity', lambda: DV.DILL.lambda, hp, xs, gap: L.gap, resist: L.d, collimation: 2 });
+      const foot = DV.footEdge(DV.develop2D({ I, E: L.E, d: L.d, S: S_DEV, X: hp, nz: NZ, pac: L.pac }), rc.tdev);
+      return { hp, cd: 2 * (hp - foot), notOpen: foot <= 0, gone: foot >= hp || L.stick };
+    });
+  }
   /** Cross-section area (µm²) and widths of an aluminium line of resist width cd (µm) in a film h (nm) after an
       isotropic etch of radius r (nm) – wall shape from the etch-front model of the dry-etching lesson (R_l = R_v). */
   function lineSection(cd, h, r) {
@@ -172,7 +185,7 @@
     });
     const centre = dies.find(d => d.x === 0 && d.y === 0);
     const tc0 = ORDER.h0 / rate * 60;                                          // s to clear the film at the centre
-    return { L, o, mk, read, rate, rEtch, tc0, over: rc.tet / tc0 - 1, xlink, dies, count, n: dies.length, centre,
+    return { L, o, mk, read, reso: resolution(rc, L), rate, rEtch, tc0, over: rc.tet / tc0 - 1, xlink, dies, count, n: dies.length, centre,
       yield: count.pass / dies.length, Rmean: nR ? sum / nR : NaN, dev: nR ? sumDev / nR : NaN, nR,
       Rs: RHO_AL / (ORDER.h0 * 1e-9), VI: RHO_AL / (ORDER.h0 * 1e-9) / FPP.K_INF, need: mp.need };
   }
@@ -188,5 +201,5 @@
   const newWafer = (u1, u2, u3) => ({ ox: +(6 * u1 - 3).toFixed(2), oy: +(6 * u2 - 3).toFixed(2), oth: Math.round(240 * u3 - 120) });
 
   return { TDS, ETCH, ETCH_URL, LAMP, RHO_AL, AL_DEV, T_STRIP, ORDER, R_TARGET, S_DEV, W_STICK, NX, NZ, thickness, solvent, etchRate, filmAt,
-    questions, grade, litho, lineSection, run, score, newWafer };
+    questions, grade, litho, lineSection, resolution, RESO, run, score, newWafer };
 }));

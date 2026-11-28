@@ -117,8 +117,8 @@
         <li><b>The resist model is a stand-in.</b> The Dill parameters are those of AZ 1500 at 365 nm, but the development-rate parameters were measured for AZ 1350J in AZ Developer 1:1 (Mack 1987); none are published for AZ 1500. The doses and times that work in the game are therefore not a recipe for the real resist. The same rate parameters are used for every developer.</li>
         <li><b>Spin curve.</b> The thickness is read from the graph of the current data sheet (accuracy about ±0.1 µm, 150 mm wafers) and interpolated between 1000 and 4000 rpm. An older data sheet of the same series gives somewhat different numbers, for example 1.20 µm instead of 1.35 µm for AZ 1512 HS at 4000 rpm. Your answer is accepted within 0.15 µm or 10 %.</li>
         <li><b>Rule for the soft bake.</b> A film that holds more solvent than the measured film of the soft-bake lesson after 90 °C for 50 s, the mildest bake in the manufacturer documents, sticks to the mask and the pattern is lost. The threshold is a rule of the game; the manufacturer notes name sticking as a consequence of too much solvent without giving a number. Photoactive compound that decomposes in the bake is counted as lost for the exposure.</li>
-        <li><b>Hard bake.</b> Above about 140 °C the resist cross-links and the solvent no longer strips it (MicroChemicals): the pads stay covered and no die makes contact. No quantitative data were found that link a missing hard bake to the wet etch, so skipping it has no effect in the game.</li>
-        <li><b>Developer on aluminium.</b> 0.26 N TMAH: 10 nm/min from the Merck data sheet (MicroChemicals quotes 70 nm/min). NaOH- and KOH-based developers: 100 nm/min as a reference rate. The attack acts on the spaces, which are etched anyway, and sideways under the resist edge by the same amount, so its effect on the resistor is small.</li>
+        <li><b>Hard bake.</b> Positive resist starts to cross-link above about 140 °C, and solvents reach their limit as strippers from hard-bake temperatures of about 150–160 °C (MicroChemicals). In the game a hard bake at 150 °C or more leaves the pads covered and no die makes contact. The same note calls the resists stable in the etchant “at least after a sufficient hardbake”, without a number, so skipping the bake has no effect in the game.</li>
+        <li><b>Developer on aluminium.</b> AZ Developer is made for minimal attack on aluminium; no rate is published and the game takes it as zero. 0.26 N TMAH: 10 nm/min from the Merck data sheet (the MicroChemicals product page quotes about 70 nm/min). NaOH- and KOH-based developers: 100 nm/min as a reference rate. The attack acts on the spaces, which are etched anyway, and sideways under the resist edge by the same amount, so its effect on the resistor is small.</li>
         <li><b>Etch.</b> Rates of 30 Å/s at 25 °C and 80 Å/s at 40 °C from the manufacturer of the etchant; real baths age and hydrogen bubbles make the etch uneven. The etch is taken as ideally isotropic and uniform, and the resist as unaffected by it.</li>
         <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces; no thin-film value was verified, so every resistance here is a lower bound. Contact resistance is not modelled.</li>
         <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
@@ -146,13 +146,13 @@
 <script src="../../assets/mfw.js?v=22734c134e"></script>
 <script src="../softbake/model.js?v=8f3bdfc3b0"></script>
 <script src="../lithography/model.js?v=694ee77c66"></script>
-<script src="../development/model.js?v=244e0d0905"></script>
-<script src="../alignment/model.js?v=04477050df"></script>
+<script src="../development/model.js?v=3acd0e850c"></script>
+<script src="../alignment/model.js?v=b3a2e34d48"></script>
 <script src="../pvd/model.js?v=1981604d34"></script>
 <script src="../oxidation/model.js?v=de9bcd22fc"></script>
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
-<script src="model.js?v=f6afde78b0"></script>
-<script src="widget.js?v=5991eaa1d4"></script>
+<script src="model.js?v=b3df2dd016"></script>
+<script src="widget.js?v=068a2e3c6d"></script>
 </body>
 </html>

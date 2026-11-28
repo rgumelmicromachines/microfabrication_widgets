@@ -16,11 +16,13 @@
    Exposure and development: model and parameters of the lesson "Development" (Dill parameters of AZ 1500 at 365 nm;
      Mack rate parameters of AZ 1350J in AZ Developer 1:1, prebake 70 °C – a stand-in, because no set is published
      for AZ 1500). The same rate parameters are used for every developer.
-   Developer on aluminium: 0 (AZ Developer), 10 nm/min (0.26 N TMAH, Merck data sheet "AZ MIF Developers";
+   Developer on aluminium: taken as 0 for AZ Developer ("optimised for minimal aluminium erosion", no rate published), 10 nm/min (0.26 N TMAH, Merck data sheet "AZ MIF Developers";
      MicroChemicals quotes 70 nm/min), 100 nm/min as reference rate for NaOH/KOH-based developers (quoted as
      "several 10 to over 100 nm/min").
-   Resist cross-links above about 140 °C and can then no longer be stripped in solvents (MicroChemicals, application
-     note "Hard bake, reflow and UV hardening of photoresists").
+   Positive resist cross-links above about 140 °C; "conventional strippers … or organic solvents reach their limits
+     from hardbake temperatures of approx. 150 - 160°C" (MicroChemicals, application note "Hard bake, reflow and UV
+     hardening of photoresists"). The game uses 150 °C. The same note: the resists are stable in H3PO4/HNO3 etchants
+     "at least after a sufficient hardbake" – no number, so a missing hard bake has no effect in the game.
    Aluminium etchant (phosphoric / nitric / acetic acid): 30 Å/s at 25 °C and 80 Å/s at 40 °C, isotropic (Transene
      Company, "Aluminum Etchant Type A" product data). Photoresist is not attacked: 0 nm/min in Al Etch A
      (K. R. Williams, K. Gupta, M. Wasilik, J. Microelectromech. Syst. 12 (2003) 761, Table II).
@@ -63,7 +65,7 @@
   const LAMP = 8.5;                                                         // mW/cm² at 365 nm (MicroChemicals)
   const RHO_AL = 2.650e-8;                                                  // Ω·m, bulk, 293 K (Desai et al. 1984)
   const AL_DEV = { azdev: 0, mif: 10, naoh: 100 };                          // nm/min used in the game (see above)
-  const T_XLINK = 140;                                                      // °C (MicroChemicals)
+  const T_STRIP = 150;                                                      // °C: solvents no longer strip the resist (MicroChemicals)
   const ORDER = {                                                           // scenario
     h0: 500, srcDist: 30, srcN: 1,                                          // nm at the centre; cm; cosine exponent
     line: 5, length: 60e3, wTarget: 4,                                      // µm
@@ -145,7 +147,7 @@
     const read = { lx: AL.vernier(mk.left.dx).reading, ly: AL.vernier(mk.left.dy).reading, rx: AL.vernier(mk.right.dx).reading, ry: AL.vernier(mk.right.dy).reading,
       off: [mk.left.dx, mk.left.dy, mk.right.dx, mk.right.dy].some(x => !AL.vernier(x).inRange) };
     const rate = etchRate(rc.etT), rEtch = L.alLoss + rate * rc.tet / 60;     // nm
-    const xlink = rc.hbT > T_XLINK && rc.hbt > 0;
+    const xlink = rc.hbT >= T_STRIP && rc.hbt > 0;
     const mp = AL.map(o, ORDER.enclosure);
     const count = { pass: 0, high: 0, low: 0, open: 0, short: 0, nocontact: 0 };
     let sum = 0, sumDev = 0, nR = 0;
@@ -184,6 +186,6 @@
   /** A new wafer on the aligner: how far off the mask sits before alignment (u1…u3 uniform in 0…1). */
   const newWafer = (u1, u2, u3) => ({ ox: +(6 * u1 - 3).toFixed(2), oy: +(6 * u2 - 3).toFixed(2), oth: Math.round(240 * u3 - 120) });
 
-  return { TDS, ETCH, ETCH_URL, LAMP, RHO_AL, AL_DEV, T_XLINK, ORDER, R_TARGET, S_DEV, W_STICK, NX, NZ, thickness, solvent, etchRate, filmAt,
+  return { TDS, ETCH, ETCH_URL, LAMP, RHO_AL, AL_DEV, T_STRIP, ORDER, R_TARGET, S_DEV, W_STICK, NX, NZ, thickness, solvent, etchRate, filmAt,
     questions, grade, litho, lineSection, run, score, newWafer };
 }));

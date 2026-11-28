@@ -34,12 +34,12 @@
   }
   const interp = (arr, x, h) => { const q = Math.min(arr.length - 1, Math.max(0, x / h)), i = Math.min(arr.length - 2, Math.floor(q)); return arr[i] + (arr[i + 1] - arr[i]) * (q - i); };
   const cdText = v => (v.notOpen ? 'not opened at the substrate' : v.gone ? 'line washed away' : um(v.cd));
-  const alText = v => (v.dev === 'azdev' ? 'none' : v.alHi <= 0 ? '0 nm' : v.alLo === null ? `≈ ${fmt.num(v.alHi, 0)} nm` : `${fmt.num(v.alLo, 0)}–${fmt.num(v.alHi, 0)} nm`);
+  const alText = v => (v.dev === 'azdev' ? 'taken as 0' : v.alHi <= 0 ? '0 nm' : v.alLo === null ? `≈ ${fmt.num(v.alHi, 0)} nm` : `${fmt.num(v.alLo, 0)}–${fmt.num(v.alHi, 0)} nm`);
 
   const widget = MFW.widget('#app', {
     title: 'Development: from exposure dose to resist profile',
     alt: v => `Positive resist, ${um(v.d)} thick, exposed with ${mj(v.E)} through a mask of ${um(v.hp)} lines and spaces and developed for ${fmt.num(v.t, 0)} s. Large open area: ${v.leftOpen > 0 ? nm(v.leftOpen) + ' of resist left' : 'cleared'}; dose to clear ${mj(v.Dc)}, contrast ${fmt.num(v.gamma, 1)}. Resist line at the substrate: ${cdText(v)}. Unexposed resist lost: ${nm(v.dark)}.`,
-    source: 'Exposure: Dill’s equations for the photoactive compound, reduced to one equation in depth for a substrate that reflects nothing (Dill et al. 1975; Babu &amp; Barouch 1986); Dill parameters of the AZ 1500 series at 365 nm from MicroChemicals. Development rate: Mack’s model with the two parameter sets he measured for <b>AZ 1350J in AZ Developer 1:1</b> (Mack 1987, Table I) – not an AZ 1500 resist; no published set for AZ 1500 was found. Front propagation in the cross-section: eikonal equation, fast sweeping method (Zhao 2005). Image at the mask edge: the contact/proximity image of the lithography lesson (scalar diffraction, 2° collimation half-angle), taken as constant through the resist apart from absorption. Attack on aluminium: Merck and MicroChemicals product documents; they disagree for TMAH (10 against 70 nm/min). The cross-section is to scale; the mask is drawn above it without its true distance.',
+    source: 'Exposure: Dill’s equations for the photoactive compound, reduced to one equation in depth for a substrate that reflects nothing (Dill et al. 1975; Babu &amp; Barouch 1986); Dill parameters of the AZ 1500 series at 365 nm from MicroChemicals. Development rate: Mack’s model with the two parameter sets he measured for <b>AZ 1350J in AZ Developer 1:1</b> (Mack 1987, Table I) – not an AZ 1500 resist; no published set for AZ 1500 was found. Front propagation in the cross-section: eikonal equation, fast sweeping method (Zhao 2005). Image at the mask edge: the contact/proximity image of the lithography lesson (scalar diffraction, 2° collimation half-angle), taken as constant through the resist apart from absorption. Attack on aluminium: Merck data sheet and MicroChemicals product page; they disagree for TMAH (10 against 70 nm/min). For AZ Developer no rate is published; it is taken as zero. The cross-section is to scale; the mask is drawn above it without its true distance.',
     freeText: v => `Explore – the dose sets how much photoactive compound is left, the developer does the rest. At ${mj(v.E)} and ${fmt.num(v.t, 0)} s the resist line is ${v.notOpen || v.gone ? cdText(v) : um(v.cd) + ' wide at the substrate'}; the mask line is ${um(v.hp)}. Press <b>Develop</b> on the figure to watch the front move.`,
 
     params: {
@@ -169,7 +169,7 @@
       ['resist left in the open area', '', v.leftOpen > 0 ? nm(v.leftOpen) : `none (cleared after ${fmt.num(v.tClear, 0)} s)`],
       ['resist line at the substrate', '', cdText(v), undefined, { hl: true, note: `mask ${um(v.hp)}` }],
       ['unexposed resist lost (dark erosion)', '', nm(v.dark), undefined, { f: 'r<sub>min</sub>·t' }],
-      v.al && ['aluminium removed in the open area', '', alText(v), undefined, { note: v.dev === 'mif' ? 'sources give 10 and 70 nm/min' : v.dev === 'naoh' ? 'at 100 nm/min; quoted as “several 10 to over 100”' : 'AZ Developer does not attack Al' }],
+      v.al && ['aluminium removed in the open area', '', alText(v), undefined, { note: v.dev === 'mif' ? 'sources give 10 and 70 nm/min' : v.dev === 'naoh' ? 'at 100 nm/min; quoted as “several 10 to over 100”' : 'made for minimal attack; no rate is published' }],
       v.gone && { warn: 'The resist line is developed away: too much dose or too long in the developer.' }]),
 
     // interactive tour: predict (ask) and try (goal) steps – see Widget._goInteractive in assets/mfw.js
@@ -201,9 +201,9 @@
           options: ['9 nm, as before', 'About 120 nm, a tenth of the film', 'None'], correct: 1 },
         text: v => `${nm(v.dark)}: the ratio of the two rates fell from 367 to ${fmt.num(v.S.rmax / v.S.rmin, 1)}. The contrast drops to ${fmt.num(v.gamma, 1)} and the dose to clear rises to ${mj(v.Dc)}. Both numbers describe one resist in one developer; a different developer, dilution or bake gives a different pair, and the data sheet of a resist rarely states them.` },
       { name: 'Aluminium under the resist', caption: v => `${DV.DEVELOPERS[v.dev].name}: aluminium removed ${alText(v)}`, set: { pb: 'pb70', al: true, dev: 'mif', t: 60 }, duration: 1,
-        task: 'The wafer now carries an aluminium film, and the developer is 0.26 N TMAH. As soon as the resist is open the developer etches the aluminium. Open <b>Substrate and developer</b> and choose a developer that leaves the aluminium alone.',
+        task: 'The wafer now carries an aluminium film, and the developer is 0.26 N TMAH. As soon as the resist is open the developer etches the aluminium. Open <b>Substrate and developer</b> and choose the developer that is made for aluminium.',
         goal: v => v.al && v.dev === 'azdev', solution: { dev: 'azdev' },
-        text: v => `Aluminium dissolves in alkaline solutions. For 0.26 N TMAH one manufacturer document gives about 10 nm/min and another about 70 nm/min; for NaOH- and KOH-based developers “several 10 to over 100 nm/min” is quoted. AZ Developer is buffered so that it does not attack aluminium. The open area was exposed to the developer for ${fmt.num(Math.max(0, v.t - v.tb0), 0)} s here. Now switch to <b>Explore</b>: thicker resist, a gap under the mask, another line width.` },
+        text: v => `Aluminium dissolves in alkaline solutions. For 0.26 N TMAH one manufacturer document gives about 10 nm/min and another about 70 nm/min; for NaOH- and KOH-based developers “several 10 to over 100 nm/min” is quoted. AZ Developer is formulated for minimal attack on aluminium; its manufacturer gives no rate, and the model takes it as zero. The open area was exposed to the developer for ${fmt.num(Math.max(0, v.t - v.tb0), 0)} s here. Now switch to <b>Explore</b>: thicker resist, a gap under the mask, another line width.` },
     ],
   });
 

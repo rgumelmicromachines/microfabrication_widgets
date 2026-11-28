@@ -605,7 +605,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   truth('underbaked film sticks to the mask → opens', (() => { const r = run({ sbT: 80, sbt: 30 }); return r.L.stick && r.count.open === 69; })());
   truth('the data-sheet bake (100 °C, 60 s) does not stick', !run({}).L.stick);
   truth('hot, long soft bake: PAC lost, resist no longer opens', (() => { const r = run({ sbT: 140, sbt: 300 }); return r.L.pac < 0.5 && r.L.notOpen; })());
-  truth('hard bake above 140 °C → no contact on any die', run({ hbT: 150 }).count.nocontact === 69);
+  truth('hard bake at 150 °C or more → no contact on any die; 145 °C still strips', run({ hbT: 150 }).count.nocontact === 69 && run({ hbT: 145 }).count.nocontact === 0);
   truth('skipped hard bake changes nothing (stated on the page)', run({ hbt: 0 }).Rmean === run({}).Rmean);
   truth('unaligned mask (3 µm off) → pads miss the windows', run({}, { ox: 3, oy: 0, oth: 0 }).count.nocontact === 69);
   truth('rotation of 100 µrad → only the dies near the edge lose contact', (() => { const r = run({}, { ox: 0, oy: 0, oth: 100 }); return r.count.nocontact > 0 && r.count.pass > 0 && r.centre.cls === 'pass'; })());

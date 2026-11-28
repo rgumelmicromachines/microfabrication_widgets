@@ -16,8 +16,9 @@
 
    Thermal run-out: a pattern on a body with the expansion coefficient α grows by α·ΔT. If mask and wafer are both
    ΔT warmer than when the first layer was printed, M = (α_mask − α_Si)·ΔT.
-     fused silica  0.54 × 10⁻⁶ /K  (MicroChemicals GmbH, photomask substrate data)
-     borosilicate  3.25 × 10⁻⁶ /K  (SCHOTT BOROFLOAT 33, technical data, mean value 20–300 °C)
+     fused silica  0.54 × 10⁻⁶ /K  (MicroChemicals GmbH, application note "Glass wafers: borosilicate", Table 2)
+     borosilicate  3.25 × 10⁻⁶ /K  (SCHOTT BOROFLOAT 33, technical data, mean value 20–300 °C; the MicroChemicals
+                                   table gives a rounded 3)
      soda-lime     9.06 × 10⁻⁶ /K  (SCHOTT technical glass data, mean value 20–300 °C)
      silicon       2.6 × 10⁻⁶ /K   (Y. Okada, Y. Tokumaru, J. Appl. Phys. 56 (1984) 314, at room temperature)
 

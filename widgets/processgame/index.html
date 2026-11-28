@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Process game · Microfabrication Interactive</title>
-<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png?v=3">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png?v=3">
 <meta name="description" content="Process game: take a wafer through one lithography level – AZ 1500 resist from the data sheet, spin coating, soft bake, alignment, exposure, development, hard bake, aluminium wet etch – and test the meander resistor electrically.">
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -111,7 +113,7 @@
         <tr><th>Part</th><th>Points</th><th>Rule</th></tr>
         <tr><td>Resistance</td><td>35</td><td>Mean deviation of the contacted dies from 795 Ω: full marks up to 2 %, none from 20 %, linear in between</td></tr>
         <tr><td>Yield</td><td>30</td><td>Share of the 69 dies with contact at both pads and a resistance within ±10 %</td></tr>
-        <tr><td>Documents</td><td>20</td><td>Share of the nine values entered correctly from the data sheets at the first attempt</td></tr>
+        <tr><td>Documents</td><td>20</td><td>Share of the nine values entered correctly from the data sheets. An answer is fixed when its station runs; a new wafer or a recoat opens the fields again</td></tr>
         <tr><td>Economy</td><td>15</td><td>−5 for each strip and recoat, −10 for each new wafer after the etch</td></tr>
       </table>
       <p>After the test a report appears under the figure. It lists your settings, the outcome of each station and the score, and it can be printed or saved.</p>
@@ -147,6 +149,7 @@
         <li><b>Etch.</b> Rates of 30 Å/s at 25 °C and 80 Å/s at 40 °C from the manufacturer of the etchant; real baths age and hydrogen bubbles make the etch uneven. The etch is taken as ideally isotropic and uniform, and the resist as unaffected by it.</li>
         <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces; no thin-film value was verified, so every resistance here is a lower bound. Contact resistance is not modelled.</li>
         <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
+        <li><b>Inspection.</b> After development the figure shows a resolution pattern (groups of equal lines and spaces of 5, 3, 2, 1.5 and 1 µm) printed with the same resist, dose, gap and development as the resistor, and the two overlay marks with the resist cross. Each group is calculated with the same model as the resistor lines. A group counts as resolved when its line width is within 20 % of the nominal width.</li>
         <li><b>Clock.</b> Development and etch run live: the clock of the developer runs eight times and that of the etchant ten times faster than real time, and the top view follows the model at every moment. On a real wafer the resist pattern cannot be measured while it is in the developer.</li>
         <li><b>Scenario.</b> Wafer, film, mask layout, temperature offset, test limit and scoring are chosen for the game. The film thickness across the wafer follows the cosine law for a small planar source 30 cm away. The mask sits up to 3 µm and 120 µrad off before alignment, at random for each wafer.</li>
         <li>The top view is what a microscope would show at the wafer centre, with a simplified layout: eight runs instead of the full meander, drawn with equal lines and spaces. The pads, their offset against the contact windows and the detail of three lines are to scale. The cross-section is drawn with an enlarged vertical scale and a schematic oxide thickness; after exposure it shows the latent image, which cannot be seen on a real wafer. The alignment marks are an example, to scale in their 20 µm frames: a chrome cross 2 µm wide on the mask inside the outline of a cross 4 µm wide that the layer below left in the film.</li>
@@ -178,7 +181,7 @@
 <script src="../oxidation/model.js?v=de9bcd22fc"></script>
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
-<script src="model.js?v=6ad2edf5c4"></script>
-<script src="widget.js?v=4e1516db65"></script>
+<script src="model.js?v=b732b6f557"></script>
+<script src="widget.js?v=2e017dbe09"></script>
 </body>
 </html>

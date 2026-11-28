@@ -615,6 +615,11 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   truth('developer attack narrows the line slightly', run({ dev: 'naoh' }).Rmean > run({}).Rmean);
   // grading
   { const g = G.grade({ qThick: 1.9, qSbMin: 90 }, good); truth('grading: wrong thickness and empty answers are wrong, a right one is right', !g.find(x => x.id === 'qThick').ok && g.find(x => x.id === 'qSbMin').ok && !g.find(x => x.id === 'qDev').ok && g.length === 9); }
+  { const g = run({}).reso, w = k => g.find(x => x.hp === k);
+    truth('inspection, good recipe: the 5 µm and 2 µm groups print within 20 %', [5, 2].every(k => !w(k).notOpen && !w(k).gone && Math.abs(w(k).cd - k) <= 0.2 * k));
+    truth('inspection, far too little dose: every group stays closed', run({ dose: 20 }).reso.every(x => x.notOpen));
+    truth('inspection, more dose: the fine lines get thinner', run({ dose: 300 }).reso.find(x => x.hp === 1.5).cd < w(1.5).cd);
+    check('inspection: the 5 µm group equals the resistor line (µm)', w(5).cd, run({}).L.cd, 0.02); }
   check('grading: etch-rate question follows the chosen temperature (Å/s)', G.questions({ ...good, etT: 't25' }).find(q => q.id === 'qRate').want, 30, 0, 0);
   { const w = G.newWafer(0, 1, 0.5); truth('new wafer: misalignment within ±3 µm and ±120 µrad', w.ox === -3 && w.oy === 3 && w.oth === 0); }
 }

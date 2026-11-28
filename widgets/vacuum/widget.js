@@ -19,7 +19,7 @@
     title: 'Vacuum: pump-down, conductance and outgassing',
     alt: v => `A ${fmt.num(v.V, 0)} L chamber pumped by a ${ls(v.S)} pump through a ${fmt.sig(v.d, 2)} cm × ${fmt.sig(v.l, 2)} cm pipe: effective speed ${ls(v.SeffMol)} in molecular flow; after ${dur(v.tc)} the pressure is ${pa(v.p)} (${v.range}); ${fmt.sci(v.target, 0)} Pa is reached after ${dur(v.tTarget)}.`,
     source: 'Pipe conductance: Knudsen\'s formula for air (W. Umrath, <i>Fundamentals of Vacuum Technology</i>, Leybold 2016, eqs. 1.26–1.28) with Dushman\'s entrance correction (J. F. O\'Hanlon, <i>A User\'s Guide to Vacuum Technology</i>, 3rd ed., 2003, eq. 3.24); effective speed 1/S<sub>eff</sub> = 1/S + 1/C; pump-down V·dp/dt = −S<sub>eff</sub>·p + Q(t). Outgassing per area after 1 h of pumping, falling as 1/t (Leybold Table X; Pfeiffer Vacuum Know-how; baked steel: Chiggiato 2017) – indicative values, published data scatter by more than 10×. Mean free path and monolayer time of air (O\'Hanlon). The pump speed is taken as constant; the chamber is a cube; pumping starts at 1 Pa after 5 min of roughing.',
-    freeText: v => `Explore – how long does it take to reach ${pa(v.target)}? Try a wider or shorter pipe, a bigger pump, a smaller chamber – and a baked chamber.`,
+    freeText: v => `Explore – how long does it take to reach ${pa(v.target)}? Try a wider or shorter pipe, a bigger pump, a smaller chamber, and a baked chamber.`,
 
     params: {
       V: { value: 100, min: 10, max: 1000, log: true, label: 'Chamber volume <i>V</i>', format: x => `${fmt.sig(x, 3)} L` },

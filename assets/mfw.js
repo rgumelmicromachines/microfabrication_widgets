@@ -872,7 +872,8 @@
       { slug: 'spincoating', title: 'Spin coating' },
       { slug: 'softbake', title: 'Soft bake' },
       { slug: 'lithography', title: 'Lithography resolution' },
-      { slug: 'development', title: 'Development' }] },
+      { slug: 'development', title: 'Development' },
+      { slug: 'alignment', title: 'Alignment & overlay' }] },
     { id: 'doping', title: 'Doping', pages: [
       { slug: 'diffusion', title: 'Diffusion & junction depth' },
       { slug: 'implant', title: 'Ion implantation' }] },

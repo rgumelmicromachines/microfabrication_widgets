@@ -518,5 +518,54 @@ section('Development (Dill exposure, Mack rate, front propagation)');
   check('AZ Developer: no attack on Al', DV.alLoss('azdev', 600)[1], 0, 0, 0);
 }
 
+section('Alignment and overlay (linear model, two marks, thermal run-out)');
+{
+  const AL = W('alignment');
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const o = { Tx: 0.6, Ty: -0.4, th: 25, M: 12.9 };
+  // the linear model against an exact rigid rotation and scaling of the point (30 mm, 40 mm)
+  { const th = 25e-6, Mm = 12.9e-6, x = 30e3, y = 40e3, X = (1 + Mm) * (x * Math.cos(th) - y * Math.sin(th)) + 0.6, Y = (1 + Mm) * (x * Math.sin(th) + y * Math.cos(th)) - 0.4, d = AL.overlay(30, 40, o);
+    check('Δx vs exact rotation + scaling (µm)', d.dx, X - x, 0, 1e-4); check('Δy vs exact rotation + scaling (µm)', d.dy, Y - y, 0, 1e-4); }
+  check('pure rotation: 40 µrad at 50 mm (µm)', AL.overlay(50, 0, { Tx: 0, Ty: 0, th: 40, M: 0 }).dy, 2, 1e-12);
+  check('pure rotation: no error at the centre', Math.hypot(AL.overlay(0, 0, { Tx: 0, Ty: 0, th: 40, M: 0 }).dx, AL.overlay(0, 0, { Tx: 0, Ty: 0, th: 40, M: 0 }).dy), 0, 0, 1e-15);
+  // largest error on the wafer: closed form against a scan of the rim
+  { let mx = 0; for (let i = 0; i < 3600; i++) { const a = i * Math.PI / 1800, d = AL.overlay(50 * Math.cos(a), 50 * Math.sin(a), o); mx = Math.max(mx, Math.hypot(d.dx, d.dy)); }
+    check('|Δ|max = |T| + R·√(θ² + M²) vs scan of the wafer edge (µm)', AL.maxError(o), mx, 1e-5); }
+  // two marks: residuals → parameters → residuals
+  { const m = AL.marks(o, 60), back = AL.fromMarks(m.left, m.right, 60);
+    check('fromMarks recovers T_x', back.Tx, o.Tx, 1e-12); check('fromMarks recovers T_y', back.Ty, o.Ty, 1e-12); check('fromMarks recovers θ', back.th, o.th, 1e-12); check('fromMarks recovers M', back.M, o.M, 1e-12);
+    const q = AL.fromMarks({ dx: 0.1, dy: -0.4 }, { dx: 0.5, dy: 0.3 }, 70);
+    check('page task 2: T_x (µm)', q.Tx, 0.3, 1e-9); check('page task 2: T_y (µm)', q.Ty, -0.05, 1e-9); check('page task 2: θ (µrad)', q.th, 10, 1e-9); check('page task 2: M (ppm)', q.M, 5.7, 0.01); }
+  check('page task 1: 30 µrad in degrees', 30e-6 * 180 / Math.PI, 0.0017, 0.02);
+  check('page task 1: 30 µrad at the edge (µm)', AL.maxError({ Tx: 0, Ty: 0, th: 30, M: 0 }), 1.5, 1e-12);
+  // thermal run-out (the table on the page: µm over 100 mm per kelvin)
+  check('soda-lime vs Si: run-out over 100 mm per K (µm)', AL.runout('soda', 1) * 100 * 1e-3, 0.65, 0.01);
+  check('borosilicate vs Si (µm)', AL.runout('boro', 1) * 100 * 1e-3, 0.065, 1e-9);
+  check('fused silica vs Si (µm)', AL.runout('fs', 1) * 100 * 1e-3, -0.21, 0.02);
+  check('page task 3: soda-lime, 2 K (ppm)', AL.runout('soda', 2), 12.9, 2e-3);
+  check('page task 3: at 45 mm (µm)', AL.runout('soda', 2) * 45e-3, 0.58, 0.01);
+  check('page task 3: fused silica, 2 K (ppm)', AL.runout('fs', 2), -4.1, 0.01);
+  check('page task 3: fused silica at 45 mm (µm)', Math.abs(AL.runout('fs', 2)) * 45e-3, 0.19, 0.03);
+  check('tour “Run-out”: soda-lime, 3 K, at the edge (µm)', AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('soda', 3) }), 0.97, 0.01);
+  truth('tour “Run-out”: only borosilicate brings the error below 0.2 µm at 3 K', AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('boro', 3) }) < 0.2 && AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('fs', 3) }) > 0.2);
+  // reading error and mark separation
+  check('page task 4: ±0.5 µm at marks 60 mm apart (µrad)', AL.rotationFromReading(0.5, 60), 17, 0.02);
+  check('page task 4: that rotation at the edge (µm)', AL.rotationFromReading(0.5, 60) * 0.05, 0.83, 0.01);
+  check('page task 4: marks 20 mm apart (µrad)', AL.rotationFromReading(0.5, 20), 50, 1e-12);
+  { const m = AL.marks({ Tx: 0, Ty: 0, th: 100, M: 0 }, 10); check('tour “Marks too close”: 100 µrad reads +0.5 µm at marks 10 mm apart', m.right.dy, 0.5, 1e-12);
+    truth('tour “Marks too close”: windows at the edge are lost with e = 3 µm', AL.map({ Tx: 0, Ty: 0, th: 100, M: 0 }, 3).yield < 1); }
+  // vernier
+  check('vernier: +0.8 µm reads +1.0 (0.5 µm steps)', AL.vernier(0.8).reading, 1.0, 1e-12);
+  check('vernier: −0.2 µm reads 0', AL.vernier(-0.2).reading, 0, 0, 1e-12);
+  truth('vernier: 3.2 µm is off a ±2.5 µm scale', !AL.vernier(3.2).inRange);
+  { // geometry: with the offset n·r the n-th bars of a 4.0 and a 3.5 µm scale coincide
+    const nB = 3, off = nB * 0.5; check('vernier geometry: bar 3 of both scales coincides at +1.5 µm', nB * 3.5 + off, nB * 4.0, 1e-12); }
+  // enclosure
+  { const mp = AL.map({ Tx: 0.6, Ty: 0.4, th: 25, M: AL.runout('soda', 2) }, 2); truth('tour “Enclosure”: 2 µm covers every die, 0.5 µm does not', mp.yield === 1 && mp.need <= 2 && mp.need > 1.6 && AL.map({ Tx: 0.6, Ty: 0.4, th: 25, M: AL.runout('soda', 2) }, 0.5).yield < 1); }
+  check('number of die sites (10 mm grid, r ≤ 45 mm)', AL.sites().length, 69, 0, 0);
+  check('root sum of squares: 0.5, 0.5, 0.65 (µm)', AL.rss([0.5, 0.5, 0.65]), 0.96, 0.005);
+  check('page task 5: plus 1.0 µm systematic (µm)', AL.rss([0.5, 0.5, 0.65]) + 1, 2.0, 0.03);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

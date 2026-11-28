@@ -11,7 +11,7 @@
      in the jitter test it comes and goes by construction. These are listed in `result.thresholds` for information;
      a label that comes and goes during a one-way sweep is still an issue;
    - a label that follows the data smoothly: in the jitter test it necessarily moves back and forth with the slider.
-     It is told apart from a hop between two places by drawing the half step – a smooth label is then in between. */
+     It is told apart from a hop between two places by drawing intermediate steps – a smooth label is then in between. */
 (function () {
   'use strict';
   // the same label stays the same key when its number, exponent or unit changes (that is new text, not a blink)
@@ -105,7 +105,7 @@
         for (let j = 1; j < 60; j++) {
           const u = j / 60, du = 1 / N, frames = [];
           for (const k of [0, 1, 0, 1, 0, -1, 0, -1, 0]) { set(u + k * du); frames.push(frameOf(w, log)); }
-          const mids = [0.5, -0.5].map(k => { set(u + k * du); return frameOf(w, log); });
+          const mids = [0.25, 0.5, 0.75, -0.25, -0.5, -0.75].map(k => { set(u + k * du); return frameOf(w, log); });
           analyse(frames, `${name} jitter at ${at(u).toPrecision(3)}`, issues, mids, notes);
         }
         Object.assign(w.P, P0);

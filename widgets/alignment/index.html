@@ -8,7 +8,7 @@
 <meta name="description" content="Interactive overlay model for a mask aligner: translation, rotation and run-out, two alignment marks, vernier reading, pad enclosure of a contact window and thermal run-out of soda-lime, borosilicate and fused-silica masks.">
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../assets/mfw.css?v=38cdd2b1f3">
+<link rel="stylesheet" href="../../assets/mfw.css?v=84a96b1213">
 </head>
 <body>
 <header class="site-header">
@@ -61,7 +61,7 @@
         <li>Two marks are 70 mm apart. The operator reads <span class="tex">\Delta x = +0.1</span>, <span class="tex">\Delta y = -0.4\ \mathrm{\mu m}</span> at the left mark and <span class="tex">\Delta x = +0.5</span>, <span class="tex">\Delta y = +0.3\ \mathrm{\mu m}</span> at the right one. Find shift, rotation and run-out.
           <details><summary>Answer</summary><span class="tex">T = (+0.3,\ -0.05)\ \mathrm{\mu m}</span>, <span class="tex">\theta = 0.7\ \mathrm{\mu m}/70\ \mathrm{mm} = 10\ \mathrm{\mu rad}</span>, <span class="tex">M = 0.4\ \mathrm{\mu m}/70\ \mathrm{mm} = 5.7\ \mathrm{ppm}</span>. Shift and rotation can be removed on the stage; the run-out stays.</details></li>
         <li>A soda-lime mask and the wafer are both 2 K warmer than at the first exposure. What is the run-out, and how far off is a die 45 mm from the centre after perfect alignment of shift and rotation? Repeat for fused silica.
-          <details><summary>Answer</summary>Soda-lime: <span class="tex">M = (9.06 - 2.6)\cdot 2 = 12.9\ \mathrm{ppm}</span>, <span class="tex">12.9\times10^{-6}\cdot 45\ \mathrm{mm} = 0.58\ \mathrm{\mu m}</span>. Fused silica: <span class="tex">M = (0.54 - 2.6)\cdot 2 = -4.1\ \mathrm{ppm}</span>, 0.19 µm in the opposite direction. The mask that expands least is not the one that fits silicon best.</details></li>
+          <details><summary>Answer</summary>Soda-lime: <span class="tex">M = (9.06 - 2.6)\cdot 2 = 12.9\ \mathrm{ppm}</span>, <span class="tex">12.9\times10^{-6}\cdot 45\ \mathrm{mm} = 0.58\ \mathrm{\mu m}</span>. Fused silica: <span class="tex">M = (0.54 - 2.6)\cdot 2 = -4.1\ \mathrm{ppm}</span>, 0.19 µm in the opposite direction, because fused silica expands less than silicon. Borosilicate glass (3.25) would leave 0.06 µm.</details></li>
         <li>The marks can be set to ±0.5 µm each. Which rotation can remain unnoticed with the marks 60 mm apart, and which with 20 mm? What does each mean at the edge of a 100 mm wafer?
           <details><summary>Answer</summary>60 mm: <span class="tex">2\cdot0.5/60 = 17\ \mathrm{\mu rad}</span>, 0.83 µm at the edge. 20 mm: 50 µrad, 2.5 µm at the edge.</details></li>
         <li>An overlay budget has three independent random contributions of 0.5, 0.5 and 0.65 µm and one systematic run-out of 1.0 µm at the wafer edge. What enclosure covers them?
@@ -97,8 +97,8 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=7f4b69d370"></script>
+<script src="../../assets/mfw.js?v=cb5072b610"></script>
 <script src="model.js?v=b3a2e34d48"></script>
-<script src="widget.js?v=ab4662db22"></script>
+<script src="widget.js?v=238f53d3a1"></script>
 </body>
 </html>

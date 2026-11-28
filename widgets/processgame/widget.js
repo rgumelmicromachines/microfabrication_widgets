@@ -107,17 +107,21 @@
       const dxy = st >= 2 ? [res.centre.dx * upm, res.centre.dy * upm] : [0, 0];
       p.rect(TX0, TY0, TX1 - TX0, TY1 - TY0, { fill: field, stroke: C.axis, width: 1.5, noOcc: true });
       p.clip(TX0, TY0, TX1, TY1, () => {
-        if (lines) {
+        {
           const xs = M.linspace(cxv - 1.2, cxv + 1.2, 7), pts = [[cxv - 1.85, cyv], [xs[0], cyv]];
           xs.forEach((x, i) => { const y = cyv + (i % 2 ? -0.72 : 0.72); pts.push([x, y]); if (i < xs.length - 1) pts.push([xs[i + 1], y]); });
           pts.push([xs[6], cyv], [cxv + 1.85, cyv]);
           const sh = pts.map(([x, y]) => [x + dxy[0], y + dxy[1]]);
-          p.path(sh, { color: lines, width: 13, cap: 'butt', noOcc: true });
-          for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 0.36 + dxy[0], cyv - 0.36 + dxy[1], 0.72, 0.72, { fill: lines, stroke: lineStroke, width: 1, noOcc: true });
+          // before the pattern is on the wafer: the mask layout as a faint ghost, so the target is visible from the start
+          const ghost = !lines && st < 5, colr = lines || C.white, al = ghost ? 0.16 : 1;
+          if (lines || ghost) {
+            p.path(sh, { color: colr, width: 13, cap: 'butt', alpha: al, noOcc: true });
+            for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 0.36 + dxy[0], cyv - 0.36 + dxy[1], 0.72, 0.72, { fill: colr, fillAlpha: al, stroke: ghost ? null : lineStroke, width: 1, noOcc: true });
+          }
         }
         for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 5 * upm, cyv - 5 * upm, 10 * upm, 10 * upm, { stroke: C.white, width: 1.5, dash: [0.05, 0.05], noOcc: true });
       });
-      p.text('dashed: contact windows under the film · turns reduced, pads to scale', X0, TY0 - 0.2, { size: 0.16, color: C.muted });
+      p.text(st < 5 ? 'faint: the pattern on the mask, not yet on the wafer · dashed: contact windows' : 'dashed: contact windows under the film · turns reduced, pads to scale', X0, TY0 - 0.2, { size: 0.16, color: C.muted });
       // detail of three lines, to scale (20 µm wide)
       const DX0 = -1.95, DX1 = X1, DY0 = 1.45, DY1 = 3.05, ud = (DX1 - DX0) / 20, dc = (DX0 + DX1) / 2;
       p.rect(DX0, DY0, DX1 - DX0, DY1 - DY0, { fill: field, stroke: C.axis, width: 1.5, noOcc: true });
@@ -275,11 +279,13 @@
   // values from the documents
   const qSec = el('section', 'pg-box'); panel.insertBefore(qSec, pbox);
   el('h4', null, qSec, 'Look up in the documents');
-  el('p', 'pg-hint', qSec, 'Type the value you find. It is checked when you run the station and counts for the score; the first answer counts. A field may stay empty.');
+  el('p', 'mfw-need', qSec, '<b>Your input</b><span>20 points for all nine values of the run</span>');
+  el('p', 'pg-hint', qSec, 'Type the value you find. It is checked when you run the station; the first answer counts. A field may stay empty.');
   const qBox = el('div', 'pg-qs', qSec);
   // tool settings (the engine's sliders live here)
   const setSec = el('section', 'pg-box'); panel.insertBefore(setSec, pbox);
   el('h4', null, setSec, 'Set the tool');
+  el('p', 'mfw-need', setSec, '<b>Your input</b><span>decides resistance (35 points) and yield (30)</span>');
   const nudge = el('div', 'pg-nudge', setSec);
   setSec.appendChild(pbox);
   const nrow = (label, key, steps, unit, digits) => {
@@ -297,6 +303,7 @@
   const runBtn = el('button', 'pg-run', actions); runBtn.type = 'button';
   const againBtn = el('button', 'pg-again', actions); againBtn.type = 'button';
   const msg = el('p', 'pg-msg', null); msg.setAttribute('aria-live', 'polite'); actions.after(msg);
+  const ptsBox = el('p', 'pg-points'); msg.after(ptsBox);
   const logBox = el('div', 'pg-log'); msg.after(logBox);
   el('h3', 'mfw-chars-h', logBox, 'Run sheet');
   const logList = el('ol', null, logBox);
@@ -311,7 +318,7 @@
       const g = state.graded[q.id], row = el('label', 'pg-q' + (g ? (g.ok ? ' is-right' : ' is-wrong') : ''), qBox);
       el('span', 'pg-q-t', row, g ? g.text : q.text).dataset.qt = q.id;
       const box = el('span', 'pg-q-in', row), inp = el('input', null, box);
-      inp.type = 'number'; inp.step = 'any'; inp.inputMode = 'decimal'; inp.dataset.q = q.id; inp.setAttribute('aria-label', `${q.text} (${q.unit})`);
+      inp.type = 'number'; inp.step = 'any'; inp.placeholder = '?'; inp.inputMode = 'decimal'; inp.dataset.q = q.id; inp.setAttribute('aria-label', `${q.text} (${q.unit})`);
       el('span', 'pg-q-u', box, q.unit);
       if (g) { inp.value = g.given === undefined ? '' : g.given; inp.disabled = true; el('span', 'pg-q-v', row, g.ok ? '✓ matches the document' : `✗ the document gives ${num3(g.want)} ${q.unit}`); }
     }
@@ -346,6 +353,9 @@
     nudge.hidden = !(st === 2 || SHOW_ALL);
     textBox.innerHTML = st < 8 ? STATIONS[st].text : 'The map shows every die, and the report with your score is below the figure. If the result is off, decide which station caused it and run another wafer.';
     renderQs(); renderLog();
+    const done = Object.values(state.graded), right = done.filter(g => g.ok).length, eco = Math.max(0, 15 - 5 * state.reworks - 10 * state.scraps);
+    ptsBox.innerHTML = `<b>Points so far</b> documents: ${right} of ${done.length} checked values right (${fmt.num(20 * right / 9, 0)} of 20) · economy: ${eco} of 15 · resistance (35) and yield (30) are decided at the test`;
+    ptsBox.hidden = st >= 8;
     if (st >= 8) renderReport(); else if (report) report.hidden = true;
   }
   runBtn.addEventListener('click', () => {

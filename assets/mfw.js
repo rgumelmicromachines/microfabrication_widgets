@@ -272,7 +272,10 @@
       const cls = (o.hl ? ' hl' : '') + (o.warn ? ' warn' : '');
       const note = o.note ? `<span class="mfw-cnote">${o.note}</span>` : '';
       const pc = `<td class="par">${par}${o.f ? `<span class="mfw-cf">${o.f}</span>` : ''}</td><td class="sym">${sym || ''}</td>`;
-      if (!u && !NUMERIC.test(v)) h += `<tr>${pc}<td class="num txt${cls}" colspan="2">${v}${note}</td></tr>`;
+      if (!u && !NUMERIC.test(v)) {                                   // a result in words: one wide cell, never a column of single words
+        h += sym ? `<tr>${pc}<td class="num txt${cls}" colspan="2">${v}${note}</td></tr>`
+          : `<tr><td class="par">${par}${o.f ? `<span class="mfw-cf">${o.f}</span>` : ''}</td><td class="num txt${cls}" colspan="3">${v}${note}</td></tr>`;
+      }
       else h += `<tr>${pc}<td class="num${cls}">${v}</td><td class="unit">${u}${note}</td></tr>`;
     }
     return h + '</tbody></table>';
@@ -808,7 +811,7 @@
   const STRINGS = {
     play: 'Play', pause: 'Pause', prev: 'Back', next: 'Next', steps: 'All steps', chars: 'Characteristics',
     full: 'Enlarge figure', exitFull: 'Close',
-    tour: 'Guided tour', explore: 'Explore', speed: 'Speed',
+    tour: 'Challenges', explore: 'Explore', speed: 'Speed', replay: 'Watch again',
     showMe: 'Show me', right: 'Right.', wrong: 'Not quite – watch what happens.', todo: 'Not done yet', reached: '✓ Done',
     needAsk: 'Your turn: choose an answer', needGoal: 'Your turn: move the sliders',
     free: 'Explore mode – every slider is yours. Change parameters and watch what happens.',
@@ -905,14 +908,14 @@
   const GAME_SLUG = 'processgame';
   const LESSONS = PAGES.filter(p => p.slug !== GAME_SLUG);
   const ACHIEVEMENTS = [
-    { id: 'first-answer', title: 'First prediction', text: 'Answer a prediction in any guided tour.' },
-    { id: 'first-tour', title: 'First wafer out', text: 'Finish every question and task of one guided tour.' },
-    { id: 'clean-tour', title: 'Clean run', text: 'Finish one tour with every prediction right and no “Show me”.' },
+    { id: 'first-answer', title: 'First prediction', text: 'Answer a prediction in any lesson.' },
+    { id: 'first-tour', title: 'First wafer out', text: 'Finish every question and task of one lesson.' },
+    { id: 'clean-tour', title: 'Clean run', text: 'Finish one lesson with every prediction right and no “Show me”.' },
     { id: 'own-hands', title: 'Own hands', text: 'Solve ten tasks with the sliders, without “Show me”.' },
-    { id: 'five-tours', title: 'Five lessons', text: 'Finish five guided tours.' },
-    { id: 'all-tours', title: 'Full process flow', text: 'Finish the guided tour of every lesson.' },
+    { id: 'five-tours', title: 'Five lessons', text: 'Finish the challenges of five lessons.' },
+    { id: 'all-tours', title: 'Full process flow', text: 'Finish the challenges of every lesson.' },
     { id: 'fine-print', title: 'Fine print', text: 'Open “Sources & model notes” in five lessons.' },
-    ...MODULES.filter(m => m.pages.some(p => p.slug !== GAME_SLUG)).map(m => ({ id: 'mod-' + m.id, title: `${m.title}: module done`, text: `Finish every guided tour of module ${m.no}.`, module: m })),
+    ...MODULES.filter(m => m.pages.some(p => p.slug !== GAME_SLUG)).map(m => ({ id: 'mod-' + m.id, title: `${m.title}: module done`, text: `Finish every lesson of module ${m.no}.`, module: m })),
     { id: 'game-done', title: 'Lot released', text: 'Take a wafer through the lithography run to the electrical test.' },
     { id: 'game-90', title: 'On target', text: 'Score 90 or more in the lithography run.' },
     { id: 'game-first', title: 'First-pass yield', text: 'Score 80 or more with the first wafer, without strip and recoat.' },
@@ -994,7 +997,7 @@
     for (const id of progress.earned(st)) if (!st.ach[id]) { st.ach[id] = today; fresh.push(ACHIEVEMENTS.find(a => a.id === id)); }
     progress.save(st);
     progress.refresh();
-    if (ev.slug && !wasDone && progress.lessonDone(st, ev.slug)) toast('Guided tour finished', `+${POINTS.tour} points`);
+    if (ev.slug && !wasDone && progress.lessonDone(st, ev.slug)) toast('Lesson finished', `+${POINTS.tour} points`);
     fresh.forEach(a => toast(`Achievement: ${a.title}`, a.text, a));
     const r0 = progress.rank(progress.total(st) - gained), r1 = progress.rank(progress.total(st));
     const ranked = r1.index > r0.index;
@@ -1054,8 +1057,9 @@
       const frac = game ? st.game.best / 100 : st.need[slug] ? progress.stepsDone(st, slug) / st.need[slug] : 0;
       m.hidden = !!st.off || !(pts > 0 || progress.stepsDone(st, slug));
       m.classList.toggle('is-done', done);
-      m.innerHTML = `<span class="tile-bar"><i style="width:${Math.round(100 * Math.min(1, frac))}%"></i></span><span>${game ? `Best run ${st.game.best} of 100` : `${done ? 'Tour finished' : `Tour ${progress.stepsDone(st, slug)} of ${st.need[slug] || '?'}`} · ${pts} pts`}</span>`;
+      m.innerHTML = `<span class="tile-bar"><i style="width:${Math.round(100 * Math.min(1, frac))}%"></i></span><span>${game ? `Best run ${st.game.best} of 100` : `${done ? 'Finished' : `${progress.stepsDone(st, slug)} of ${st.need[slug] || '?'} challenges`} · ${pts} pts`}</span>`;
     });
+    widgets.forEach(w => w._tourPoints && w._tourPoints());
     const sec = document.getElementById('progress');
     if (!sec) return;
     if (st.off) {
@@ -1070,12 +1074,12 @@
           <ol class="rank-steps">${RANKS.map(([n, name], i) => `<li class="${i <= rk.index ? 'is-on' : ''}"><span>${n}</span>${escH(name)}</li>`).join('')}</ol>
         </div>
         <ul class="stat-row">
-          <li><b>${tours}</b><span>of ${LESSONS.length} guided tours finished</span></li>
+          <li><b>${tours}</b><span>of ${LESSONS.length} lessons finished</span></li>
           <li><b>${got}</b><span>of ${ACHIEVEMENTS.length} badges</span></li>
           <li><b>${st.game.runs ? st.game.best : '–'}</b><span>best lithography run, of 100</span></li>
         </ul>
         <ul class="ach-grid">${ACHIEVEMENTS.map(a => `<li class="ach${st.ach[a.id] ? ' is-on' : ''}">${badge(a, !!st.ach[a.id])}<div><b>${escH(a.title)}</b><span>${escH(a.text)}</span><small>${st.ach[a.id] ? 'earned ' + st.ach[a.id] : 'not yet'}</small></div></li>`).join('')}</ul>
-        <p class="progress-how">A prediction in a guided tour gives ${POINTS.right} points if it is right and ${POINTS.wrong} if not; a task solved with the sliders gives ${POINTS.solved}, with “Show me” ${POINTS.hint}; a finished tour adds ${POINTS.tour}. The lithography run counts with its best score.</p>
+        <p class="progress-how">A prediction gives ${POINTS.right} points if it is right and ${POINTS.wrong} if not; a task solved with the sliders gives ${POINTS.solved}, with “Show me” ${POINTS.hint}; a finished lesson adds ${POINTS.tour}. The lithography run counts with its best score.</p>
         <p class="progress-actions"><button type="button" data-act="sound" aria-pressed="${!st.mute}">Sound: ${st.mute ? 'off' : 'on'}</button> <button type="button" data-act="hide">Hide points and badges</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
     }
     sec.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
@@ -1084,9 +1088,7 @@
       else if (act === 'sound') { s2.mute = !s2.mute; progress.save(s2); if (!s2.mute) chime('badge'); }
       else { s2.off = act === 'hide'; progress.save(s2); }
       progress.refresh();
-      widgets.forEach(w => w._tourPoints && w._tourPoints());
     }));
-    widgets.forEach(w => w._tourPoints && w._tourPoints());
   };
   /** Lesson menu in the header, previous / next links under the widget and the page footer – inserted on every page. */
   function buildNav() {
@@ -1143,6 +1145,18 @@
       if (e.key === 'Escape') { close(); btn.focus(); }
       else if (!pop.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); links[(i + (e.key === 'ArrowDown' ? 1 : links.length - 1)) % links.length].focus(); }
     });
+    const map = el('nav', 'course-map'); map.setAttribute('aria-label', 'Modules and lessons');
+    const mods = el('ol', 'map-modules', map);
+    MODULES.forEach(md => {
+      const li = el('li', md === (cur && cur.module) ? 'is-current' : '', mods); li.setAttribute('data-module', md.id);
+      li.innerHTML = `<a href="${cur ? href(md.pages[0]) : '#module-' + md.id}"${md === (cur && cur.module) ? ' aria-current="true"' : ''}><span>${md.no}</span>${escH(md.title)}</a>`;
+    });
+    if (cur) {
+      const les = el('ol', 'map-lessons', map); les.setAttribute('data-module', cur.module.id);
+      cur.module.pages.forEach(pg => { el('li', pg === cur ? 'is-current' : '', les).innerHTML = `<a href="${href(pg)}"${pg === cur ? ' aria-current="page"' : ''}><span>${pg.no}</span>${escH(pg.title)}</a>`; });
+    }
+    header.insertAdjacentElement('afterend', map);
+    for (const row of map.children) { const c = row.querySelector('.is-current'); if (c) row.scrollLeft = Math.max(0, c.offsetLeft - (row.clientWidth - c.offsetWidth) / 2); }
     const crumb = header.querySelector('.crumb');
     if (crumb) crumb.replaceWith(menu); else header.insertBefore(menu, header.querySelector('.header-spacer'));
     // previous / next under the widget
@@ -1306,9 +1320,9 @@
       this._stepKeys = new Set(); this._stepLayers = new Set();
       steps.forEach(s => { Object.keys(s.set || {}).forEach(k => this._stepKeys.add(k));
         (s.show || []).concat(s.hide || []).forEach(n => this._stepLayers.add(n)); });
-      // a lesson opens in Explore (every slider free); the guided tour is the second tab. `startMode: 'tour'` in the
-      // config or `#tour` at the end of the address opens the tour directly (handy for a link in a course page).
-      const wantTour = cfg.startMode === 'tour' || (typeof location !== 'undefined' && location.hash === '#tour');
+      // a lesson opens in its tour of challenges; Explore (every slider free, nothing asked) is the second tab.
+      // `startMode: 'explore'` in the config or `#explore` at the end of the address opens Explore directly.
+      const wantTour = cfg.startMode !== 'explore' && !(typeof location !== 'undefined' && location.hash === '#explore');
       this.mode = this.hasTour && wantTour ? 'tour' : 'explore';
       const sp = parseFloat(store.get('mfw-speed'));
       this.speed = SPEEDS.includes(sp) ? sp : 1;
@@ -1453,14 +1467,14 @@
         `opt.instant` (tests, thumbnails) goes straight to the answered / solved state. */
     _goInteractive(i, st, target, opt) {
       const S = this.S, box = this.taskEl;
-      const reveal = (instant, extra) => {
+      const reveal = (instant, extra, minDur = 0) => {
         this._stepLayers.forEach(n => this._fadeLayer(n, target.layers[n] || 0, instant ? 0 : 0.6));
         const vals = {};
         this._stepKeys.forEach(k => { vals[k] = k in target.P ? target.P[k] : this.cfg.params[k].value; });
-        return this.animate({ ...vals, ...(extra || {}) }, instant ? 0 : (st.duration === undefined ? 2.5 : st.duration), st.ease || 'smooth');
+        return this.animate({ ...vals, ...(extra || {}) }, instant ? 0 : Math.max(minDur, st.duration === undefined ? 2.5 : st.duration), st.ease || 'smooth');
       };
       const caption = fade => { this._capSrc = target.caption; this.caption(resolveText(target.caption, this.values), fade); };
-      const explain = () => { this._resetHeights(); this._textSrc = st.text; this._setExplain(resolveText(st.text, this.values)); };
+      const explain = keep => { if (!keep) this._resetHeights(); this._textSrc = st.text; this._setExplain(resolveText(st.text, this.values)); };
       const hush = () => { this._textSrc = null; this._setExplain(''); };
       const solved = () => { this._solved.add(i); this._markStep(i); };
       const award = kind => {                                              // text for the step's own points (the tour bonus is announced apart)
@@ -1483,16 +1497,25 @@
           btns.forEach((b, j) => { b.disabled = true; b.classList.toggle('is-right', j === q.correct); b.classList.toggle('is-wrong', j === k && k !== q.correct); });
           if (k !== undefined) verdict.textContent = k === q.correct ? S.right : S.wrong;
         };
-        if (answered) { mark(was); caption(!opt.instant); explain(); solved(); const pr = reveal(opt.instant); if (st.enter) st.enter(this); return pr; }
-        hush(); this._capSrc = null; this.caption('', true);
         // the question is asked about the state of the previous step (plus `from`), wherever the student came from
         const before = i > 0 ? stepState(this.cfg, i - 1) : { P: {}, layers: {} }, start = {};
         this._stepKeys.forEach(k => { start[k] = k in before.P ? before.P[k] : this.cfg.params[k].value; });
+        Object.assign(start, st.from || {});
+        // after the answer the figure shows what happens – slowly enough to follow, and again on request
+        const SLOW = 4;
+        const replay = () => {
+          if (box.querySelector('.mfw-replay')) return;
+          const rb = el('button', 'mfw-replay', box, S.replay); rb.type = 'button';
+          rb.addEventListener('click', () => { if (this.step !== i) return; this.animate(start, 0.5).then(() => { if (this.step === i) reveal(false, null, SLOW); }); });
+        };
+        if (answered) { mark(was); caption(!opt.instant); explain(); solved(); const pr = reveal(opt.instant); if (!opt.instant) replay(); if (st.enter) st.enter(this); return pr; }
+        hush(); this._capSrc = null; this.caption('', true);
         this._stepLayers.forEach(n => this._fadeLayer(n, before.layers[n] || 0, 0.4));
-        const pr = this.animate({ ...start, ...(st.from || {}) }, 0.8);
+        const pr = this.animate(start, 0.8);
         btns.forEach((b, k) => b.addEventListener('click', () => {
           (this._answers || (this._answers = {}))[i] = k;
-          mark(k); verdict.textContent += award(k === q.correct ? 'right' : 'wrong'); caption(true); explain(); solved(); reveal(false);
+          mark(k); verdict.textContent += award(k === q.correct ? 'right' : 'wrong'); caption(true); explain(); solved(); replay();
+          setTimeout(() => { if (this.step === i) reveal(false, null, SLOW); }, 500);   // a moment to look up from the buttons to the figure
           if (st.enter) st.enter(this);
         }));
         return pr;
@@ -1503,13 +1526,20 @@
         const needEl = need(S.needGoal, `${POINTS.solved} points, ${POINTS.hint} with “${S.showMe}”`);
         const row = el('div', 'mfw-taskrow', box), status = el('span', 'mfw-status', row, S.todo);
         let show = null;
-        const reached = () => { this._goalFn = null; needEl.hidden = true; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.hidden = true; explain(); solved(); };
+        const reached = () => { this._goalFn = null; needEl.style.visibility = 'hidden'; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.style.visibility = 'hidden'; explain(true); solved(); };   // hidden, not removed: nothing below may move
         if (st.solution) {
           show = el('button', 'mfw-showme', row, S.showMe); show.type = 'button';
           show.addEventListener('click', () => { this._hinted.add(i); this.animate(st.solution, 2); });
         }
         if (opt.instant) { const pr = reveal(true, st.solution); reached(); return pr; }
         hush();
+        // keep room for the explanation that appears when the task is solved, so the sliders do not move under the hand
+        try {
+          const e = this.explainEl, probe = withDerived(this.cfg, { ...this.P, ...target.P, ...(st.solution || {}) }, 0);
+          e.style.minHeight = ''; e.innerHTML = richToHTML(resolveText(st.text, probe));
+          const h = Math.ceil(e.getBoundingClientRect().height); e.innerHTML = ''; this._explain = '';
+          e._mfwH = h; e.style.minHeight = h + 'px';
+        } catch (err) { /* no reserve: the text simply appears */ }
         const pr = reveal(false);
         pr.then(() => { if (this.step === i && this.mode === 'tour') { this._goalReached = () => { reached(); status.textContent += award(this._hinted.has(i) ? 'hint' : 'solved'); }; this._goalFn = st.goal; } });
         if (st.enter) st.enter(this);
@@ -1643,7 +1673,7 @@
         const tabs = el('div', 'mfw-tabs', this.panel);
         tabs.setAttribute('role', 'tablist');
         this.tabBtns = {};
-        for (const m of ['explore', 'tour']) {
+        for (const m of ['tour', 'explore']) {
           const b = el('button', 'mfw-tab', tabs, m === 'tour' ? S.tour : S.explore);
           b.type = 'button'; b.setAttribute('role', 'tab');
           b.addEventListener('click', () => this.setMode(m));
@@ -1816,7 +1846,7 @@
       if (!e || !this.slug) return;
       const st = progress.load(), max = progress.lessonMax(this.cfg.steps || []), pts = progress.lessonPoints(st, this.slug);
       e.hidden = !!st.off || !max;
-      const html = `<span class="tp-bar"><i style="width:${Math.round(100 * Math.min(1, pts / (max || 1)))}%"></i></span><span class="tp-txt"><b>${pts}</b> of ${max} points in this tour</span>`;
+      const html = `<span class="tp-bar"><i style="width:${Math.round(100 * Math.min(1, pts / (max || 1)))}%"></i></span><span class="tp-txt"><b>${pts}</b> of ${max} points in this lesson</span>`;
       if (e._html !== html) { e.innerHTML = html; e._html = html; }
     }
     _setExplain(html) { if (this._explain === html) return; this._explain = html; this.explainEl.innerHTML = richToHTML(html); this._holdHeight(this.explainEl); }
@@ -2026,7 +2056,7 @@
       }
       if (this._niceHeld && !this._dragging()) { this._niceHeld = false; this.dirty = true; }   // slider at rest: ranges settle
       if (this.dirty || this.cfg.loop) this._draw();
-      if (this._goalFn && this.mode === 'tour' && this._v && this._goalFn(this._v)) { const g = this._goalReached; this._goalFn = null; if (g) g(); }
+      if (this._goalFn && this.mode === 'tour' && this._v && !this._dragging() && !this.tweens.size && this._goalFn(this._v)) { const g = this._goalReached; this._goalFn = null; if (g) g(); }
       this._raf = requestAnimationFrame(x => this._frame(x));
     }
     _draw() {

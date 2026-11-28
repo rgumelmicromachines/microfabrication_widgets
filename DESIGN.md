@@ -271,6 +271,12 @@ Built by `MFW.chars(rows)`: columns Parameter · Symbol · Value · Unit under a
 ### Lesson tiles (overview)
 A 16:9 miniature of the lesson's real figure (light and dark versions, swapped by theme) in a strong-rule frame, then number and title, then one sentence in ink-2. Hover darkens the frame to ink and underlines the title.
 
+## Navigation
+
+Under the header band sits the course map: one row with the nine modules (number in the module colour, the current one underlined in it) and, on a lesson page, a second row with the lessons of that module (the current one filled with the module colour). Both rows scroll sideways on a phone and bring the current item into view. The band keeps the lesson menu and stays sticky; the course map scrolls away with the page.
+
+A lesson opens in its tour, the tab “Challenges”; “Explore” is the second tab.
+
 ## Page order
 
 A lesson reads top to bottom as: title and one-paragraph lede, the figure with its panel, then one column of folding sections (equations, exercises, limitations, references; closed at first, top rule in the module colour), then the links to the previous and next lesson. The process game puts the game first and its work order in the first folding section, open by default (`data-fold="open"` on a card).

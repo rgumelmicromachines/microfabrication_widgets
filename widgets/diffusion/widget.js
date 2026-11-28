@@ -139,19 +139,31 @@
       ['sheet resistance', 'R<sub>s</sub>', `${fmt.sig(v.Rs2, 3)} Ω/□`],
       v.Cs > v.ni1 && { warn: `C<sub>s</sub> &gt; n<sub>i</sub>(T₁) = ${fmt.sci(v.ni1, 1)} cm⁻³: real diffusion is faster and concentration-dependent.` }]),
 
+    // interactive tour: predict (ask) and try (goal) steps – see Widget._goInteractive in assets/mfw.js
     steps: [
-      { name: 'Predeposition', caption: 'Constant surface concentration → erfc profile', set: { T1: 950, t1: 30, csMode: 'sol', t2: 0, T2: 1100 }, duration: 1.5,
+      { name: 'Predeposition', caption: 'Constant surface concentration → erfc profile', set: { dop: 'B', NB: 1e15, T1: 950, t1: 30, csMode: 'sol', t2: 0, T2: 1100 }, duration: 1.5,
         text: v => `The wafer sits in a dopant source (e.g. BBr₃, POCl₃ or a solid source) at ${v.T1} °C. The surface is held at the solid solubility, C<sub>s</sub> ≈ ${conc(v.Cs)}, and dopant diffuses in with D = ${fmt.sci(v.D1, 1)} cm²/s. The solution of Fick's law is an erfc profile with diffusion length √(Dt) = ${um(Math.sqrt(v.Dt1))}.` },
       { name: 'Junction depth', caption: 'The junction lies where C(x) = N_B', show: ['junction'],
         text: v => `The diffused ${NAME[v.dop]} compensates the substrate doping N<sub>B</sub>. Where C(x) = N<sub>B</sub> the net doping changes sign: that depth is the <b>junction depth</b> x<sub>j</sub> = 2√(Dt)·erfc⁻¹(N<sub>B</sub>/C<sub>s</sub>) = ${um(v.xj2)}. Under the mask edge the dopant also spreads sideways (about 0.8 x<sub>j</sub>).` },
-      { name: 'Drive-in', caption: 'No more supply: the fixed dose spreads deeper', set: { t2: 60 }, show: ['pre'], duration: 3,
-        text: v => `Next the source is removed (the surface is sealed by oxide) and the wafer is heated again, here ${mins(v.t2)} at ${v.T2} °C. The dose Q = ${fmt.sci(v.Q, 2)} cm⁻² stays constant, so the profile flattens: the surface concentration drops to ${conc(v.Cs2)} and the junction moves to ${um(v.xj2)}.` },
-      { name: 'Gaussian approximation', caption: 'Gaussian is good once D₂t₂ ≫ D₁t₁', show: ['gauss'],
-        text: v => `Hand calculations treat the predeposited dose as a thin sheet at the surface, which gives a Gaussian (dotted). Here D₂t₂/D₁t₁ = ${fmt.sig(v.ratio, 2)}, so the approximation ${v.ratio > 10 ? 'is already very good' : 'is still visibly off near the surface'}. The yellow curve is the exact solution for the real erfc starting profile.` },
-      { name: 'Temperature', caption: 'D is thermally activated: +50 °C ≈ 3× faster', set: { T2: 1150 }, duration: 2.5,
-        text: v => `With an effective activation energy of ${fmt.num(8.617333e-5 * Math.log(v.D2 / DF.D(v.dop, 1100)) / (1 / 1373.15 - 1 / (v.T2 + 273.15)), 1)} eV the diffusivity is extremely temperature-sensitive: at ${v.T2} °C D is ${fmt.sig(v.D2 / DF.D(v.dop, 1100), 2)}× higher than at 1100 °C and the junction moves to ${um(v.xj2)}. Every later high-temperature step (oxidation, annealing) moves junctions as well – the <i>thermal budget</i> must be planned for the whole process.` },
-      { name: 'Sheet resistance', caption: 'R_s – what the four-point probe measures', set: { T2: 1100, t2: 120 }, duration: 2,
-        text: v => `The diffused layer is a resistor. Its sheet resistance R<sub>s</sub> = 1 / (q ∫ μ(C)·(C − N<sub>B</sub>) dx) = <b>${fmt.sig(v.Rs2, 3)} Ω/□</b> is measured with a four-point probe; together with x<sub>j</sub> (from angle-lapping or SIMS) it characterises the diffusion. Now switch to <b>Explore</b>, change the dopant or substrate doping and design your own junction.` },
+      { name: 'Drive-in', caption: 'No more supply: the fixed dose spreads deeper', from: { t2: 0 }, set: { t2: 60 }, show: ['pre'], duration: 3,
+        ask: { q: 'Next the source is removed, the surface is sealed by an oxide and the wafer is heated again: 60 min at 1100 °C. No dopant enters or leaves. What happens to the profile?',
+          options: ['Nothing – without a source there is no diffusion', 'The junction moves deeper, the surface concentration stays at the solid solubility', 'The junction moves deeper and the surface concentration drops'], correct: 2 },
+        text: v => `With the source removed and the surface sealed, the wafer is heated again, here ${mins(v.t2)} at ${v.T2} °C. The dopant keeps diffusing, but the dose Q = ${fmt.sci(v.Q, 2)} cm⁻² stays constant, so the profile flattens: the surface concentration drops to ${conc(v.Cs2)} and the junction moves to ${um(v.xj2)}. The dashed curve is the profile after predeposition.` },
+      { name: 'Gaussian approximation', caption: 'Gaussian is good once D₂t₂ ≫ D₁t₁', set: { T2: 1100, t2: 60 }, show: ['gauss'], duration: 1,
+        task: 'Hand calculations treat the predeposited dose as a thin sheet at the surface, which gives a Gaussian (dotted). After this drive-in it lies on the exact profile (yellow). Lower the <b>drive-in temperature T<sub>2</sub></b> until the two curves separate: until the drive-in diffusion length √(D₂t₂) in the readout is less than twice the predeposition one, √(D₁t₁).',
+        goal: v => v.Dt2 > 0 && v.Dt2 < 4 * v.Dt1, solution: { T2: 960 },
+        text: v => {
+          const arg = v.Q / (v.NB * Math.sqrt(Math.PI * v.Dt2 * 1e-8)), xg = v.Dt2 > 0 && arg > 1 ? Math.sqrt(4 * v.Dt2 * Math.log(arg)) : 0;
+          return `The Gaussian assumes that the whole dose starts at the surface. Here D₂t₂/D₁t₁ = ${fmt.sig(v.ratio, 2)}, so the approximation ${v.ratio > 10 ? 'is already very good' : 'is visibly off'}: it puts the junction at ${um(xg)}, the exact solution for the real erfc starting profile (yellow) at ${um(v.xj2)}. The dopant was already spread over √(D₁t₁) = ${um(Math.sqrt(v.Dt1))} before the drive-in began; the Gaussian formula is safe only once D₂t₂ ≫ D₁t₁.`;
+        } },
+      { name: 'Temperature', caption: 'D is thermally activated: +50 °C ≈ 3× faster', from: { T2: 1100, t2: 60 }, set: { T2: 1150, t2: 60 }, duration: 2.5,
+        ask: { q: 'Back to 60 min at 1100 °C (1373 K). The drive-in temperature is now raised by 50 °C, to 1423 K. By what factor does the diffusivity D grow?',
+          options: ['About 1.04× – like the absolute temperature', 'About 1.5×', 'About 3×'], correct: 2 },
+        text: v => `With an effective activation energy of ${fmt.num(8.617333e-5 * Math.log(DF.D(v.dop, 1150) / DF.D(v.dop, 1100)) / (1 / 1373.15 - 1 / 1423.15), 1)} eV the diffusivity is extremely temperature-sensitive: at ${v.T2} °C D is ${fmt.sig(v.D2 / DF.D(v.dop, 1100), 2)}× its value at 1100 °C and the junction is at ${um(v.xj2)}. Every later high-temperature step (oxidation, annealing) moves junctions as well – the <i>thermal budget</i> must be planned for the whole process.` },
+      { name: 'Sheet resistance', caption: 'R_s – what the four-point probe measures', set: { T2: 1100, t2: 60 }, duration: 2,
+        task: 'Design a junction: back at 1100 °C, lengthen the <b>drive-in time t<sub>2</sub></b> until the junction depth x<sub>j</sub> is 2 µm.',
+        goal: v => Math.abs(v.xj2 - 2) <= 0.1, solution: { t2: 130 },
+        text: v => `The junction is at ${um(v.xj2)}. The diffused layer above it is a resistor. Its sheet resistance R<sub>s</sub> = 1 / (q ∫ μ(C)·(C − N<sub>B</sub>) dx) = <b>${fmt.sig(v.Rs2, 3)} Ω/□</b> is measured with a four-point probe; together with x<sub>j</sub> (from angle-lapping or SIMS) it characterises the diffusion. Now switch to <b>Explore</b>, change the dopant or substrate doping and design your own junction.` },
     ],
   });
 }());

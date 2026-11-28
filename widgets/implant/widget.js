@@ -206,7 +206,7 @@
       { name: 'Energy sets the depth', caption: 'Higher energy → deeper and broader profile', set: { E: 30 }, duration: 1,
         task: 'The peak of the profile now lies about 110 nm below the surface. Raise the <b>energy E</b> until the projected range R<sub>p</sub> is about 300 nm.',
         goal: v => Math.abs(v.Rp - 300) <= 25, solution: { E: 93 },
-        text: v => `At ${fmt.num(v.E, 0)} keV ${ION[v.ion].name} stops at R<sub>p</sub> = ${nm(v.Rp)} with ΔR<sub>p</sub> = ${nm(v.dRp)}: more energy carries the ions deeper and broadens the profile. The same dose spread over a broader profile gives a lower peak, here ${conc(v.Np)}. Energy is the knob for depth.` },
+        text: v => `At ${fmt.num(v.E, 0)} keV ${ION[v.ion].name} stops at R<sub>p</sub> = ${nm(v.Rp)} with ΔR<sub>p</sub> = ${nm(v.dRp)}: more energy carries the ions deeper and broadens the profile. The same dose spread over a broader profile gives a lower peak, here ${conc(v.Np)}.` },
       { name: 'Dose sets the concentration', caption: 'N_p = Q/(√(2π)·ΔR_p) ≈ 0.4·Q/ΔR_p', from: { E: 100, Q: 1e15 }, set: { E: 100, Q: 1e13 }, duration: 2.5,
         ask: { q: 'The energy stays at 100 keV, but the dose – the number of ions per cm² – is cut to one hundredth, from 10¹⁵ to 10¹³ cm⁻². What happens to the profile?',
           options: ['The peak is 100× lower; depth and width stay the same', 'The peak is 100× lower and the profile becomes shallower', 'The peak is 10× lower and the profile 10× narrower'], correct: 0 },

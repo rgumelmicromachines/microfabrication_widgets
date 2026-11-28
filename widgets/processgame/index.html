@@ -99,7 +99,7 @@
         <div><dt>Wafer</dt><dd>100 mm silicon, oxide with 10 µm contact windows, 69 dies</dd></div>
         <div><dt>Film</dt><dd>500 nm evaporated aluminium at the wafer centre, about 5 % thinner at the edge</dd></div>
         <div><dt>Mask</dt><dd>Soda-lime glass; meander of 5 µm lines and 5 µm spaces, 60 mm long; pads overlap the windows by 2 µm; two alignment marks 60 mm apart</dd></div>
-        <div><dt>Target</dt><dd>795 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</dd></div>
+        <div><dt>Target</dt><dd>1440 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</dd></div>
         <div><dt>Resist</dt><dd>AZ 1500 series, 1.3–1.6 µm after soft bake</dd></div>
         <div><dt>Tools</dt><dd>Spin coater, hotplate, mask aligner with dose control (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C, microscope</dd></div>
         <div><dt>Documents</dt><dd><a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf" target="_blank" rel="noopener">AZ 1500 series data sheet</a> (Merck, PDF at microchemicals.com) · <a href="https://transene.com/aluminum/" target="_blank" rel="noopener">aluminium etchant Type A</a> (Transene)</dd></div>
@@ -111,7 +111,7 @@
       <h2>How the run is scored</h2>
       <table>
         <tr><th>Part</th><th>Points</th><th>Rule</th></tr>
-        <tr><td>Resistance</td><td>35</td><td>Mean deviation of the contacted dies from 795 Ω: full marks up to 2 %, none from 20 %, linear in between</td></tr>
+        <tr><td>Resistance</td><td>35</td><td>Mean deviation of the contacted dies from 1440 Ω: full marks up to 2 %, none from 20 %, linear in between</td></tr>
         <tr><td>Yield</td><td>30</td><td>Share of the 69 dies with contact at both pads and a resistance within ±10 %</td></tr>
         <tr><td>Documents</td><td>20</td><td>Share of the nine values entered correctly from the data sheets. An answer is fixed when its station runs; a new wafer or a recoat opens the fields again</td></tr>
         <tr><td>Economy</td><td>15</td><td>−5 for each strip and recoat, −10 for each new wafer after the etch</td></tr>
@@ -122,8 +122,8 @@
     <article class="card tasks">
       <h2>Plan before you run</h2>
       <ol>
-        <li>Check the target resistance of the work order. Use the bulk resistivity of aluminium, <span class="tex">\rho = 2.65\times10^{-8}\ \Omega\,\mathrm{m}</span>.
-          <details><summary>Answer</summary><span class="tex">R = \rho L/(w h) = 2.65\times10^{-8}\cdot 0.06 / (4\times10^{-6}\cdot 5\times10^{-7}) = 795\ \Omega</span>. The sheet resistance is <span class="tex">\rho/h = 53\ \mathrm{m\Omega/\square}</span> and the meander has 15 000 squares.</details></li>
+        <li>Check the target resistance of the work order. Use the resistivity of the aluminium film, <span class="tex">\rho = 4.8\times10^{-8}\ \Omega\,\mathrm{m}</span>.
+          <details><summary>Answer</summary><span class="tex">R = \rho L/(w h) = 4.8\times10^{-8}\cdot 0.06 / (4\times10^{-6}\cdot 5\times10^{-7}) = 1440\ \Omega</span>. The sheet resistance is <span class="tex">\rho/h = 96\ \mathrm{m\Omega/\square}</span> and the meander has 15 000 squares.</details></li>
         <li>The lamp delivers 8.5 mW/cm² at 365 nm. How long does the aligner expose for a dose of 128 mJ/cm²?
           <details><summary>Answer</summary><span class="tex">128\ \mathrm{mJ/cm^2} / 8.5\ \mathrm{mW/cm^2} = 15\ \mathrm{s}</span>.</details></li>
         <li>An etchant removes 80 Å/s. How long does it take to clear 500 nm at the wafer centre, and the 473 nm at the edge?
@@ -132,8 +132,8 @@
           <details><summary>Answer</summary>The wall is a quarter circle of radius <span class="tex">r</span> around the resist edge. Just cleared, <span class="tex">r = h = 0.5\ \mathrm{\mu m}</span>: the mean undercut per side is <span class="tex">\pi r/4 = 0.39\ \mathrm{\mu m}</span>, mean width 4.21 µm. With <span class="tex">r = 0.6\ \mathrm{\mu m}</span> the mean undercut over the film thickness is 0.52 µm per side and the width 3.96 µm. That is where the 4.0 µm of the work order comes from.</details></li>
         <li>The soda-lime mask and the wafer are 1.5 K warmer than at the first exposure. How far off is a die 45 mm from the centre after perfect alignment, and how much of the 2 µm pad overlap is left for the alignment itself?
           <details><summary>Answer</summary><span class="tex">M = (9.0 - 2.6)\cdot 1.5 = 9.6\ \mathrm{ppm}</span>, at 45 mm 0.43 µm. About 1.5 µm is left.</details></li>
-        <li>A four-point probe on the unpatterned film reads <span class="tex">V/I = 11.7\ \mathrm{m\Omega}</span>. What is the sheet resistance?
-          <details><summary>Answer</summary><span class="tex">R_s = (\pi/\ln 2)\cdot V/I = 4.532 \cdot 11.7 = 53\ \mathrm{m\Omega/\square}</span>.</details></li>
+        <li>A four-point probe on the unpatterned film reads <span class="tex">V/I = 21.2\ \mathrm{m\Omega}</span>. What is the sheet resistance?
+          <details><summary>Answer</summary><span class="tex">R_s = (\pi/\ln 2)\cdot V/I = 4.532 \cdot 21.2 = 96\ \mathrm{m\Omega/\square}</span>.</details></li>
       </ol>
     </article>
 
@@ -147,7 +147,7 @@
         <li><b>Hard bake.</b> Positive resist starts to cross-link above about 140 °C, and solvents reach their limit as strippers from hard-bake temperatures of about 150–160 °C (MicroChemicals). In the game a hard bake at 150 °C or more leaves the pads covered and no die makes contact. The same note calls the resists stable in the etchant “at least after a sufficient hardbake”, without a number, so skipping the bake has no effect in the game.</li>
         <li><b>Developer on aluminium.</b> AZ Developer is made for minimal attack on aluminium; no rate is published and the game takes it as zero. 0.26 N TMAH: 10 nm/min from the Merck data sheet (the MicroChemicals product page quotes about 70 nm/min). NaOH- and KOH-based developers: 100 nm/min as a reference rate. The attack acts on the spaces, which are etched anyway, and sideways under the resist edge by the same amount, so its effect on the resistor is small.</li>
         <li><b>Etch.</b> Rates of 30 Å/s at 25 °C and 80 Å/s at 40 °C from the manufacturer of the etchant; real baths age and hydrogen bubbles make the etch uneven. The etch is taken as ideally isotropic and uniform, and the resist as unaffected by it.</li>
-        <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces, and the value depends on how the film was made: evaporated films on unheated glass were measured about 60 % above bulk at room temperature (Mayadas 1968), a sputtered film 430 nm thick at 4.8 × 10⁻⁸ Ω·m (Corrêa et al. 2024). No value for a film like the one in the work order was found, so the game keeps the bulk value and every resistance here is a lower bound. Contact resistance is not modelled.</li>
+        <li><b>Resistance.</b> Calculated with 4.8 × 10⁻⁸ Ω·m, the resistivity measured at room temperature on a sputtered aluminium film 430 nm thick (Corrêa et al. 2024). Bulk aluminium has 2.650 × 10⁻⁸ Ω·m; a thin film lies above that because of its grain boundaries and surfaces, and by how much depends on how it was made. The film of the work order is evaporated and 500 nm thick, and no measured value for such a film was found in a source that could be opened (evaporated films on unheated glass: about 60 % above bulk, Mayadas 1968). The resistances are therefore those of a film like the sputtered one; measure your own film with a four-point probe before you design a resistor. Contact resistance is not modelled.</li>
         <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
         <li><b>Inspection.</b> After development the figure shows a resolution pattern (groups of equal lines and spaces of 5, 3, 2, 1.5 and 1 µm) printed with the same resist, dose, gap and development as the resistor, and the two overlay marks with the resist cross. Each group is calculated with the same model as the resistor lines. A group counts as resolved when its line width is within 20 % of the nominal width.</li>
         <li><b>Clock.</b> Development and etch run live: the clock of the developer runs eight times and that of the etchant ten times faster than real time, and the top view follows the model at every moment. On a real wafer the resist pattern cannot be measured while it is in the developer.</li>
@@ -183,7 +183,7 @@
 <script src="../oxidation/model.js?v=de9bcd22fc"></script>
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
-<script src="model.js?v=e7be71a1c1"></script>
-<script src="widget.js?v=c3bab9e588"></script>
+<script src="model.js?v=bef55a12ff"></script>
+<script src="widget.js?v=e405d1e21b"></script>
 </body>
 </html>

@@ -809,6 +809,7 @@
     play: 'Play', pause: 'Pause', prev: 'Back', next: 'Next', steps: 'All steps', chars: 'Characteristics',
     full: 'Enlarge figure', exitFull: 'Close',
     tour: 'Guided tour', explore: 'Explore', speed: 'Speed',
+    showMe: 'Show me', right: 'Right.', wrong: 'Not quite – watch what happens.', todo: 'Your turn – use the sliders', reached: '✓ Done',
     free: 'Explore mode – every slider is yours. Change parameters and watch what happens.',
     locked: 'set by the tour', lockedHint: 'Sliders marked “set by the tour” follow the current step. Switch to <b>Explore</b> to set them yourself.',
     source: 'Sources & model notes',
@@ -1075,6 +1076,10 @@
       for (const [n, vis] of Object.entries(cfg.layers || {})) this.layerA[n] = vis ? 1 : 0;
       const steps = cfg.steps || [];
       this.hasTour = steps.length > 0;
+      // interactive tour: steps with a question to answer first (`ask`) or a task to do on the sliders (`goal`).
+      // Then nothing is locked, there is no autoplay, and the steps are reached through numbered dots.
+      this.interactive = steps.some(s => s.ask || s.goal);
+      this._solved = new Set();
       this._stepKeys = new Set(); this._stepLayers = new Set();
       steps.forEach(s => { Object.keys(s.set || {}).forEach(k => this._stepKeys.add(k));
         (s.show || []).concat(s.hide || []).forEach(n => this._stepLayers.add(n)); });
@@ -1201,6 +1206,7 @@
       if (this.mode !== 'tour') { this.mode = 'tour'; this._applyMode(); }
       const st = steps[i], target = stepState(this.cfg, i);
       this.step = i; this._markStep(i);
+      if (this.interactive) return this._goInteractive(i, st, target, opt);
       this._stepLayers.forEach(n => this._fadeLayer(n, target.layers[n] || 0, opt.instant ? 0 : 0.6));
       const vals = {};
       this._stepKeys.forEach(k => { vals[k] = k in target.P ? target.P[k] : this.cfg.params[k].value; });
@@ -1209,6 +1215,72 @@
       this._capSrc = target.caption; this.caption(resolveText(target.caption, v), !opt.instant);
       this._resetHeights();
       this._textSrc = st.text; this._setExplain(resolveText(st.text, v));
+      if (st.enter) st.enter(this);
+      return pr;
+    }
+    /** One step of an interactive tour.
+        - `ask: { q, options: [...], correct: index }` – predict: the question comes first, the figure moves to the state
+          of the step only after an answer, then the explanation (`text`) appears. `from: {…}` sets the state the
+          question is asked about.
+        - `goal: v => boolean`, `task: 'what to do'`, `solution: {…}` – try: the figure goes to the state of the step and
+          the student works the sliders until the goal holds; "Show me" plays the solution.
+        - neither: a plain step, shown with its explanation.
+        `opt.instant` (tests, thumbnails) goes straight to the answered / solved state. */
+    _goInteractive(i, st, target, opt) {
+      const S = this.S, box = this.taskEl;
+      const reveal = (instant, extra) => {
+        this._stepLayers.forEach(n => this._fadeLayer(n, target.layers[n] || 0, instant ? 0 : 0.6));
+        const vals = {};
+        this._stepKeys.forEach(k => { vals[k] = k in target.P ? target.P[k] : this.cfg.params[k].value; });
+        return this.animate({ ...vals, ...(extra || {}) }, instant ? 0 : (st.duration === undefined ? 2.5 : st.duration), st.ease || 'smooth');
+      };
+      const caption = fade => { this._capSrc = target.caption; this.caption(resolveText(target.caption, this.values), fade); };
+      const explain = () => { this._resetHeights(); this._textSrc = st.text; this._setExplain(resolveText(st.text, this.values)); };
+      const hush = () => { this._textSrc = null; this._setExplain(''); };
+      const solved = () => { this._solved.add(i); this._markStep(i); };
+      this._goalFn = null; this._goalReached = null; box.innerHTML = '';
+      if (st.ask) {
+        const q = st.ask, was = this._answers && this._answers[i], answered = opt.instant || was !== undefined;
+        el('p', 'mfw-q', box).innerHTML = richToHTML(resolveText(q.q, this.values));
+        const opts = el('div', 'mfw-opts', box), verdict = el('p', 'mfw-verdict', box);
+        const btns = q.options.map(o => { const b = el('button', 'mfw-opt', opts); b.type = 'button'; b.innerHTML = richToHTML(o); return b; });
+        const mark = k => {
+          btns.forEach((b, j) => { b.disabled = true; b.classList.toggle('is-right', j === q.correct); b.classList.toggle('is-wrong', j === k && k !== q.correct); });
+          if (k !== undefined) verdict.textContent = k === q.correct ? S.right : S.wrong;
+        };
+        if (answered) { mark(was); caption(!opt.instant); explain(); solved(); const pr = reveal(opt.instant); if (st.enter) st.enter(this); return pr; }
+        hush(); this._capSrc = null; this.caption('', true);
+        // the question is asked about the state of the previous step (plus `from`), wherever the student came from
+        const before = i > 0 ? stepState(this.cfg, i - 1) : { P: {}, layers: {} }, start = {};
+        this._stepKeys.forEach(k => { start[k] = k in before.P ? before.P[k] : this.cfg.params[k].value; });
+        this._stepLayers.forEach(n => this._fadeLayer(n, before.layers[n] || 0, 0.4));
+        const pr = this.animate({ ...start, ...(st.from || {}) }, 0.8);
+        btns.forEach((b, k) => b.addEventListener('click', () => {
+          (this._answers || (this._answers = {}))[i] = k;
+          mark(k); caption(true); explain(); solved(); reveal(false);
+          if (st.enter) st.enter(this);
+        }));
+        return pr;
+      }
+      caption(!opt.instant);
+      if (st.goal) {
+        el('p', 'mfw-q', box).innerHTML = richToHTML(resolveText(st.task, this.values));
+        const row = el('div', 'mfw-taskrow', box), status = el('span', 'mfw-status', row, S.todo);
+        let show = null;
+        const reached = () => { this._goalFn = null; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.hidden = true; explain(); solved(); };
+        if (st.solution) {
+          show = el('button', 'mfw-showme', row, S.showMe); show.type = 'button';
+          show.addEventListener('click', () => this.animate(st.solution, 2));
+        }
+        if (opt.instant) { const pr = reveal(true, st.solution); reached(); return pr; }
+        hush();
+        const pr = reveal(false);
+        pr.then(() => { if (this.step === i && this.mode === 'tour') { this._goalReached = reached; this._goalFn = st.goal; } });
+        if (st.enter) st.enter(this);
+        return pr;
+      }
+      explain(); solved();
+      const pr = reveal(opt.instant);
       if (st.enter) st.enter(this);
       return pr;
     }
@@ -1287,7 +1359,7 @@
         const ex = this.cfg.explore || {};
         (ex.show || []).forEach(n => this._fadeLayer(n, 1, 0.5));
         (ex.hide || []).forEach(n => this._fadeLayer(n, 0, 0.5));
-        this.caption('', true); this._capSrc = null; this._textSrc = null;
+        this.caption('', true); this._capSrc = null; this._textSrc = null; this._goalFn = null;
         this._resetHeights();
         this._setExplain(resolveText(this.cfg.freeText || this.S.free, this.values));
       }
@@ -1348,6 +1420,17 @@
         this.countN = el('span', 'mfw-count-n', count); this.countT = el('span', 'mfw-count-t', count);
         this.nextBtn = el('button', 'mfw-nav', stepper); this.nextBtn.type = 'button';
         this.nextBtn.innerHTML = S.next + icon('right'); this.nextBtn.addEventListener('click', () => this.next());
+        if (this.interactive) {
+          this.dotsEl = el('div', 'mfw-dots', this.tourBox);
+          this.dots = cfg.steps.map((st, i) => {
+            const b = el('button', 'mfw-dot', this.dotsEl, String(i + 1));
+            b.type = 'button'; b.title = st.name || ''; b.setAttribute('aria-label', `Step ${i + 1}: ${st.name || ''}`);
+            b.addEventListener('click', () => this.goStep(i));
+            return b;
+          });
+          this.taskEl = el('div', 'mfw-task', this.tourBox);
+          this.taskEl.setAttribute('aria-live', 'polite');
+        } else {
         const row = el('div', 'mfw-transport', this.tourBox);
         this.playBtn = el('button', 'mfw-play', row);
         this.playBtn.type = 'button';
@@ -1361,10 +1444,11 @@
         sel.addEventListener('change', () => { this.speed = parseFloat(sel.value); store.set('mfw-speed', sel.value); });
         const track = el('div', 'mfw-holdtrack', this.tourBox);
         this.holdBar = el('div', 'mfw-holdbar', track);
+        }
       }
       this.explainEl = el('div', 'mfw-explain', this.panel);
       this.explainEl.setAttribute('aria-live', 'polite');
-      if (this.hasTour) {
+      if (this.hasTour && !this.interactive) {
         this.stepsBox = el('details', 'mfw-stepsbox', this.panel);
         el('summary', null, this.stepsBox, `${S.steps} (${cfg.steps.length})`);
         const list = el('ol', 'mfw-steps', this.stepsBox);
@@ -1453,9 +1537,9 @@
       if (this.tabBtns) for (const [m, b] of Object.entries(this.tabBtns)) b.setAttribute('aria-selected', String(m === this.mode));
       if (this.tourBox) this.tourBox.hidden = !tour;
       if (this.stepsBox) this.stepsBox.hidden = !tour;
-      if (this.lockHint) this.lockHint.hidden = !tour;
+      if (this.lockHint) this.lockHint.hidden = !tour || this.interactive;
       for (const [name, c] of Object.entries(this.controls)) {
-        const locked = tour && this._stepKeys.has(name);
+        const locked = tour && !this.interactive && this._stepKeys.has(name);
         c.inp.disabled = locked;
         c.lab.classList.toggle('is-locked', locked);
       }
@@ -1538,6 +1622,7 @@
       this.figCol.classList.toggle('is-pinned', !!wide && this.figCol.offsetHeight + 66 + 12 <= window.innerHeight);
     }
     _markStep(i) {
+      (this.dots || []).forEach((b, j) => { if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('is-done', this._solved.has(j)); });
       (this.chips || []).forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('is-done', j < i); });
       const steps = this.cfg.steps || [];
       if (!this.countN || !steps[i]) return;
@@ -1578,7 +1663,7 @@
       this.fullBtn.focus();
     }
     _userInput(name, value) {
-      if (this.mode === 'tour' && this._stepKeys.has(name)) return;            // locked (should not happen: input disabled)
+      if (this.mode === 'tour' && !this.interactive && this._stepKeys.has(name)) return;   // locked (should not happen: input disabled)
       if (this.playing) this.stop();
       if (typeof value === 'number') this._inputT = now();                     // slider moving: ranges hold (see nice)
       this._editing = name;
@@ -1615,7 +1700,7 @@
         const tag = (e.target.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'select' || tag === 'button' && e.key === ' ') return;
         if (!this.hasTour || this.mode !== 'tour') return;
-        if (e.key === ' ') { e.preventDefault(); this.playing ? this.stop() : this.play(); }
+        if (e.key === ' ') { if (this.interactive) return; e.preventDefault(); this.playing ? this.stop() : this.play(); }
         else if (e.key === 'ArrowRight') { e.preventDefault(); this.next(); }
         else if (e.key === 'ArrowLeft') { e.preventDefault(); this.prev(); }
       });
@@ -1663,6 +1748,7 @@
       }
       if (this._niceHeld && !this._dragging()) { this._niceHeld = false; this.dirty = true; }   // slider at rest: ranges settle
       if (this.dirty || this.cfg.loop) this._draw();
+      if (this._goalFn && this.mode === 'tour' && this._v && this._goalFn(this._v)) { const g = this._goalReached; this._goalFn = null; if (g) g(); }
       this._raf = requestAnimationFrame(x => this._frame(x));
     }
     _draw() {

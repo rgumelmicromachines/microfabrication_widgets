@@ -18,7 +18,7 @@
     { name: 'Soft bake', done: v => `${fmt.num(v.sbT, 0)} °C, ${fmt.num(v.sbt, 0)} s on the hotplate`,
       text: 'The film still holds solvent. For contact printing it has to be dry enough not to stick to the mask; a bake that is too hot or too long destroys photoactive compound. The data sheet gives a temperature range.' },
     { name: 'Alignment', done: v => `mask moved by (${sg(v.ax, 2)}, ${sg(v.ay, 2)}) µm, ${sg(v.ath, 0)} µrad`,
-      text: `The mask is loaded and sits a few micrometres off. At each of the two marks a dark cross on the mask has to sit in the middle of the cross-shaped channel on the wafer, with the same gap on both sides of every arm. Use the buttons or the sliders. The pads overlap the contact windows by ${O.enclosure} µm. The mask is ${O.dT} K warmer than at the first exposure, so a small opposite Δx at the two marks cannot be removed.` },
+      text: `The mask is loaded and sits a few micrometres off. At each of the two marks the wafer shows the outline of a cross, left in the film by the layer below. The dark chrome cross of the mask is a little smaller and has to sit in the middle of that outline, with the same gap all round. Use the buttons or the sliders. The pads overlap the contact windows by ${O.enclosure} µm. The mask is ${O.dT} K warmer than at the first exposure, so a small opposite Δx at the two marks cannot be removed.` },
     { name: 'Exposure', done: v => `${v.mode === 'prox' ? `proximity, gap ${fmt.num(v.gap, 0)} µm` : 'hard contact'}, ${fmt.num(v.dose, 0)} mJ/cm²`,
       text: `Set the dose; the aligner turns it into an exposure time at ${G.LAMP} mW/cm² (365 nm). The resist line should come out ${O.line} µm wide at the aluminium. The <a href="../development/index.html" target="_blank" rel="noopener">Development lesson</a> uses the same resist model: set your thickness and ${O.line} µm lines there to find the dose before you expose here.` },
     { name: 'Development', done: v => `${MFW_DEV.DEVELOPERS[v.dev].name}, ${fmt.num(v.tdev, 0)} s`,
@@ -108,18 +108,21 @@
       p.rect(TX0, TY0, TX1 - TX0, TY1 - TY0, { fill: field, stroke: C.axis, width: 1.5, noOcc: true });
       p.clip(TX0, TY0, TX1, TY1, () => {
         {
-          const xs = M.linspace(cxv - 1.2, cxv + 1.2, 7), pts = [[cxv - 1.85, cyv], [xs[0], cyv]];
-          xs.forEach((x, i) => { const y = cyv + (i % 2 ? -0.72 : 0.72); pts.push([x, y]); if (i < xs.length - 1) pts.push([xs[i + 1], y]); });
-          pts.push([xs[6], cyv], [cxv + 1.85, cyv]);
-          const sh = pts.map(([x, y]) => [x + dxy[0], y + dxy[1]]);
+          // layout: eight full-height runs with line = space, joined alternately at top and bottom, a pad at each end
+          const lw = 0.17, xs = M.linspace(cxv - 1.2, cxv + 1.2, 8), yb = cyv - 0.75, yt = cyv + 0.75, padY = yb - lw / 2 + 0.36;
           // before the pattern is on the wafer: the mask layout as a faint ghost, so the target is visible from the start
-          const ghost = !lines && st < 5, colr = lines || C.white, al = ghost ? 0.16 : 1;
+          const ghost = !lines && st < 5, colr = lines || MFW.mix(field, C.white, 0.16);
           if (lines || ghost) {
-            p.path(sh, { color: colr, width: 13, cap: 'butt', alpha: al, noOcc: true });
-            for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 0.36 + dxy[0], cyv - 0.36 + dxy[1], 0.72, 0.72, { fill: colr, fillAlpha: al, stroke: ghost ? null : lineStroke, width: 1, noOcc: true });
+            const R = (x0, y0, x1, y1) => p.box(x0 + dxy[0], y0 + dxy[1], x1 + dxy[0], y1 + dxy[1], { fill: colr, stroke: null, noOcc: true });
+            xs.forEach((x, k) => {
+              R(x - lw / 2, yb - lw / 2, x + lw / 2, yt + lw / 2);                                   // run
+              if (k < xs.length - 1) { const y = k % 2 ? yb : yt; R(x - lw / 2, y - lw / 2, xs[k + 1] + lw / 2, y + lw / 2); }   // link to the next run
+            });
+            R(cxv - 1.85, yb - lw / 2, xs[0], yb + lw / 2); R(xs[7], yb - lw / 2, cxv + 1.85, yb + lw / 2);   // leads to the pads
+            for (const sx of [-1, 1]) R(cxv + sx * 1.85 - 0.36, padY - 0.36, cxv + sx * 1.85 + 0.36, padY + 0.36);
           }
+          for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 5 * upm, padY - 5 * upm, 10 * upm, 10 * upm, { stroke: C.white, width: 1.5, dash: [0.05, 0.05], noOcc: true });
         }
-        for (const sx of [-1, 1]) p.rect(cxv + sx * 1.85 - 5 * upm, cyv - 5 * upm, 10 * upm, 10 * upm, { stroke: C.white, width: 1.5, dash: [0.05, 0.05], noOcc: true });
       });
       p.text(st < 5 ? 'faint: the pattern on the mask, not yet on the wafer · dashed: contact windows' : 'dashed: contact windows under the film · turns reduced, pads to scale', X0, TY0 - 0.2, { size: 0.16, color: C.muted });
       // detail of three lines, to scale (20 µm wide)
@@ -198,35 +201,35 @@
       p.text('5 µm', X1 - 5 * kx - 0.1, BOT - 0.25, { size: 0.17, align: 'right', color: C.text });
       p.text(st === 4 ? 'vertical scale enlarged · yellow: exposed resist, invisible on a real wafer' : 'vertical scale enlarged; oxide thickness schematic', X0, BOT - 0.62, { size: 0.16, color: C.muted });
 
-      // ======================================================== alignment marks: mask cross in a cross-shaped channel (to scale)
+      // ======================================================== alignment marks: chrome cross of the mask inside the cross outline on the wafer (to scale)
+      const crossPts = (cx0, cy0, a, b, u) => [[-a, -b], [a, -b], [a, -a], [b, -a], [b, a], [a, a], [a, b], [-a, b], [-a, a], [-b, a], [-b, -a], [-a, -a]].map(([x, y]) => [cx0 + x * u, cy0 + y * u]);
       const view = (x0, y0, S, title, dd, rd) => {
-        const u = S / 14, xc = x0 + S / 2, yc = y0 + S / 2;
+        const u = S / 20, xc = x0 + S / 2, yc = y0 + S / 2;                  // 20 µm field of view
+        // what the microscope sees: the aluminium film (tinted by the resist once it is coated) with the step that
+        // the contact-window layer left in it – a cross 4 µm wide and 16 µm long
+        const ground = st >= 1 && st < 8 ? MFW.mix(cMetal, cRes, 0.45) : cMetal;
         p.text(title, x0, y0 + S + 0.2, { size: 0.18, color: C.greyA });
-        p.rect(x0, y0, S, S, { fill: C.greyE, stroke: C.axis, width: 1.5, noOcc: true });
+        p.rect(x0, y0, S, S, { fill: ground, stroke: C.axis, width: 1.5, noOcc: true });
         p.clip(x0, y0, x0 + S, y0 + S, () => {
-          for (const qx of [-1, 1]) for (const qy of [-1, 1])                 // wafer layer: four squares leave a 4 µm wide cross
-            p.rect(xc + (qx > 0 ? 2 : -6) * u, yc + (qy > 0 ? 2 : -6) * u, 4 * u, 4 * u, { fill: cOx, stroke: MAT.sio2.stroke, width: 1.5, noOcc: true });
-          if (st >= 2) {                                                      // mask layer: cross with 2 µm arms – 1 µm gap on each side when aligned
-            const mx = xc + dd.dx * u, my = yc + dd.dy * u, o2 = { fill: MAT.chrome.fill, fillAlpha: 0.9, stroke: null, noOcc: true };
-            p.rect(mx - 5.5 * u, my - 1 * u, 11 * u, 2 * u, o2);
-            p.rect(mx - 1 * u, my - 5.5 * u, 2 * u, 11 * u, o2);
-          }
+          p.polygon(crossPts(xc, yc, 2, 8, u), { fill: MFW.mix(ground, C.white, 0.14), stroke: MAT.metal.stroke, width: 1.5, noOcc: true });
+          // mask: a chrome cross 2 µm wide and 14 µm long – 1 µm of gap all round when aligned
+          if (st >= 2) p.polygon(crossPts(xc + dd.dx * u, yc + dd.dy * u, 1, 7, u), { fill: MAT.chrome.fill, fillAlpha: 0.92, stroke: null, noOcc: true });
         });
         p.text(st >= 2 ? `vernier: Δx ${sg(rd[0])}, Δy ${sg(rd[1])} µm` : 'mask not loaded', x0, y0 - 0.2, { size: 0.18, color: C.text });
       };
       if (st === 2) {                                                         // the alignment station: marks large, no wafer map
         view(0.25, 0.55, 2.95, 'left alignment mark', res.mk.left, [res.read.lx, res.read.ly]);
         view(3.55, 0.55, 2.95, 'right alignment mark', res.mk.right, [res.read.rx, res.read.ry]);
-        p.text('Centre each dark cross in its channel: equal gaps on both sides of every arm.', 0.25, -0.2, { size: 0.19, color: C.text });
-        p.text(`The gap is 1 µm when aligned. Verniers read in 0.5 µm steps; the marks are ${O.marksL} mm apart.`, 0.25, -0.55, { size: 0.17, color: C.muted });
+        p.text('Centre each dark cross inside the outline on the wafer: the same gap all round.', 0.25, -0.2, { size: 0.19, color: C.text });
+        p.text(`The gap is 1 µm when aligned; each view is 20 µm wide. Verniers read in 0.5 µm steps.`, 0.25, -0.55, { size: 0.17, color: C.muted });
         p.text('A difference in Δy between the marks is a rotation; a difference in Δx is run-out and stays.', 0.25, -0.85, { size: 0.17, color: C.muted });
         if (res.read.off) p.text('A mark is off the vernier scale (more than 2.5 µm).', 0.25, -1.2, { size: 0.17, color: C.red });
         return;
       }
       view(0.25, 1.25, 2.0, 'left alignment mark', res.mk.left, [res.read.lx, res.read.ly]);
       view(2.6, 1.25, 2.0, 'right alignment mark', res.mk.right, [res.read.rx, res.read.ry]);
-      p.text('mask cross in the', 4.95, 2.95, { size: 0.17, color: C.muted });
-      p.text('channel on the wafer;', 4.95, 2.7, { size: 0.17, color: C.muted });
+      p.text('chrome cross of the mask', 4.95, 2.95, { size: 0.17, color: C.muted });
+      p.text('in the outline on the wafer;', 4.95, 2.7, { size: 0.17, color: C.muted });
       p.text(`marks ${O.marksL} mm apart`, 4.95, 2.45, { size: 0.17, color: C.muted });
       if (st >= 2 && res.read.off) p.text('off the vernier scale', 4.95, 1.9, { size: 0.17, color: C.red });
 

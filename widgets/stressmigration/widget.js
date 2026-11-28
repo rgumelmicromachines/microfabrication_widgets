@@ -126,18 +126,29 @@
       ['apparent activation energy in use', '', `${fmt.num(v.eUse, 2)} eV`],
       !v.above && v.AF < 1 && { warn: 'This storage temperature is too high: the stress has relaxed so far that the test runs slower than the product in use.' }]),
 
+    // interactive tour: predict (ask) and try (goal) steps – see Widget._goInteractive in assets/mfw.js
     steps: [
       { name: 'Voids without any current', caption: 'A line that only sits in a warm oven can still break', set: { metal: 'cu', T: 150, Tuse: 105 }, duration: 1,
         text: v => `No current flows here, yet a void grows. The metal was enclosed in its dielectric at high temperature; on cooling it wants to shrink far more than the silicon and glass around it and cannot. Below the stress-free temperature T<sub>0</sub> ≈ ${degC(v.p.T0)} the line is therefore under <b>tensile stress</b>, the larger the colder it gets. The stress drives vacancies to grain boundaries and interfaces, where they collect into voids – in copper typically under a via that sits on a wide lead, which supplies many vacancies.` },
       { name: 'Two factors that pull apart', caption: 'Stress falls with temperature, diffusion rises', show: ['terms'], duration: 1,
         text: v => `The voiding rate is the product of two factors. The driving force, the stress, is proportional to T<sub>0</sub> − T and enters as a power, (T<sub>0</sub> − T)<sup>N</sup> with N = ${v.p.N} (red): it is largest when the chip is cold. The vacancies, however, must diffuse, and diffusion follows exp(−E<sub>a</sub>/kT) with E<sub>a</sub> = ${v.p.Ea} eV (blue): it is fastest when the chip is hot. Cold, nothing moves; near T<sub>0</sub>, nothing pushes.` },
-      { name: 'The worst temperature', caption: v => `Fastest voiding at ${degC(v.Tp)}`, set: { T: 190 }, duration: 3,
+      { name: 'The worst temperature', caption: v => (Math.abs(v.T - v.Tp) <= 5 ? `Fastest voiding at ${degC(v.Tp)}` : 'Between cold and T_0 the voiding is fastest'), set: { T: 150 }, duration: 1,
+        task: 'Move the <b>Storage (test) temperature <i>T</i></b> to the temperature at which the void grows fastest – the top of the yellow curve.',
+        goal: v => Math.abs(v.T - v.Tp) <= 5, solution: { T: 190 },
         text: v => `In between, the rate has a maximum, where N/(T<sub>0</sub> − T) = E<sub>a</sub>/kT²: here at ${degC(v.Tp)}. The lower plot shows the same thing as a time to failure – a bathtub with its shortest life at this temperature. This is unusual: for almost every other failure mechanism hotter simply means faster.` },
-      { name: 'Hotter is slower', caption: v => `${degC(v.T)}: only ${fmt.sig(100 * v.relTest, 2)} % of the maximum rate`, set: { T: 250 }, show: ['use'], duration: 3,
-        text: v => `Raise the storage temperature to ${degC(v.T)} and the voiding <i>slows down</i>: the stress has almost relaxed. Such a test would even run ${v.AF < 1 ? 'slower' : 'hardly faster'} than the product in use at ${degC(v.Tuse)} (${times(v.AF)}), and would pass a metallisation that fails in the field. A stress-migration bake has to be placed near the maximum, typically at 150–200 °C.` },
-      { name: 'A slow test', caption: v => `The best bake is only ${times(v.AF)} faster than use`, set: { T: 190 }, duration: 2,
+      { name: 'Hotter is slower', caption: v => (v.above ? `${degC(v.T)}: above T_0, no voiding` : `${degC(v.T)}: ${fmt.sig(100 * v.relTest, 2)} % of the maximum rate`), set: { T: 190 }, show: ['use'], duration: 1,
+        task: 'An accelerated test is normally run as hot as possible. The teal point marks the product in use at 105 °C. Raise the <b>Storage (test) temperature <i>T</i></b> until the test runs <i>slower</i> than the product in use – the acceleration AF in the readout falls below 1.',
+        goal: v => v.T > v.Tp && v.AF < 1, solution: { T: 250 },
+        text: v => (v.above
+          ? `At ${degC(v.T)} the line is above its stress-free temperature T<sub>0</sub> = ${degC(v.p.T0)}: the tensile stress is gone and no void grows at all. Already somewhat below T<sub>0</sub> the stress has relaxed so far that a test runs slower than the product in use at ${degC(v.Tuse)}, and would pass a metallisation that fails in the field. A stress-migration bake has to be placed near the maximum, typically at 150–200 °C.`
+          : `Raise the storage temperature to ${degC(v.T)} and the voiding <i>slows down</i>: the stress has almost relaxed. Such a test would even run ${v.AF < 1 ? 'slower' : 'hardly faster'} than the product in use at ${degC(v.Tuse)} (${times(v.AF)}), and would pass a metallisation that fails in the field. A stress-migration bake has to be placed near the maximum, typically at 150–200 °C.`) },
+      { name: 'A slow test', caption: v => `The best bake is only ${times(v.AF)} faster than use`, from: { T: 250 }, set: { T: 190 }, duration: 2,
+        ask: { q: 'The bake is moved back to the best temperature, 190 °C, where the voiding is fastest. The product runs at 105 °C. How much faster than the product does this test run?',
+          options: ['About 6×', 'About 600×', 'About 60 000×'], correct: 0 },
         text: v => `Even at the best temperature the acceleration is modest: ${times(v.AF)} against use at ${degC(v.Tuse)}. The reason is the apparent activation energy, E<sub>eff</sub> = E<sub>a</sub> − N·k·T²/(T<sub>0</sub> − T): it is ${fmt.num(v.eUse, 2)} eV at ${degC(v.Tuse)} and falls to zero at the maximum. With so little leverage the wafers are stored for one to two thousand hours and their resistance is read at intervals. Compare electromigration, where a hot test gains four orders of magnitude.` },
       { name: 'Aluminium lines', caption: v => `Al–Si: T_0 = ${degC(v.p.T0)}, maximum at ${degC(v.Tp)}`, set: { metal: 'alsi', T: 165 }, duration: 1,
+        ask: { q: 'The model was first made for Al–Si lines. Their stress-free temperature is lower than for the copper structure, 232 °C instead of 270 °C, and N and E<sub>a</sub> are somewhat lower too. Where is the temperature of the fastest voiding, compared with 190 °C for copper?',
+          options: ['Lower', 'The same – 190 °C', 'Higher'], correct: 0 },
         text: v => `The model was first made for narrow Al–Si lines, which notched and opened at grain boundaries during storage. With N = ${v.p.N}, E<sub>a</sub> = ${v.p.Ea} eV and T<sub>0</sub> = ${degC(v.p.T0)} the maximum lies at ${degC(v.Tp)}. Two remedies became standard: a little copper in the aluminium, which slows grain-boundary diffusion, and a refractory layer such as TiN or TiW under the aluminium, which keeps carrying the current when the aluminium above it has a void.` },
     ],
   });

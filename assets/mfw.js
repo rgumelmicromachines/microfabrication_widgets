@@ -1732,7 +1732,30 @@
     /** In the guided tour the characteristics table sits above the sliders. Sliders the tour does not set stay free,
         so dragging one must not change the table's height: reserve the tallest height the current step takes over the
         extremes (and options) of those free sliders. In Explore the table sits below the sliders and needs no reserve. */
+    /** Explore: the text above the sliders may depend on the live values (cfg.freeText as a function) and change its
+        number of lines at some slider value, which would push every control down by a line. Reserve the tallest height
+        the text takes at the extremes and options of each control. Stops after about 120 ms on pages with a slow model. */
+    _primeExplain() {
+      const e = this.explainEl, cfg = this.cfg;
+      if (!e || !e.offsetParent || this.mode !== 'explore' || typeof cfg.freeText !== 'function') return;
+      const P0 = { ...this.P }, states = [], t0 = now();
+      for (const [k, d] of Object.entries(cfg.params || {})) {
+        if (d.hidden) continue;
+        if (d.options) Object.keys(d.options).forEach(o => states.push({ ...P0, [k]: o }));
+        else if (typeof d.value === 'boolean') states.push({ ...P0, [k]: !P0[k] });
+        else if (typeof d.value === 'number' && d.min !== undefined) states.push({ ...P0, [k]: d.min }, { ...P0, [k]: d.max });
+      }
+      const keep = e.innerHTML;
+      let h = 0;
+      for (const P of states) {
+        if (now() - t0 > 120) break;
+        try { e.innerHTML = richToHTML(cfg.freeText(withDerived(cfg, P, 0))); h = Math.max(h, Math.ceil(e.getBoundingClientRect().height)); } catch (err) { /* a state the model rejects */ }
+      }
+      e.innerHTML = keep;
+      if (h > (e._mfwH || 0)) { e._mfwH = h; e.style.minHeight = h + 'px'; }
+    }
     _primeReadout() {
+      this._primeExplain();
       const e = this.readoutEl, cfg = this.cfg;
       if (!cfg.readout || !e || !e.offsetParent || this.mode !== 'tour' || !this.panel.contains(e)) return;
       const P0 = { ...this.P };

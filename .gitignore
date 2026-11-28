@@ -1,5 +1,7 @@
 # course lecture slides – copyrighted teaching material, kept local only
 source_prednasky/
+# manufacturer application notes (PDFs, copyrighted) – reference material, kept local only
+microchemicals/
 # local tooling output
 .playwright-mcp/
 .claude/*

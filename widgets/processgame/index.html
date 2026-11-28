@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Process game · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<meta name="description" content="Process game: take a wafer through one lithography level – AZ 1500 resist from the data sheet, spin coating, soft bake, alignment, exposure, development, hard bake, aluminium wet etch – and test the meander resistor electrically.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=8a7067c2ad">
+<style>
+  .pg-order { margin: 0 0 22px; }
+  .pg-order table { max-width: 900px; }
+  .pg-text { margin: 0; font-size: 16px; line-height: 1.55; color: var(--text-2); }
+  .pg-text a { color: var(--link); }
+  .mfw .mfw-explain { min-height: 0; }
+  .pg-qs { display: grid; gap: 10px; }
+  .pg-q { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; font-size: 15.5px; color: var(--text); }
+  .pg-q-in { display: inline-flex; align-items: baseline; gap: 6px; }
+  .pg-q input { width: 6.5em; padding: 5px 8px; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 0; text-align: right; }
+  .pg-q input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .pg-q-u { min-width: 2.4em; color: var(--muted); font-size: 14.5px; }
+  .pg-q-v { grid-column: 1 / -1; font-size: 14.5px; font-weight: 600; }
+  .pg-q.is-right .pg-q-v { color: var(--accent); }
+  .pg-q.is-wrong .pg-q-v { color: var(--danger); }
+  .pg-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mfw .pg-actions button { padding: 8px 14px; font-size: 15.5px; }
+  .mfw .pg-run { border-color: var(--accent); background: var(--accent-soft); font-weight: 650; }
+  .mfw .pg-run:disabled { opacity: 0.5; cursor: default; }
+  .pg-msg { margin: 0; min-height: 1.5em; font-size: 15.5px; font-weight: 600; color: var(--text-2); }
+  .pg-log ol { margin: 6px 0 0; padding-left: 1.4em; font-size: 15px; color: var(--text-2); }
+  .pg-log li { margin: 3px 0; }
+  #report { grid-column: 1 / -1; }
+  #report table { max-width: 980px; }
+  #report .pg-total { font-size: 19px; color: var(--accent); }
+  #report input[type=text] { font: inherit; padding: 4px 8px; margin-left: 6px; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); }
+  #report button { font: inherit; padding: 7px 14px; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); cursor: pointer; }
+  #report button:hover { border-color: var(--text); }
+  .pg-printname:empty { display: none; }
+  @media print {
+    .site-header, .page-head, .pg-order, #app, .lesson-pager, .article > .card:not(#report), .footer, .pg-noprint { display: none !important; }
+    #report { border-top: 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Process game</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Lithography run: aluminium meander resistor</h1>
+    <p class="lede">You get a wafer and a work order. Eight stations later an electrical test decides whether the resistor is on target. Nothing stops you from making a mistake; it travels with the wafer.</p>
+  </div>
+
+  <section class="card pg-order" aria-labelledby="order-h">
+    <h2 id="order-h">Work order</h2>
+    <p>Pattern the aluminium film into a meander resistor whose two pads land on the contact windows that are already in the oxide. One mask, one lithography level, wet etch.</p>
+    <table>
+      <tr><th>Item</th><th>Given</th></tr>
+      <tr><td>Wafer</td><td>100 mm silicon, oxide with 10 µm contact windows, 69 dies</td></tr>
+      <tr><td>Film</td><td>500 nm evaporated aluminium at the wafer centre, about 5 % thinner at the edge</td></tr>
+      <tr><td>Mask</td><td>Soda-lime glass; meander of 5 µm lines and 5 µm spaces, 60 mm long; pads overlap the windows by 2 µm; two alignment marks 60 mm apart</td></tr>
+      <tr><td>Target</td><td>795 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</td></tr>
+      <tr><td>Resist</td><td>AZ 1500 series, 1.3–1.6 µm after soft bake</td></tr>
+      <tr><td>Tools</td><td>Spin coater, hotplate, mask aligner (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C</td></tr>
+      <tr><td>Documents</td><td><a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf" target="_blank" rel="noopener">AZ 1500 series data sheet</a> (Merck, PDF at microchemicals.com) · <a href="https://transene.com/aluminum/" target="_blank" rel="noopener">aluminium etchant Type A</a> (Transene)</td></tr>
+    </table>
+    <p class="note">At each station you set the tool and enter the values the station asks for from these documents. The first answer counts. You can strip the resist and coat again at any time before the etch; after the etch only a new wafer helps.</p>
+  </section>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card" id="report" hidden></article>
+
+    <article class="card">
+      <h2>How the run is scored</h2>
+      <table>
+        <tr><th>Part</th><th>Points</th><th>Rule</th></tr>
+        <tr><td>Resistance</td><td>35</td><td>Mean deviation of the contacted dies from 795 Ω: full marks up to 2 %, none from 20 %, linear in between</td></tr>
+        <tr><td>Yield</td><td>30</td><td>Share of the 69 dies with contact at both pads and a resistance within ±10 %</td></tr>
+        <tr><td>Documents</td><td>20</td><td>Share of the nine values entered correctly from the data sheets at the first attempt</td></tr>
+        <tr><td>Economy</td><td>15</td><td>−5 for each strip and recoat, −10 for each new wafer after the etch</td></tr>
+      </table>
+      <p>After the test a report appears under the figure. It lists your settings, the outcome of each station and the score, and it can be printed or saved.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Plan before you run</h2>
+      <ol>
+        <li>Check the target resistance of the work order. Use the bulk resistivity of aluminium, <span class="tex">\rho = 2.65\times10^{-8}\ \Omega\,\mathrm{m}</span>.
+          <details><summary>Answer</summary><span class="tex">R = \rho L/(w h) = 2.65\times10^{-8}\cdot 0.06 / (4\times10^{-6}\cdot 5\times10^{-7}) = 795\ \Omega</span>. The sheet resistance is <span class="tex">\rho/h = 53\ \mathrm{m\Omega/\square}</span> and the meander has 15 000 squares.</details></li>
+        <li>The lamp delivers 8.5 mW/cm² at 365 nm. Which dose does a 15 s exposure give?
+          <details><summary>Answer</summary><span class="tex">8.5\ \mathrm{mW/cm^2}\cdot 15\ \mathrm{s} = 128\ \mathrm{mJ/cm^2}</span>.</details></li>
+        <li>An etchant removes 80 Å/s. How long does it take to clear 500 nm at the wafer centre, and the 473 nm at the edge?
+          <details><summary>Answer</summary>80 Å/s = 480 nm/min. Centre: <span class="tex">500/480 = 62.5\ \mathrm{s}</span>. Edge: 59 s. Every second after that is overetch.</details></li>
+        <li>The etch is isotropic. A 5.0 µm resist line covers the 500 nm film. What is the mean width of the aluminium line when the film has just cleared, and after 20 % more etch time?
+          <details><summary>Answer</summary>The wall is a quarter circle of radius <span class="tex">r</span> around the resist edge. Just cleared, <span class="tex">r = h = 0.5\ \mathrm{\mu m}</span>: the mean undercut per side is <span class="tex">\pi r/4 = 0.39\ \mathrm{\mu m}</span>, mean width 4.21 µm. With <span class="tex">r = 0.6\ \mathrm{\mu m}</span> the mean undercut over the film thickness is 0.52 µm per side and the width 3.96 µm. That is where the 4.0 µm of the work order comes from.</details></li>
+        <li>The soda-lime mask and the wafer are 1.5 K warmer than at the first exposure. How far off is a die 45 mm from the centre after perfect alignment, and how much of the 2 µm pad overlap is left for the alignment itself?
+          <details><summary>Answer</summary><span class="tex">M = (9.06 - 2.6)\cdot 1.5 = 9.7\ \mathrm{ppm}</span>, at 45 mm 0.44 µm. About 1.5 µm is left.</details></li>
+        <li>A four-point probe on the unpatterned film reads <span class="tex">V/I = 11.7\ \mathrm{m\Omega}</span>. What is the sheet resistance?
+          <details><summary>Answer</summary><span class="tex">R_s = (\pi/\ln 2)\cdot V/I = 4.532 \cdot 11.7 = 53\ \mathrm{m\Omega/\square}</span>.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model, rules &amp; limitations</h2>
+      <ul>
+        <li><b>Each station runs the model of its lesson</b>: soft bake, lithography resolution, development, alignment and overlay, evaporation, dry etching (its etch front with equal rates in all directions) and the four-point probe. The limitations listed on those pages apply here too.</li>
+        <li><b>The resist model is a stand-in.</b> The Dill parameters are those of AZ 1500 at 365 nm, but the development-rate parameters were measured for AZ 1350J in AZ Developer 1:1 (Mack 1987); none are published for AZ 1500. The doses and times that work in the game are therefore not a recipe for the real resist. The same rate parameters are used for every developer.</li>
+        <li><b>Spin curve.</b> The thickness is read from the graph of the current data sheet (accuracy about ±0.1 µm, 150 mm wafers) and interpolated between 1000 and 4000 rpm. An older data sheet of the same series gives somewhat different numbers, for example 1.20 µm instead of 1.35 µm for AZ 1512 HS at 4000 rpm. Your answer is accepted within 0.15 µm or 10 %.</li>
+        <li><b>Rule for the soft bake.</b> A film that holds more solvent than the measured film of the soft-bake lesson after 90 °C for 50 s, the mildest bake in the manufacturer documents, sticks to the mask and the pattern is lost. The threshold is a rule of the game; the manufacturer notes name sticking as a consequence of too much solvent without giving a number. Photoactive compound that decomposes in the bake is counted as lost for the exposure.</li>
+        <li><b>Hard bake.</b> Above about 140 °C the resist cross-links and the solvent no longer strips it (MicroChemicals): the pads stay covered and no die makes contact. No quantitative data were found that link a missing hard bake to the wet etch, so skipping it has no effect in the game.</li>
+        <li><b>Developer on aluminium.</b> 0.26 N TMAH: 10 nm/min from the Merck data sheet (MicroChemicals quotes 70 nm/min). NaOH- and KOH-based developers: 100 nm/min as a reference rate. The attack acts on the spaces, which are etched anyway, and sideways under the resist edge by the same amount, so its effect on the resistor is small.</li>
+        <li><b>Etch.</b> Rates of 30 Å/s at 25 °C and 80 Å/s at 40 °C from the manufacturer of the etchant; real baths age and hydrogen bubbles make the etch uneven. The etch is taken as ideally isotropic and uniform, and the resist as unaffected by it.</li>
+        <li><b>Resistance.</b> Calculated with the bulk resistivity of aluminium, 2.650 × 10⁻⁸ Ω·m. A thin film has a higher resistivity because of its grain boundaries and surfaces; no thin-film value was verified, so every resistance here is a lower bound. Contact resistance is not modelled.</li>
+        <li><b>Proximity printing</b> is limited to gaps of 10–30 µm. The image model uses an ideal grating and one wavelength and would show sharp images again at certain larger gaps (Talbot effect), which broadband light does not.</li>
+        <li><b>Scenario.</b> Wafer, film, mask layout, temperature offset, test limit and scoring are chosen for the game. The film thickness across the wafer follows the cosine law for a small planar source 30 cm away. The mask sits up to 3 µm and 120 µrad off before alignment, at random for each wafer.</li>
+        <li>The cross-section is drawn with an enlarged vertical scale and a schematic oxide thickness. The alignment marks are to scale in their frames.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>Merck Performance Materials, technical data sheet “AZ 1500 Series – Positive Tone Photoresist”, Rev. 03/21, <a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf">microchemicals.com</a> (spin curve, soft bake, spectral sensitivity, development, hard bake).</li>
+        <li>MicroChemicals GmbH, application notes “Exposure of photoresists”, “Softbake of photoresist films”, “Development of photoresists”, “Hard bake, reflow and UV hardening of photoresists”, “Wet etching of metals”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a>.</li>
+        <li>Transene Company, “Aluminum Etchant Type A”, product data, <a href="https://transene.com/aluminum/">transene.com</a>.</li>
+        <li>K. R. Williams, K. Gupta, M. Wasilik, “Etch rates for micromachining processing – part II”, <i>J. Microelectromech. Syst.</i> 12 (2003) 761.</li>
+        <li>C. A. Mack, “Development of positive photoresists”, <i>J. Electrochem. Soc.</i> 134 (1987) 148.</li>
+        <li>P. D. Desai, H. M. James, C. Y. Ho, “Electrical resistivity of aluminum and manganese”, <i>J. Phys. Chem. Ref. Data</i> 13 (1984) 1131.</li>
+        <li>SÜSS MicroTec, <i>MJB4 Mask Aligner</i>, product brochure 02/2010 (printing modes, proximity gap).</li>
+        <li>The references of the lessons <a href="../softbake/index.html">Soft bake</a>, <a href="../lithography/index.html">Lithography resolution</a>, <a href="../development/index.html">Development</a>, <a href="../alignment/index.html">Alignment &amp; overlay</a>, <a href="../pvd/index.html">Evaporation &amp; sputtering</a>, <a href="../dryetch/index.html">Dry etching</a> and <a href="../fourpoint/index.html">Four-point probe</a>.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=6f876d02b2"></script>
+<script src="../softbake/model.js?v=8f3bdfc3b0"></script>
+<script src="../lithography/model.js?v=694ee77c66"></script>
+<script src="../development/model.js?v=244e0d0905"></script>
+<script src="../alignment/model.js?v=04477050df"></script>
+<script src="../pvd/model.js?v=1981604d34"></script>
+<script src="../oxidation/model.js?v=de9bcd22fc"></script>
+<script src="../dryetch/model.js?v=a3e5dd44fd"></script>
+<script src="../fourpoint/model.js?v=95e6dd96d9"></script>
+<script src="model.js?v=f6afde78b0"></script>
+<script src="widget.js?v=70256682d9"></script>
+</body>
+</html>

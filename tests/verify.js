@@ -567,5 +567,55 @@ section('Alignment and overlay (linear model, two marks, thermal run-out)');
   check('page task 5: plus 1.0 µm systematic (µm)', AL.rss([0.5, 0.5, 0.65]) + 1, 2.0, 0.03);
 }
 
+section('Process game (data-sheet values, chained lesson models, scoring)');
+{
+  const G = W('processgame'), SP = W('spincoating'), DVm = W('development'), ALm = W('alignment');
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const good = { resist: 'az1512', rpm: 3500, sbT: 100, sbt: 60, ax: 0, ay: 0, ath: 0, mode: 'contact', gap: 20, texp: 15, dev: 'azdev', tdev: 60, hbT: 110, hbt: 60, etT: 't40', tet: 75 };
+  const wf = { ox: 0, oy: 0, oth: 0 }, run = (ch, w = wf) => G.run({ ...good, ...ch }, w);
+  // digitised spin curve
+  check('spin curve returns the digitised point (AZ 1512 HS, 3000 rpm, µm)', G.thickness('az1512', 3000), 1.52, 1e-12);
+  check('spin curve returns the digitised point (AZ 1518, 4000 rpm, µm)', G.thickness('az1518', 4000), 1.84, 1e-12);
+  truth('thickness falls with speed and rises along the series', G.thickness('az1512', 2500) > G.thickness('az1512', 3500) && G.thickness('az1505', 3000) < G.thickness('az1512', 3000) && G.thickness('az1518', 3000) < G.thickness('az1529', 3000));
+  check('digitised curve follows the ω^(−1/2) law of the spin-coating lesson (1000 → 4000 rpm, AZ 1512 HS)', G.thickness('az1512', 1000) / G.thickness('az1512', 4000), SP.thickness(1000, 20) / SP.thickness(4000, 20), 0.02);
+  truth('only AZ 1512 HS reaches the 1.3–1.6 µm of the work order between 1000 and 4000 rpm', ['az1505', 'az1518', 'az1529'].every(k => [1000, 2000, 3000, 4000].every(r => { const t = G.thickness(k, r); return t < 1.3 || t > 1.6; })) && G.thickness('az1512', 3500) > 1.3 && G.thickness('az1512', 3500) < 1.6);
+  // page tasks
+  check('page task 1: target resistance (Ω)', G.R_TARGET, 795, 1e-9);
+  check('page task 1: sheet resistance (mΩ/□)', 1000 * G.RHO_AL / 500e-9, 53, 1e-9);
+  check('page task 2: dose of 15 s (mJ/cm²)', G.LAMP * 15, 128, 0.005);
+  check('page task 3: 80 Å/s in nm/min', G.etchRate('t40'), 480, 1e-12);
+  check('page task 3: time to clear the centre (s)', run({}).tc0, 62.5, 1e-12);
+  check('page task 3 and work order: film at the edge (nm)', G.filmAt(50), 473, 0.002);
+  check('page task 4: mean width when just cleared (µm)', G.lineSection(5, 500, 500).wEff, 5 - 2 * Math.PI / 4 * 0.5, 2e-3);
+  check('page task 4: after 20 % more etch (µm)', G.lineSection(5, 500, 600).wEff, 3.96, 0.005);
+  truth('before the film clears the lines are still connected', !G.lineSection(5, 500, 499).cleared);
+  check('page task 5: run-out at 45 mm (µm)', ALm.runout('soda', 1.5) * 45e-3, 0.44, 0.01);
+  check('page task 6: four-point probe V/I (mΩ)', 1000 * run({}).VI, 11.7, 0.005);
+  // a careful run is on target
+  { const r = run({}); check('careful run: mean resistance (Ω)', r.Rmean, G.R_TARGET, 0.02); check('careful run: all 69 dies pass', r.count.pass, 69, 0, 0);
+    check('resist model = Development lesson (resist line width, µm)', r.L.cd, 2 * (5 - DVm.footEdge(DVm.develop2D({ I: r.L.I, E: r.L.E, d: r.L.d, S: DVm.MACK.pb70, X: 5, nz: 32, pac: r.L.pac }), 60)), 1e-12);
+    const sc = G.score(r, G.grade({ qThick: 1.4, qSbMin: 90, qSbMax: 110, qSensMin: 310, qSensMax: 450, qDev: 60, qHbMin: 100, qHbMax: 110, qRate: 80 }, good), 0, 0);
+    check('careful run with every document value right scores 100', sc.total, 100, 0, 0);
+    check('one rework and one new wafer cost 15 points', G.score(r, [{ ok: true }], 1, 1).eco, 0, 0, 0); }
+  // mistakes carry forward
+  truth('underexposure → spaces not open → every die shorted', run({ texp: 4 }).count.short === 69);
+  truth('etch stopped early → shorts at the centre first', (() => { const r = run({ tet: 60 }); return r.centre.cls === 'short' && r.count.pass > 0 && r.count.short > 0; })());
+  truth('long overetch → resistance too high', run({ tet: 110 }).count.high === 69);
+  truth('underexposed but open → lines too wide → resistance too low', run({ texp: 7 }).count.low === 69);
+  truth('underbaked film sticks to the mask → opens', (() => { const r = run({ sbT: 80, sbt: 30 }); return r.L.stick && r.count.open === 69; })());
+  truth('the data-sheet bake (100 °C, 60 s) does not stick', !run({}).L.stick);
+  truth('hot, long soft bake: PAC lost, resist no longer opens', (() => { const r = run({ sbT: 140, sbt: 300 }); return r.L.pac < 0.5 && r.L.notOpen; })());
+  truth('hard bake above 140 °C → no contact on any die', run({ hbT: 150 }).count.nocontact === 69);
+  truth('skipped hard bake changes nothing (stated on the page)', run({ hbt: 0 }).Rmean === run({}).Rmean);
+  truth('unaligned mask (3 µm off) → pads miss the windows', run({}, { ox: 3, oy: 0, oth: 0 }).count.nocontact === 69);
+  truth('rotation of 100 µrad → only the dies near the edge lose contact', (() => { const r = run({}, { ox: 0, oy: 0, oth: 100 }); return r.count.nocontact > 0 && r.count.pass > 0 && r.centre.cls === 'pass'; })());
+  truth('TMAH developer attacks the aluminium, AZ Developer does not', run({ dev: 'mif', tdev: 90 }).L.alLoss > 5 && run({}).L.alLoss === 0);
+  truth('developer attack narrows the line slightly', run({ dev: 'naoh' }).Rmean > run({}).Rmean);
+  // grading
+  { const g = G.grade({ qThick: 1.9, qSbMin: 90 }, good); truth('grading: wrong thickness and empty answers are wrong, a right one is right', !g.find(x => x.id === 'qThick').ok && g.find(x => x.id === 'qSbMin').ok && !g.find(x => x.id === 'qDev').ok && g.length === 9); }
+  check('grading: etch-rate question follows the chosen temperature (Å/s)', G.questions({ ...good, etT: 't25' }).find(q => q.id === 'qRate').want, 30, 0, 0);
+  { const w = G.newWafer(0, 1, 0.5); truth('new wafer: misalignment within ±3 µm and ±120 µrad', w.ox === -3 && w.oy === 3 && w.oth === 0); }
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

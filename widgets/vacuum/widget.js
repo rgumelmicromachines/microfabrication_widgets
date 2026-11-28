@@ -121,7 +121,10 @@
         { color: C.muted, size: 0.18, key: 'target' });
       if (isFinite(v.tTarget) && v.tTarget >= 1) {
         ax.dot(v.tTarget, v.target, { r: 0.07, color: C.muted });
-        ax.place(`after ${dur(v.tTarget)}`, ax.around(v.tTarget, v.target, 0.15).concat(ax.around(v.tTarget, v.target, 0.45)), { color: C.muted, size: 0.18, key: 'ttarget' });
+        // the curve falls from the upper left to the lower right through this point: only the two quadrants beside it
+        // (upper right, lower left) are offered, so the label cannot trade places across the curve when a slider trembles
+        const tx = ax.X(v.tTarget), ty = ax.Y(v.target);
+        ax.place(`after ${dur(v.tTarget)}`, [0.15, 0.32, 0.5, 0.75].flatMap(d => [[tx + d, ty + d, 'left', 'bottom'], [tx - d, ty - d, 'right', 'top']]), { color: C.muted, size: 0.18, key: 'ttarget', bg: true });
       }
       if (inPlot) ax.place(pa(v.p), ax.around(v.tc, v.p, 0.16).concat(ax.around(v.tc, v.p, 0.45), ax.around(v.tc, v.p, 0.8)), { color: C.yellow, size: 0.19, key: 'pnow' });
     },

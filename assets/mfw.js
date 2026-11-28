@@ -10,7 +10,7 @@
  *  - light / dark theme (palette is swapped in place, every widget redraws)
  *  - sans-serif UI font, English number format (decimal point)
  *  - layout fills the screen: stage + side panel on wide screens, stage height fits the viewport
- *  - two explicit modes: "Guided tour" (steps drive some parameters, those sliders are locked)
+ *  - two explicit modes: the tour (tab "Challenges": questions and tasks in numbered steps)
  *    and "Explore" (every slider is free); parameters no step touches are never overwritten
  *  - playback speed control, hold time per step derived from reading time, progress bar
  *  - step text / caption may be functions of the live values, log-scale sliders, conditional controls
@@ -433,10 +433,18 @@
         if (sc === 0) { best = last; bestS = 0; }
       }
       if (best < 0) {
+        let lastS = Infinity;
         for (let i = 0; i < cands.length; i++) {
           const sc = this._collide(boxOf(cands[i]), o);
+          if (i === last) lastS = sc;
           if (sc < bestS - 1e-9) { best = i; bestS = sc; }
           if (sc === 0) break;
+        }
+        // no place is free: stay where the label was unless another place is clearly better – two equally crowded
+        // places must not trade the label back and forth while a slider trembles
+        if (bestS > 0 && last !== undefined && last < cands.length) {
+          if (lastS === Infinity) lastS = this._collide(boxOf(cands[last]), o);
+          if (lastS - bestS < 1) { best = last; bestS = lastS; }
         }
       }
       this._placed.set(key, best);
@@ -1744,7 +1752,7 @@
       if (cfg.readout) {
         const chars = this.charsEl = el('section', 'mfw-chars', this.panel);
         this._charsSlot = this.panel.appendChild(document.createComment('characteristics'));   // its place in the panel
-        el('h3', 'mfw-chars-h', chars, S.chars);
+        el('h2', 'mfw-chars-h', chars, S.chars);
         this.readoutEl = el('div', 'mfw-readout', chars);
       }
       const params = Object.entries(cfg.params || {}).filter(([, d]) => !d.hidden);
@@ -1869,7 +1877,7 @@
       for (const e of [this.explainEl, this.readoutEl]) if (e) { e._mfwH = 0; e.style.minHeight = ''; }
       this._primeReadout();
     }
-    /** In the guided tour the characteristics table sits above the sliders. Sliders the tour does not set stay free,
+    /** In the tour the characteristics table sits above the sliders. Sliders the tour does not set stay free,
         so dragging one must not change the table's height: reserve the tallest height the current step takes over the
         extremes (and options) of those free sliders. In Explore the table sits below the sliders and needs no reserve. */
     /** Explore: the text above the sliders may depend on the live values (cfg.freeText as a function) and change its

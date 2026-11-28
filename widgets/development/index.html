@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<meta name="description" content="Interactive development of a positive photoresist: Dill exposure kinetics, Mack development rate, resist profile of a line, contrast curve, dark erosion and the attack of developers on aluminium.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=8a7067c2ad">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Lithography</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Development: from exposure dose to resist profile</h1>
+    <p class="lede">The exposure only changes the chemistry of the resist. The developer turns that change into a profile – how much dose and how much time does a line of the right width need?</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <h3>Exposure (Dill)</h3>
+      <p>With <span class="tex">m</span> the fraction of the photoactive compound (PAC) that is still intact and <span class="tex">I</span> the intensity at depth <span class="tex">z</span>:</p>
+      <div class="tex-display">\frac{\partial I}{\partial z} = -(A\,m + B)\,I, \qquad \frac{\partial m}{\partial t} = -C\,I\,m</div>
+      <p>At the surface this gives <span class="tex">m = e^{-C E}</span> for the dose <span class="tex">E</span>. <span class="tex">A</span> is the absorption that bleaches away with the PAC, <span class="tex">B</span> the absorption that stays, <span class="tex">C</span> the sensitivity. If the substrate reflects nothing, the profile in depth follows from one equation:</p>
+      <div class="tex-display">\frac{dm}{dz} = m\,\bigl[A\,(1-m) - B \ln m\bigr], \qquad m(0) = e^{-C E}</div>
+      <table>
+        <tr><th>AZ 1500 series, 365 nm</th><th>A</th><th>B</th><th>C</th></tr>
+        <tr><td>MicroChemicals, optical parameters of photoresists</td><td>1.0133 µm⁻¹</td><td>0.2177 µm⁻¹</td><td>0.0239 cm²/mJ</td></tr>
+      </table>
+      <h3>Development rate (Mack)</h3>
+      <div class="tex-display">r(m) = r_{max}\,\frac{(a+1)\,(1-m)^n}{a + (1-m)^n} + r_{min}, \qquad a = \frac{n+1}{n-1}\,(1-m_{TH})^n</div>
+      <table>
+        <tr><th>AZ 1350J in AZ Developer 1:1 (Mack 1987)</th><th>r<sub>max</sub></th><th>r<sub>min</sub></th><th>n</th><th>m<sub>TH</sub></th></tr>
+        <tr><td>prebake 70 °C</td><td>55 nm/s</td><td>0.15 nm/s</td><td>6</td><td>0.61</td></tr>
+        <tr><td>prebake 100 °C</td><td>21 nm/s</td><td>2 nm/s</td><td>5</td><td>0.61</td></tr>
+      </table>
+      <h3>Front, dose to clear and contrast</h3>
+      <p>The developer front moves along its normal at the local rate. In a large open area it reaches the depth <span class="tex">z</span> after</p>
+      <div class="tex-display">T(z) = \int_0^{z} \frac{dz'}{r\bigl(m(z')\bigr)}, \qquad T(d) = t \ \Rightarrow\ E = D_c</div>
+      <p>and the dose for which the whole thickness <span class="tex">d</span> is developed in the time <span class="tex">t</span> is the dose to clear <span class="tex">D_c</span>. The contrast is the slope of the thickness left against the logarithm of the dose:</p>
+      <div class="tex-display">\gamma = \frac{1}{\log_{10}(D_c / D_0)}, \qquad \text{dark erosion} = r_{min}\,t</div>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>Which dose at 365 nm leaves half of the PAC at the surface of an AZ 1500 resist? How much is left after 100 mJ/cm²?
+          <details><summary>Answer</summary><span class="tex">E = \ln 2 / C = 0.693/0.0239 = 29\ \mathrm{mJ/cm^2}</span>. After 100 mJ/cm²: <span class="tex">m = e^{-2.39} = 0.092</span>.</details></li>
+        <li>An unexposed 1.2 µm film absorbs with <span class="tex">A + B</span>, a fully bleached one with <span class="tex">B</span> only. Which fraction of the 365 nm light reaches the substrate in each case?
+          <details><summary>Answer</summary>Unexposed: <span class="tex">e^{-(1.0133+0.2177)\cdot 1.2} = 0.23</span>. Bleached: <span class="tex">e^{-0.2177\cdot 1.2} = 0.77</span>. The film becomes more transparent while it is exposed, so the bottom catches up – but it always lags behind the surface.</details></li>
+        <li>Use the 70 °C parameter set. Calculate <span class="tex">a</span> and the development rate for <span class="tex">m = 0.3</span>, <span class="tex">m = 0.61</span> and <span class="tex">m = 0.8</span>.
+          <details><summary>Answer</summary><span class="tex">a = \tfrac{7}{5}\cdot 0.39^6 = 0.0049</span>. Rates: 53 nm/s, 23 nm/s and 0.86 nm/s. Between <span class="tex">m = 0.8</span> and <span class="tex">m = 0.61</span> the rate changes 27-fold: the resist behaves almost like a switch.</details></li>
+        <li>How much unexposed resist do the two parameter sets remove in a 60 s development, and what is the ratio <span class="tex">r_{max}/r_{min}</span>?
+          <details><summary>Answer</summary>70 °C: <span class="tex">0.15\cdot 60 = 9\ \mathrm{nm}</span>, ratio 367. 100 °C: <span class="tex">2\cdot 60 = 120\ \mathrm{nm}</span>, ratio 10.5.</details></li>
+        <li>In Explore mode (1.2 µm, 70 °C set, 60 s) read <span class="tex">D_0</span> and <span class="tex">D_c</span> from the contrast curve and calculate γ. Then set the thickness to 2 µm. What happens to the dose to clear?
+          <details><summary>Answer</summary><span class="tex">D_0 = 14</span>, <span class="tex">D_c = 44\ \mathrm{mJ/cm^2}</span>, <span class="tex">\gamma = 1/\log_{10}(44/14) = 2.1</span>. For 2 µm the dose to clear rises to 85 mJ/cm²: the film is thicker and its bottom receives less light.</details></li>
+        <li>A wafer with an aluminium film is developed for 90 s in 0.26 N TMAH. The resist in the open areas is gone after 25 s. How much aluminium is removed according to the two quoted etch rates?
+          <details><summary>Answer</summary>The aluminium is exposed for 65 s. At 10 nm/min: 11 nm. At 70 nm/min: 76 nm. The two manufacturer documents disagree by a factor of seven, so the loss has to be measured on the film in question.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li><b>Two resists in one model.</b> The Dill parameters are those of the AZ 1500 series at 365 nm. The development-rate parameters were measured by Mack for a different, older resist, AZ 1350J, in AZ Developer diluted 1:1. No published Mack parameter set for an AZ 1500 resist was found, so the doses and times of this page show the behaviour of a DNQ/novolak resist and are not a process recipe for AZ 1500.</li>
+        <li><b>No dark-erosion value for AZ 1500</b> was found in the manufacturer documents. The page uses <span class="tex">r_{min}</span> of the AZ 1350J sets.</li>
+        <li>The choice of developer changes only the attack on aluminium. Its effect on the development rate (normality, dilution, temperature, agitation, an inhibited surface layer) is not modelled, because no rate parameters are published for the other developers.</li>
+        <li>Attack on aluminium: about 10 nm/min for 0.26 N TMAH in one manufacturer document and about 70 nm/min in another; both bounds are shown. For NaOH- and KOH-based developers only “several 10 to over 100 nm/min” is quoted; the page uses 100 nm/min as a reference rate. The recess is drawn for the higher rate.</li>
+        <li>The substrate reflects nothing: no standing waves and no extra dose from the reflection. Silicon reflects roughly 30 % and a metal film more than 90 % of the exposure light (MicroChemicals), so real profiles on aluminium show standing waves and need less dose.</li>
+        <li>The dose is the dose at 365 nm. A mercury lamp also exposes the resist at 405 and 436 nm, where the Dill parameters differ.</li>
+        <li>The image at the mask edge is the scalar contact/proximity image of the lithography lesson, evaluated in the middle of the resist and taken as constant through its thickness apart from absorption.</li>
+        <li>The front is computed on a grid of 41 × 33 points with a first-order method; widths are good to a few per cent of the line width. The contrast is the slope of the calculated curve at the dose to clear, which is steeper than a straight-line fit through measured points.</li>
+        <li>The cross-section is to scale. The mask is drawn above it only to show where the chrome edges are.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>F. H. Dill, W. P. Hornberger, P. S. Hauge, J. M. Shaw, “Characterization of positive photoresist”, <i>IEEE Trans. Electron Devices</i> ED-22 (1975) 445.</li>
+        <li>S. V. Babu, E. Barouch, “Exact solution of Dill's model equations for positive photoresist kinetics”, <i>IEEE Electron Device Lett.</i> EDL-7 (1986) 252.</li>
+        <li>C. A. Mack, “Development of positive photoresists”, <i>J. Electrochem. Soc.</i> 134 (1987) 148 (rate model; Table I: AZ 1350J in AZ Developer 1:1).</li>
+        <li>H. Zhao, “A fast sweeping method for eikonal equations”, <i>Math. Comp.</i> 74 (2005) 603.</li>
+        <li>MicroChemicals GmbH, application notes “Optical parameters of photoresists”, “Exposure of photoresists” and “Development of photoresists”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (Dill parameters of AZ 1500, contrast, developer compatibility with aluminium).</li>
+        <li>Merck Performance Materials, technical data sheets “AZ 1500 Series”, “AZ Developer” and “AZ MIF Developers”, available from <a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf">microchemicals.com</a>.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=e9e0b6aa5d"></script>
+<script src="../lithography/model.js?v=694ee77c66"></script>
+<script src="model.js?v=8839342f8f"></script>
+<script src="widget.js?v=7c081bfe8f"></script>
+</body>
+</html>

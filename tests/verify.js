@@ -462,5 +462,61 @@ section('Stress migration (McPherson–Dunn creep model)');
   check('page task 4: E_eff of Al–Si at 105 °C (eV)', SM.eaEff(105, al.T0, al.N, al.Ea), 0.35, 0.02);
 }
 
+section('Development (Dill exposure, Mack rate, front propagation)');
+{
+  const DV = W('development'), S = DV.MACK.pb70, S2 = DV.MACK.pb100;
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  check('surface: m = exp(−C·E), 100 mJ/cm²', DV.mSurface(100), Math.exp(-2.39), 1e-12);
+  check('page task 1: dose for m = 0.5 (mJ/cm²)', Math.log(2) / DV.DILL.C, 29.0, 2e-3);
+  // the reduced equation in depth against stepping Dill's two equations through the exposure
+  { const a = DV.pacProfile(60, 1.2, 40), b = DV.pacBrute(60, 1.2, 400, 8000); check('m at the substrate: reduced equation vs brute force', a[40], b[400], 2e-3); }
+  { const a = DV.pacProfile(200, 3, 80), b = DV.pacBrute(200, 3, 400, 8000); check('same for 3 µm, 200 mJ/cm²', a[80], b[400], 3e-3); }
+  // weak exposure: Beer–Lambert with the unbleached absorption A + B → 1 − m(d) ≈ C·E·exp(−(A+B)·d)
+  check('weak-exposure limit (E = 0.01)', 1 - DV.pacProfile(0.01, 1.2, 80)[80], DV.DILL.C * 0.01 * Math.exp(-(DV.DILL.A + DV.DILL.B) * 1.2), 2e-3);
+  check('page task 2: unbleached transmission of 1.2 µm', Math.exp(-(DV.DILL.A + DV.DILL.B) * 1.2), 0.23, 0.01);
+  check('page task 2: bleached transmission', Math.exp(-DV.DILL.B * 1.2), 0.77, 0.01);
+  truth('no exposure leaves m = 1 at every depth', DV.pacProfile(0, 1.2, 40).every(m => m === 1));
+  // Mack rate: limits, and the inflection point at m_TH (the meaning of the parameter)
+  check('r(m = 1) = r_min', DV.rate(1, S), S.rmin, 1e-12);
+  check('r(m = 0) = r_max + r_min', DV.rate(0, S), S.rmax + S.rmin, 1e-12);
+  { const h = 1e-3, d2 = m => (DV.rate(m + h, S) - 2 * DV.rate(m, S) + DV.rate(m - h, S)); truth('inflection of r(m) at m_TH = 0.61', d2(0.61 - 0.02) * d2(0.61 + 0.02) < 0 && Math.abs(d2(0.61)) < Math.abs(d2(0.55)) / 5); }
+  check('Mack 1987: r_max/r_min, prebake 70 °C', S.rmax / S.rmin, 367, 2e-3);
+  check('Mack 1987: r_max/r_min, prebake 100 °C', S2.rmax / S2.rmin, 10.5, 1e-9);
+  check('page task 3: a (70 °C set)', 7 / 5 * 0.39 ** 6, 0.0049, 0.01);
+  check('page task 3: r(0.3) (nm/s)', 1000 * DV.rate(0.3, S), 53, 0.01);
+  check('page task 3: r(0.61) (nm/s)', 1000 * DV.rate(0.61, S), 23, 0.01);
+  check('page task 3: r(0.8) (nm/s)', 1000 * DV.rate(0.8, S), 0.86, 0.01);
+  // development of a large open area
+  check('unexposed film: depth = r_min·t (dark erosion, 60 s, nm)', 1000 * DV.depth(0, 1.2, 60, S), 9, 1e-6);
+  check('page task 4: dark erosion, 100 °C set (nm)', 1000 * DV.depth(0, 1.2, 60, S2), 120, 1e-6);
+  check('saturated exposure: clear time → d/(r_max + r_min) (s)', DV.clearTime(1e4, 1.2, S), 1.2 / (S.rmax + S.rmin), 1e-3);
+  { const Dc = DV.doseToClear(1.2, 60, S); check('dose to clear inverts the clear time (s)', DV.clearTime(Dc, 1.2, S), 60, 1e-4);
+    const c = DV.contrast(1.2, 60, S); check('γ = 1/log10(D_c/D_0)', 1 / Math.log10(c.Dc / c.D0), c.gamma, 1e-9);
+    check('page task 5 and tour: D_c, 1.2 µm, 60 s (mJ/cm²)', c.Dc, 44, 0.02); check('page task 5: D_0', c.D0, 14, 0.03); check('page task 5: γ', c.gamma, 2.1, 0.03);
+    check('page task 5: D_c for 2 µm', DV.doseToClear(2, 60, S), 85, 0.01);
+    check('tour “Time against dose”: D_c at 120 s is a seventh lower', 1 - DV.doseToClear(1.2, 120, S) / c.Dc, 1 / 7, 0.05);
+    check('tour “Too little dose”: 25 mJ/cm², 60 s develops about half (µm)', DV.depth(25, 1.2, 60, S), 0.6, 0.1);
+    truth('more time never raises the dose to clear', DV.doseToClear(1.2, 120, S) < c.Dc && DV.doseToClear(1.2, 30, S) > c.Dc); }
+  // front propagation on the grid
+  { const flat = new Array(21).fill(1);
+    const R = DV.develop2D({ I: flat, E: 0, d: 1.2, S, X: 2, nz: 32 }); check('uniform resist: front arrives at d after d/r_min (s)', R.T[32 * 21 + 10], 1.2 / S.rmin, 1e-9);
+    const R2 = DV.develop2D({ I: flat, E: 60, d: 1.2, S, X: 2, nz: 32 }); check('uniform exposure: grid solver vs ∫dz/r (s)', R2.T[32 * 21 + 10], DV.clearTime(60, 1.2, S), 0.03);
+    check('profile() of a uniform film = depth() (µm)', DV.profile(R2, 15)[5], DV.depth(60, 1.2, 15, S), 0.03);
+    truth('nothing cleared → foot edge 0; everything cleared → X', DV.footEdge(R, 60) === 0 && DV.footEdge(R2, 60) === 2);
+    // a sharp, fully exposed half next to an unexposed half: the edge creeps sideways at r_min
+    const step = flat.map((x, i) => (i <= 10 ? 1e3 : 0)), R3 = DV.develop2D({ I: step, E: 1, d: 0.6, S, X: 2, nz: 32 });
+    const t0 = 0.6 / (S.rmax + S.rmin), tt = 600; check('sharp edge: lateral creep r_min·(t − t_clear) (µm)', DV.footEdge(R3, tt) - 1.0, S.rmin * (tt - t0), 0.15, 0.02); }
+  // tour claims with the real image of a 2 µm line in contact
+  { const xs = []; for (let i = 0; i < 41; i++) xs.push(2 * i / 40);
+    const I = LI.aerialImage({ mode: 'proximity', lambda: 0.365, hp: 2, xs, gap: 0, resist: 1.2, collimation: 2 });
+    const cd = (E, t) => 2 * (2 - DV.footEdge(DV.develop2D({ I, E, d: 1.2, S, X: 2, nz: 32 }), t));
+    check('tour “Dose to size”: 150 mJ/cm² prints 2 µm (µm)', cd(150, 60), 2, 0.02);
+    check('tour “Too long in the developer”: 180 s narrows the line by ≈ 0.1 µm', cd(150, 60) - cd(150, 180), 0.1, 0.25);
+    truth('the line narrows with dose', cd(100, 60) > cd(200, 60) && cd(200, 60) > cd(400, 60)); }
+  check('page task 6: Al lost in 65 s at 10 nm/min (nm)', DV.alLoss('mif', 65)[0], 11, 0.02);
+  check('page task 6: Al lost in 65 s at 70 nm/min (nm)', DV.alLoss('mif', 65)[1], 76, 0.01);
+  check('AZ Developer: no attack on Al', DV.alLoss('azdev', 600)[1], 0, 0, 0);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

@@ -175,7 +175,7 @@
     // interactive tour: predict (ask) and try (goal) steps – see Widget._goInteractive in assets/mfw.js
     steps: [
       { name: 'Exposure', caption: 'Light destroys the photoactive compound – most of it near the surface', set: { E: 60, t: 0, d: 1.2, pb: 'pb70', hp: 2, gap: 0, al: false, dev: 'azdev' }, duration: 0.5,
-        text: v => `A positive resist contains a photoactive compound (PAC) that keeps the resin from dissolving in the developer. UV light destroys it: after the dose E the fraction m = exp(−C·E) is left at the surface, here ${fmt.num(v.mS, 2)}. The resist absorbs part of the light on the way down, so the bottom of the film receives less – ${fmt.num(v.mB, 2)} is left at the substrate. The lighter areas of the cross-section are where the PAC is gone. The mask edge is not imaged sharply either (purple curve): diffraction lets some light under the chrome.` },
+        text: v => `A positive resist contains a photoactive compound (PAC) that keeps the resin from dissolving in the developer. UV light destroys it: after the dose E the fraction m = exp(−C·E) is left at the surface, here ${fmt.num(v.mS, 2)}. The resist absorbs part of the light on the way down, so the bottom of the film receives less: ${fmt.num(v.mB, 2)} is left at the substrate. The lighter areas of the cross-section are where the PAC is gone. The mask edge is not imaged sharply either (purple curve): diffraction lets some light under the chrome.` },
       { name: 'Too little dose', caption: v => `${mj(v.E)}, 60 s: ${nm(v.depthOpen)} developed, ${nm(v.leftOpen)} left`, from: { E: 25, t: 0 }, set: { E: 25, t: 60 }, duration: 3,
         ask: { q: 'A dose of 25 mJ/cm² leaves 55 % of the PAC at the surface. The 1.2 µm film is developed for 60 s. How much of it is gone in a large open area?',
           options: ['All of it', 'About half', 'Almost nothing'], correct: 1 },
@@ -195,7 +195,7 @@
       { name: 'Too long in the developer', caption: v => `180 s: line ${cdText(v)}, ${nm(v.dark)} lost on top`, from: { t: 60 }, set: { t: 180 }, duration: 3,
         ask: { q: 'The wafer stays in the developer three times as long, 180 s instead of 60 s. What happens to the 2 µm resist line?',
           options: ['Nothing, it is unexposed', 'It gets about 0.1 µm narrower', 'It is washed away'], correct: 1 },
-        text: v => `The line shrinks to ${cdText(v)}. Its flanks received some light and keep dissolving slowly, and even unexposed resist is not immune: it loses r<sub>min</sub>·t = ${nm(v.dark)} in thickness (<b>dark erosion</b>). The exposed resist dissolved ${fmt.num(v.S.rmax / v.S.rmin, 0)} times faster than that, which is why the pattern survives.` },
+        text: v => `The line shrinks to ${cdText(v)}. Its flanks received some light and keep dissolving slowly, and unexposed resist dissolves too: it loses r<sub>min</sub>·t = ${nm(v.dark)} in thickness (<b>dark erosion</b>). The exposed resist dissolved ${fmt.num(v.S.rmax / v.S.rmin, 0)} times faster than that, which is why the pattern survives.` },
       { name: 'A weaker rate ratio', caption: v => `r_max/r_min = ${fmt.num(v.S.rmax / v.S.rmin, 0)}: ${nm(v.dark)} of unexposed resist lost`, from: { t: 60 }, set: { pb: 'pb100', t: 60 }, show: ['gamma'], duration: 1,
         ask: { q: 'After a hotter prebake Mack measured for the same resist a maximum rate of 21 instead of 55 nm/s, and a rate of unexposed resist of 2 instead of 0.15 nm/s. How much unexposed resist is lost in 60 s now?',
           options: ['9 nm, as before', 'About 120 nm, a tenth of the film', 'None'], correct: 1 },

@@ -8,10 +8,12 @@
 <meta name="description" content="Process game: take a wafer through one lithography level – AZ 1500 resist from the data sheet, spin coating, soft bake, alignment, exposure, development, hard bake, aluminium wet etch – and test the meander resistor electrically.">
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../assets/mfw.css?v=38cdd2b1f3">
+<link rel="stylesheet" href="../../assets/mfw.css?v=84a96b1213">
 <style>
-  .pg-order { margin: 0 0 22px; }
-  .pg-order table { max-width: 900px; }
+  .pg-spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 0 32px; margin: 4px 0 10px; border-top: 1px solid var(--line-strong); }
+  .pg-spec > div { display: grid; grid-template-columns: 6.2em minmax(0, 1fr); gap: 0 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; line-height: 1.4; }
+  .pg-spec dt { font-weight: 650; font-stretch: 85%; color: var(--text); }
+  .pg-spec dd { margin: 0; color: var(--text-2); }
   .pg-text { margin: 0; font-size: 16px; line-height: 1.55; color: var(--text-2); }
   .pg-text a { color: var(--link); }
   .mfw .mfw-explain { min-height: 0; }
@@ -19,8 +21,11 @@
   .pg-strip li { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-strong); font-size: 14px; font-weight: 650; color: var(--muted); font-variant-numeric: tabular-nums; }
   .pg-strip li.is-done { border-color: var(--mod); background: color-mix(in srgb, var(--mod) 14%, transparent); color: var(--text); }
   .pg-strip li.is-now { border-color: var(--mod); background: var(--mod); color: var(--on-mod); }
-  .pg-box { display: grid; gap: 10px; padding: 12px 14px 14px; border: 1px solid var(--line-strong); border-left: 6px solid var(--mod); }
+  .pg-box { display: grid; gap: 10px; padding: 10px 0 2px; border-top: 2px solid var(--mod); }
   .pg-box h4 { margin: 0; font-size: 16px; font-weight: 700; font-stretch: 90%; color: var(--text); }
+  .pg-q input:placeholder-shown { border: 2px solid var(--mod); background: color-mix(in srgb, var(--mod) 8%, var(--surface)); }
+  .pg-points { margin: 0; padding-top: 8px; border-top: 1px solid var(--line); font-size: 14.5px; line-height: 1.45; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .pg-points b { margin-right: 6px; color: var(--text); font-stretch: 88%; }
   .pg-hint { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--muted); }
   .pg-nudge { display: grid; gap: 6px; }
   .pg-nrow { display: grid; grid-template-columns: 4.6em repeat(4, minmax(0, 1fr)) 2.6em; gap: 6px; align-items: center; font-size: 15px; color: var(--text); }
@@ -42,7 +47,6 @@
   .pg-msg { margin: 0; min-height: 1.5em; font-size: 15.5px; font-weight: 600; color: var(--text-2); }
   .pg-log ol { margin: 6px 0 0; padding-left: 1.4em; font-size: 15px; color: var(--text-2); }
   .pg-log li { margin: 3px 0; }
-  #report { grid-column: 1 / -1; }
   #report table { max-width: 980px; }
   #report .pg-total { font-size: 19px; color: var(--accent); }
   #report input[type=text] { font: inherit; padding: 4px 8px; margin-left: 6px; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); }
@@ -50,7 +54,7 @@
   #report button:hover { border-color: var(--text); }
   .pg-printname:empty { display: none; }
   @media print {
-    .site-header, .page-head, .pg-order, #app, .lesson-pager, .article > .card:not(#report), .footer, .pg-noprint { display: none !important; }
+    .site-header, .page-head, #app, .lesson-pager, .article > .card:not(#report), .footer, .pg-noprint { display: none !important; }
     #report { border-top: 0; }
     body { background: #fff; }
   }
@@ -67,29 +71,29 @@
 <main class="page">
   <div class="page-head">
     <h1>Lithography run: aluminium meander resistor</h1>
-    <p class="lede">You get a wafer and a work order. Eight stations later an electrical test decides whether the resistor is on target. Nothing stops you from making a mistake; it travels with the wafer.</p>
+    <p class="lede">You get a wafer and a work order. Eight stations later an electrical test decides whether the resistor is on target. No setting is blocked: a wrong one shows up later, under the microscope or at the test. The work order is under the figure.</p>
   </div>
 
-  <section class="card pg-order" aria-labelledby="order-h">
-    <h2 id="order-h">Work order</h2>
-    <p>Pattern the aluminium film into a meander resistor whose two pads land on the contact windows that are already in the oxide. One mask, one lithography level, wet etch.</p>
-    <table>
-      <tr><th>Item</th><th>Given</th></tr>
-      <tr><td>Wafer</td><td>100 mm silicon, oxide with 10 µm contact windows, 69 dies</td></tr>
-      <tr><td>Film</td><td>500 nm evaporated aluminium at the wafer centre, about 5 % thinner at the edge</td></tr>
-      <tr><td>Mask</td><td>Soda-lime glass; meander of 5 µm lines and 5 µm spaces, 60 mm long; pads overlap the windows by 2 µm; two alignment marks 60 mm apart</td></tr>
-      <tr><td>Target</td><td>795 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</td></tr>
-      <tr><td>Resist</td><td>AZ 1500 series, 1.3–1.6 µm after soft bake</td></tr>
-      <tr><td>Tools</td><td>Spin coater, hotplate, mask aligner with dose control (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C, microscope</td></tr>
-      <tr><td>Documents</td><td><a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf" target="_blank" rel="noopener">AZ 1500 series data sheet</a> (Merck, PDF at microchemicals.com) · <a href="https://transene.com/aluminum/" target="_blank" rel="noopener">aluminium etchant Type A</a> (Transene)</td></tr>
-    </table>
-    <p class="note">Each station has two parts: values to look up in these documents, and the settings of the tool. Then you run the station. The microscope view above the cross-section shows the resistor after every step. You can strip the resist and coat again at any time before the etch; after the etch only a new wafer helps.</p>
-  </section>
 
   <div id="app"></div>
 
   <section class="article">
     <article class="card" id="report" hidden></article>
+
+    <article class="card pg-order" data-fold="open" aria-labelledby="order-h">
+      <h2 id="order-h">Work order</h2>
+      <p>Pattern the aluminium film into a meander resistor whose two pads land on the contact windows that are already in the oxide. The job takes one mask and one lithography level, and the film is etched wet.</p>
+      <dl class="pg-spec">
+        <div><dt>Wafer</dt><dd>100 mm silicon, oxide with 10 µm contact windows, 69 dies</dd></div>
+        <div><dt>Film</dt><dd>500 nm evaporated aluminium at the wafer centre, about 5 % thinner at the edge</dd></div>
+        <div><dt>Mask</dt><dd>Soda-lime glass; meander of 5 µm lines and 5 µm spaces, 60 mm long; pads overlap the windows by 2 µm; two alignment marks 60 mm apart</dd></div>
+        <div><dt>Target</dt><dd>795 Ω per resistor (4.0 µm electrical line width), test limit ±10 %</dd></div>
+        <div><dt>Resist</dt><dd>AZ 1500 series, 1.3–1.6 µm after soft bake</dd></div>
+        <div><dt>Tools</dt><dd>Spin coater, hotplate, mask aligner with dose control (8.5 mW/cm² at 365 nm, hard contact or proximity), developer bench, aluminium etchant at 25 or 40 °C, microscope</dd></div>
+        <div><dt>Documents</dt><dd><a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf" target="_blank" rel="noopener">AZ 1500 series data sheet</a> (Merck, PDF at microchemicals.com) · <a href="https://transene.com/aluminum/" target="_blank" rel="noopener">aluminium etchant Type A</a> (Transene)</dd></div>
+      </dl>
+      <p class="note">You can strip the resist and coat again at any time before the etch; after the etch only a new wafer helps.</p>
+    </article>
 
     <article class="card">
       <h2>How the run is scored</h2>
@@ -154,7 +158,7 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=7f4b69d370"></script>
+<script src="../../assets/mfw.js?v=cb5072b610"></script>
 <script src="../softbake/model.js?v=8f3bdfc3b0"></script>
 <script src="../lithography/model.js?v=694ee77c66"></script>
 <script src="../development/model.js?v=0856a9851a"></script>
@@ -164,6 +168,6 @@
 <script src="../dryetch/model.js?v=a3e5dd44fd"></script>
 <script src="../fourpoint/model.js?v=95e6dd96d9"></script>
 <script src="model.js?v=6ad2edf5c4"></script>
-<script src="widget.js?v=124b49cf75"></script>
+<script src="widget.js?v=2fdd1a64cd"></script>
 </body>
 </html>

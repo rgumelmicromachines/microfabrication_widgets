@@ -809,7 +809,8 @@
     play: 'Play', pause: 'Pause', prev: 'Back', next: 'Next', steps: 'All steps', chars: 'Characteristics',
     full: 'Enlarge figure', exitFull: 'Close',
     tour: 'Guided tour', explore: 'Explore', speed: 'Speed',
-    showMe: 'Show me', right: 'Right.', wrong: 'Not quite – watch what happens.', todo: 'Your turn – use the sliders', reached: '✓ Done',
+    showMe: 'Show me', right: 'Right.', wrong: 'Not quite – watch what happens.', todo: 'Not done yet', reached: '✓ Done',
+    needAsk: 'Your turn: choose an answer', needGoal: 'Your turn: move the sliders',
     free: 'Explore mode – every slider is yours. Change parameters and watch what happens.',
     locked: 'set by the tour', lockedHint: 'Sliders marked “set by the tour” follow the current step. Switch to <b>Explore</b> to set them yourself.',
     source: 'Sources & model notes',
@@ -935,7 +936,7 @@
     },
     /** Most points a lesson with the given tour steps can give. */
     lessonMax: steps => steps.reduce((a, st) => a + (st.ask ? POINTS.right : st.goal ? POINTS.solved : 0), 0) + (steps.some(st => st.ask || st.goal) ? POINTS.tour : 0),
-    empty: () => ({ v: 1, off: false, steps: {}, need: {}, src: {}, game: { best: 0, runs: 0, first: false, docs: false, scrap: false }, ach: {} }),
+    empty: () => ({ v: 1, off: false, mute: false, steps: {}, need: {}, src: {}, game: { best: 0, runs: 0, first: false, docs: false, scrap: false }, ach: {} }),
     /** Apply one event to the state (in place). Returns the points gained by it.
         { type: 'need', slug, n } – the lesson has n scoring steps;
         { type: 'step', slug, i, kind: 'right' | 'wrong' | 'solved' | 'hint' } – the better result of a step is kept;
@@ -996,9 +997,33 @@
     if (ev.slug && !wasDone && progress.lessonDone(st, ev.slug)) toast('Guided tour finished', `+${POINTS.tour} points`);
     fresh.forEach(a => toast(`Achievement: ${a.title}`, a.text, a));
     const r0 = progress.rank(progress.total(st) - gained), r1 = progress.rank(progress.total(st));
-    if (r1.index > r0.index) toast(`New rank: ${r1.name}`, r1.next ? `${r1.next - progress.total(st)} points to ${r1.nextName}` : 'The highest rank.');
+    const ranked = r1.index > r0.index;
+    if (ranked) toast(`New rank: ${r1.name}`, r1.next ? `${r1.next - progress.total(st)} points to ${r1.nextName}` : 'The highest rank.');
+    const big = ranked || fresh.length > 0 || (ev.slug && !wasDone && progress.lessonDone(st, ev.slug));
+    if (!st.mute && (big || gained > 0) && ev.type !== 'need') chime(big ? 'badge' : 'point');
+    if (gained > 0) { const chip = document.querySelector('.progress-chip'); if (chip) { chip.classList.remove('is-bump'); void chip.offsetWidth; chip.classList.add('is-bump'); } }
     return gained;
   };
+  /** Short synthesised sounds (no audio files): a soft tick for points, a three-note chime for a badge, a finished tour
+      or a new rank. Only after a click of the reader (browsers allow sound then), never when muted or hidden. */
+  let audio = null;
+  function chime(kind) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      audio = audio || new AC();
+      if (audio.state === 'suspended') audio.resume();
+      const t0 = audio.currentTime, notes = kind === 'badge' ? [[659.25, 0], [987.77, 0.11], [1318.5, 0.22]] : [[880, 0]];
+      for (const [f, dt] of notes) {
+        const o = audio.createOscillator(), g = audio.createGain(), len = kind === 'badge' ? 0.55 : 0.16;
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + dt);
+        g.gain.exponentialRampToValueAtTime(kind === 'badge' ? 0.12 : 0.07, t0 + dt + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + len);
+        o.connect(g); g.connect(audio.destination); o.start(t0 + dt); o.stop(t0 + dt + len + 0.02);
+      }
+    } catch (e) { /* no sound: fine */ }
+  }
   let toastBox = null;
   const badge = (a, on = true) => `<span class="badge${on ? ' is-on' : ''}" data-family="${a.family}" aria-hidden="true"><span>${escH(a.mark)}</span></span>`;
   function toast(title, text, a) {
@@ -1006,7 +1031,7 @@
     const t = document.createElement('div'); t.className = 'mfw-toast';
     t.innerHTML = `${a ? badge(a) : ''}<div><b>${escH(title)}</b><span>${escH(text)}</span></div>`;
     toastBox.appendChild(t);
-    setTimeout(() => t.remove(), 6000);
+    setTimeout(() => { t.classList.add('is-leaving'); setTimeout(() => t.remove(), 400); }, 7000);
   }
   /** Header chip, hub section and tile marks – redrawn after every change. */
   progress.refresh = () => {
@@ -1051,11 +1076,12 @@
         </ul>
         <ul class="ach-grid">${ACHIEVEMENTS.map(a => `<li class="ach${st.ach[a.id] ? ' is-on' : ''}">${badge(a, !!st.ach[a.id])}<div><b>${escH(a.title)}</b><span>${escH(a.text)}</span><small>${st.ach[a.id] ? 'earned ' + st.ach[a.id] : 'not yet'}</small></div></li>`).join('')}</ul>
         <p class="progress-how">A prediction in a guided tour gives ${POINTS.right} points if it is right and ${POINTS.wrong} if not; a task solved with the sliders gives ${POINTS.solved}, with “Show me” ${POINTS.hint}; a finished tour adds ${POINTS.tour}. The lithography run counts with its best score.</p>
-        <p class="progress-actions"><button type="button" data-act="hide">Hide points and badges</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
+        <p class="progress-actions"><button type="button" data-act="sound" aria-pressed="${!st.mute}">Sound: ${st.mute ? 'off' : 'on'}</button> <button type="button" data-act="hide">Hide points and badges</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
     }
     sec.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
       const s2 = progress.load(), act = b.getAttribute('data-act');
       if (act === 'reset') { if (!window.confirm('Delete all points and badges stored in this browser?')) return; progress.save(progress.empty()); }
+      else if (act === 'sound') { s2.mute = !s2.mute; progress.save(s2); if (!s2.mute) chime('badge'); }
       else { s2.off = act === 'hide'; progress.save(s2); }
       progress.refresh();
       widgets.forEach(w => w._tourPoints && w._tourPoints());
@@ -1078,10 +1104,10 @@
     if (cur) {
       let open = {};
       try { open = JSON.parse(store.get('mfw-cards') || '{}') || {}; } catch (e) { open = {}; }
-      document.querySelectorAll('.article > .card:not(.refs):not(#report)').forEach((card, i) => {
+      document.querySelectorAll('.article > .card:not(#report), .card[data-fold]').forEach((card, i) => {
         const h = card.querySelector(':scope > h2');
         if (!h || card.querySelector(':scope > .card-body')) return;
-        const kind = card.classList.contains('tasks') ? 'tasks' : /limit/i.test(h.textContent) ? 'limits' : 'card' + i;
+        const kind = card.classList.contains('tasks') ? 'tasks' : card.classList.contains('refs') ? 'refs' : /limit/i.test(h.textContent) ? 'limits' : card.id || card.className.replace(/\s+/g, '-') + i;
         const body = el('div', 'card-body');
         while (h.nextSibling) body.appendChild(h.nextSibling);
         card.appendChild(body);
@@ -1093,7 +1119,7 @@
           card.classList.toggle('is-collapsed', !on); body.hidden = !on; btn.setAttribute('aria-expanded', String(on));
           if (on) { renderMath(body); body.querySelectorAll('.tex-display[data-done]').forEach(fitDisplay); }
         };
-        set(!!open[kind]);
+        set(kind in open ? !!open[kind] : card.getAttribute('data-fold') === 'open');
         btn.addEventListener('click', () => { open[kind] = body.hidden; store.set('mfw-cards', JSON.stringify(open)); set(open[kind]); });
       });
     }
@@ -1128,7 +1154,7 @@
       const link = (p, dir) => (p ? `<a class="pager-${dir}" href="${href(p)}"><small>${dir === 'prev' ? 'Previous' : 'Next'} · ${p.no} ${escH(p.topic)}</small><span>${escH(p.title)}</span></a>`
         : `<a class="pager-${dir} pager-hub" href="${root}index.html"><small>${dir === 'prev' ? 'Previous' : 'Next'}</small><span>Contents</span></a>`);
       nav.innerHTML = link(prev, 'prev') + link(next, 'next');
-      app.insertAdjacentElement('afterend', nav);
+      (document.querySelector('main .article') || app).insertAdjacentElement('afterend', nav);   // after the cards: the way on is at the end
     }
     // footer: work-in-progress note and the suggestion link (lesson pages get one, the overview has its own)
     let foot = document.querySelector('.footer');
@@ -1444,12 +1470,16 @@
         return g > 0 ? ` +${g} points` : '';
       };
       this._goalFn = null; this._goalReached = null; box.innerHTML = '';
+      // a marked line says that the reader has to act here, and what the step is worth
+      const need = (label, pts) => { const e = el('p', 'mfw-need', box); e.innerHTML = `<b>${label}</b>${this.slug && progress.on() ? `<span>${pts}</span>` : ''}`; return e; };
       if (st.ask) {
         const q = st.ask, was = this._answers && this._answers[i], answered = opt.instant || was !== undefined;
         el('p', 'mfw-q', box).innerHTML = richToHTML(resolveText(q.q, this.values));
+        const needEl = need(S.needAsk, `${POINTS.right} points if right, ${POINTS.wrong} if not`);
         const opts = el('div', 'mfw-opts', box), verdict = el('p', 'mfw-verdict', box);
         const btns = q.options.map(o => { const b = el('button', 'mfw-opt', opts); b.type = 'button'; b.innerHTML = richToHTML(o); return b; });
         const mark = k => {
+          needEl.hidden = true;
           btns.forEach((b, j) => { b.disabled = true; b.classList.toggle('is-right', j === q.correct); b.classList.toggle('is-wrong', j === k && k !== q.correct); });
           if (k !== undefined) verdict.textContent = k === q.correct ? S.right : S.wrong;
         };
@@ -1470,9 +1500,10 @@
       caption(!opt.instant);
       if (st.goal) {
         el('p', 'mfw-q', box).innerHTML = richToHTML(resolveText(st.task, this.values));
+        const needEl = need(S.needGoal, `${POINTS.solved} points, ${POINTS.hint} with “${S.showMe}”`);
         const row = el('div', 'mfw-taskrow', box), status = el('span', 'mfw-status', row, S.todo);
         let show = null;
-        const reached = () => { this._goalFn = null; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.hidden = true; explain(); solved(); };
+        const reached = () => { this._goalFn = null; needEl.hidden = true; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.hidden = true; explain(); solved(); };
         if (st.solution) {
           show = el('button', 'mfw-showme', row, S.showMe); show.type = 'button';
           show.addEventListener('click', () => { this._hinted.add(i); this.animate(st.solution, 2); });
@@ -1862,7 +1893,14 @@
       this.figCol.classList.toggle('is-pinned', !!wide && this.figCol.offsetHeight + 66 + 12 <= window.innerHeight);
     }
     _markStep(i) {
-      (this.dots || []).forEach((b, j) => { if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('is-done', this._solved.has(j)); });
+      const got = this.slug && progress.on() ? (progress.load().steps[this.slug] || {}) : null, all = this.cfg.steps || [];
+      (this.dots || []).forEach((b, j) => {
+        if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+        b.classList.toggle('is-done', this._solved.has(j));
+        const open = !!got && !!(all[j].ask || all[j].goal) && !(j in got);
+        b.classList.toggle('has-points', open);
+        b.title = (all[j].name || '') + (open ? ` – ${all[j].ask ? POINTS.right : POINTS.solved} points to collect` : '');
+      });
       (this.chips || []).forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('is-done', j < i); });
       const steps = this.cfg.steps || [];
       if (!this.countN || !steps[i]) return;

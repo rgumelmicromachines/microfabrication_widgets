@@ -271,6 +271,10 @@ Built by `MFW.chars(rows)`: columns Parameter · Symbol · Value · Unit under a
 ### Lesson tiles (overview)
 A 16:9 miniature of the lesson's real figure (light and dark versions, swapped by theme) in a strong-rule frame, then number and title, then one sentence in ink-2. Hover darkens the frame to ink and underlines the title.
 
+## Page order
+
+A lesson reads top to bottom as: title and one-paragraph lede, the figure with its panel, then one column of folding sections (equations, exercises, limitations, references; closed at first, top rule in the module colour), then the links to the previous and next lesson. The process game puts the game first and its work order in the first folding section, open by default (`data-fold="open"` on a card).
+
 ## Module colours
 
 Added 2026-11-28 at the owner's request, to give the pages more colour without touching the figures. One hue per module (`--m-base`, `--m-substrate`, `--m-litho`, `--m-doping`, `--m-films`, `--m-etch`, `--m-metal`, `--m-char`, `--m-game` in `assets/mfw.css`, light and dark values from the figure palette, each at least 4.5:1 on its ground). `data-module` on `<body>` (lesson pages) or on a module section (contents page) sets `--mod`.
@@ -281,7 +285,7 @@ It is not used for body text, links, sliders, buttons or anything inside a figur
 
 ## Progress panel
 
-Points, ranks and badges are a layer the reader can switch off. Badges are round medallions filled with the colour of their family (a module, the process game, or oxide blue for the general ones) and carry a mark of letters or digits; a badge not yet earned is a dashed outline. No emoji, no glyph icons.
+Points, ranks and badges are a layer the reader can switch off. A new badge, a finished tour and a new rank are announced by a pop-up in the lower right corner (the one element with a shadow, because it floats over the page) and by a short synthesised chime; a point gives a soft tick and a flash of the header chip. Sound can be switched off in the progress panel. Where the reader has to act, a filled tag in the module colour says so (“Your turn”, “Your input”) together with what the step is worth; never use a coloured side stripe for this. Badges are round medallions filled with the colour of their family (a module, the process game, or oxide blue for the general ones) and carry a mark of letters or digits; a badge not yet earned is a dashed outline. No emoji, no glyph icons.
 
 ## Do's and Don'ts
 

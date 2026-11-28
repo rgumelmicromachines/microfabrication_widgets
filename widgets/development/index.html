@@ -8,7 +8,7 @@
 <meta name="description" content="Interactive development of a positive photoresist: Dill exposure kinetics, Mack development rate, resist profile of a line, contrast curve, dark erosion and the attack of developers on aluminium.">
 <script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
 <link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../assets/mfw.css?v=38cdd2b1f3">
+<link rel="stylesheet" href="../../assets/mfw.css?v=84a96b1213">
 </head>
 <body>
 <header class="site-header">
@@ -21,7 +21,7 @@
 <main class="page">
   <div class="page-head">
     <h1>Development: from exposure dose to resist profile</h1>
-    <p class="lede">The exposure only changes the chemistry of the resist. The developer turns that change into a profile – how much dose and how much time does a line of the right width need?</p>
+    <p class="lede">The exposure only changes the chemistry of the resist; the developer turns that change into a profile. This page shows how much dose and how much time a line of the right width needs.</p>
   </div>
 
   <div id="app"></div>
@@ -58,9 +58,9 @@
         <li>Which dose at 365 nm leaves half of the PAC at the surface of an AZ 1500 resist? How much is left after 100 mJ/cm²?
           <details><summary>Answer</summary><span class="tex">E = \ln 2 / C = 0.693/0.0239 = 29\ \mathrm{mJ/cm^2}</span>. After 100 mJ/cm²: <span class="tex">m = e^{-2.39} = 0.092</span>.</details></li>
         <li>An unexposed 1.2 µm film absorbs with <span class="tex">A + B</span>, a fully bleached one with <span class="tex">B</span> only. Which fraction of the 365 nm light reaches the substrate in each case?
-          <details><summary>Answer</summary>Unexposed: <span class="tex">e^{-(1.0133+0.2177)\cdot 1.2} = 0.23</span>. Bleached: <span class="tex">e^{-0.2177\cdot 1.2} = 0.77</span>. The film becomes more transparent while it is exposed, so the bottom catches up – but it always lags behind the surface.</details></li>
+          <details><summary>Answer</summary>Unexposed: <span class="tex">e^{-(1.0133+0.2177)\cdot 1.2} = 0.23</span>. Bleached: <span class="tex">e^{-0.2177\cdot 1.2} = 0.77</span>. The film becomes more transparent while it is exposed, so the bottom catches up, although it always stays behind the surface.</details></li>
         <li>Use the 70 °C parameter set. Calculate <span class="tex">a</span> and the development rate for <span class="tex">m = 0.3</span>, <span class="tex">m = 0.61</span> and <span class="tex">m = 0.8</span>.
-          <details><summary>Answer</summary><span class="tex">a = \tfrac{7}{5}\cdot 0.39^6 = 0.0049</span>. Rates: 53 nm/s, 23 nm/s and 0.86 nm/s. Between <span class="tex">m = 0.8</span> and <span class="tex">m = 0.61</span> the rate changes 27-fold: the resist behaves almost like a switch.</details></li>
+          <details><summary>Answer</summary><span class="tex">a = \tfrac{7}{5}\cdot 0.39^6 = 0.0049</span>. Rates: 53 nm/s, 23 nm/s and 0.86 nm/s. Between <span class="tex">m = 0.8</span> and <span class="tex">m = 0.61</span> the rate changes 27-fold.</details></li>
         <li>How much unexposed resist do the two parameter sets remove in a 60 s development, and what is the ratio <span class="tex">r_{max}/r_{min}</span>?
           <details><summary>Answer</summary>70 °C: <span class="tex">0.15\cdot 60 = 9\ \mathrm{nm}</span>, ratio 367. 100 °C: <span class="tex">2\cdot 60 = 120\ \mathrm{nm}</span>, ratio 10.5.</details></li>
         <li>In Explore mode (1.2 µm, 70 °C set, 60 s) read <span class="tex">D_0</span> and <span class="tex">D_c</span> from the contrast curve and calculate γ. Then set the thickness to 2 µm. What happens to the dose to clear?
@@ -99,9 +99,9 @@
   </section>
 </main>
 
-<script src="../../assets/mfw.js?v=7f4b69d370"></script>
+<script src="../../assets/mfw.js?v=cb5072b610"></script>
 <script src="../lithography/model.js?v=694ee77c66"></script>
 <script src="model.js?v=0856a9851a"></script>
-<script src="widget.js?v=492d6362a0"></script>
+<script src="widget.js?v=a204034874"></script>
 </body>
 </html>

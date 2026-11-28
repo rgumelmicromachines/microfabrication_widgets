@@ -541,14 +541,14 @@ section('Alignment and overlay (linear model, two marks, thermal run-out)');
   check('page task 1: 30 µrad in degrees', 30e-6 * 180 / Math.PI, 0.0017, 0.02);
   check('page task 1: 30 µrad at the edge (µm)', AL.maxError({ Tx: 0, Ty: 0, th: 30, M: 0 }), 1.5, 1e-12);
   // thermal run-out (the table on the page: µm over 100 mm per kelvin)
-  check('soda-lime vs Si: run-out over 100 mm per K (µm)', AL.runout('soda', 1) * 100 * 1e-3, 0.65, 0.01);
+  check('soda-lime vs Si: run-out over 100 mm per K (µm)', AL.runout('soda', 1) * 100 * 1e-3, 0.64, 0.01);
   check('borosilicate vs Si (µm)', AL.runout('boro', 1) * 100 * 1e-3, 0.065, 1e-9);
   check('fused silica vs Si (µm)', AL.runout('fs', 1) * 100 * 1e-3, -0.21, 0.02);
-  check('page task 3: soda-lime, 2 K (ppm)', AL.runout('soda', 2), 12.9, 2e-3);
+  check('page task 3: soda-lime, 2 K (ppm)', AL.runout('soda', 2), 12.8, 2e-3);
   check('page task 3: at 45 mm (µm)', AL.runout('soda', 2) * 45e-3, 0.58, 0.01);
   check('page task 3: fused silica, 2 K (ppm)', AL.runout('fs', 2), -4.1, 0.01);
   check('page task 3: fused silica at 45 mm (µm)', Math.abs(AL.runout('fs', 2)) * 45e-3, 0.19, 0.03);
-  check('tour “Run-out”: soda-lime, 3 K, at the edge (µm)', AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('soda', 3) }), 0.97, 0.01);
+  check('tour “Run-out”: soda-lime, 3 K, at the edge (µm)', AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('soda', 3) }), 0.96, 0.01);
   truth('tour “Run-out”: only borosilicate brings the error below 0.2 µm at 3 K', AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('boro', 3) }) < 0.2 && AL.maxError({ Tx: 0, Ty: 0, th: 0, M: AL.runout('fs', 3) }) > 0.2);
   // reading error and mark separation
   check('page task 4: ±0.5 µm at marks 60 mm apart (µrad)', AL.rotationFromReading(0.5, 60), 17, 0.02);
@@ -591,7 +591,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   check('page task 4: mean width when just cleared (µm)', G.lineSection(5, 500, 500).wEff, 5 - 2 * Math.PI / 4 * 0.5, 2e-3);
   check('page task 4: after 20 % more etch (µm)', G.lineSection(5, 500, 600).wEff, 3.96, 0.005);
   truth('before the film clears the lines are still connected', !G.lineSection(5, 500, 499).cleared);
-  check('page task 5: run-out at 45 mm (µm)', ALm.runout('soda', 1.5) * 45e-3, 0.44, 0.01);
+  check('page task 5: run-out at 45 mm (µm)', ALm.runout('soda', 1.5) * 45e-3, 0.43, 0.01);
   check('page task 6: four-point probe V/I (mΩ)', 1000 * run({}).VI, 11.7, 0.005);
   // a careful run is on target
   { const r = run({}); check('careful run: mean resistance (Ω)', r.Rmean, G.R_TARGET, 0.02); check('careful run: all 69 dies pass', r.count.pass, 69, 0, 0);

@@ -44,7 +44,7 @@
       <div class="tex-display">M = (\alpha_{mask} - \alpha_{Si})\,\Delta T</div>
       <table>
         <tr><th>Material</th><th>α (10⁻⁶ K⁻¹)</th><th>Run-out against Si per kelvin, over 100 mm</th></tr>
-        <tr><td>Soda-lime glass</td><td>9.06</td><td>+0.65 µm</td></tr>
+        <tr><td>Soda-lime glass</td><td>9.0</td><td>+0.64 µm</td></tr>
         <tr><td>Borosilicate glass</td><td>3.25</td><td>+0.065 µm</td></tr>
         <tr><td>Fused silica</td><td>0.54</td><td>−0.21 µm</td></tr>
         <tr><td>Silicon</td><td>2.6</td><td>–</td></tr>
@@ -63,7 +63,7 @@
         <li>Two marks are 70 mm apart. The operator reads <span class="tex">\Delta x = +0.1</span>, <span class="tex">\Delta y = -0.4\ \mathrm{\mu m}</span> at the left mark and <span class="tex">\Delta x = +0.5</span>, <span class="tex">\Delta y = +0.3\ \mathrm{\mu m}</span> at the right one. Find shift, rotation and run-out.
           <details><summary>Answer</summary><span class="tex">T = (+0.3,\ -0.05)\ \mathrm{\mu m}</span>, <span class="tex">\theta = 0.7\ \mathrm{\mu m}/70\ \mathrm{mm} = 10\ \mathrm{\mu rad}</span>, <span class="tex">M = 0.4\ \mathrm{\mu m}/70\ \mathrm{mm} = 5.7\ \mathrm{ppm}</span>. Shift and rotation can be removed on the stage; the run-out stays.</details></li>
         <li>A soda-lime mask and the wafer are both 2 K warmer than at the first exposure. What is the run-out, and how far off is a die 45 mm from the centre after perfect alignment of shift and rotation? Repeat for fused silica.
-          <details><summary>Answer</summary>Soda-lime: <span class="tex">M = (9.06 - 2.6)\cdot 2 = 12.9\ \mathrm{ppm}</span>, <span class="tex">12.9\times10^{-6}\cdot 45\ \mathrm{mm} = 0.58\ \mathrm{\mu m}</span>. Fused silica: <span class="tex">M = (0.54 - 2.6)\cdot 2 = -4.1\ \mathrm{ppm}</span>, 0.19 µm in the opposite direction, because fused silica expands less than silicon. Borosilicate glass (3.25) would leave 0.06 µm.</details></li>
+          <details><summary>Answer</summary>Soda-lime: <span class="tex">M = (9.0 - 2.6)\cdot 2 = 12.8\ \mathrm{ppm}</span>, <span class="tex">12.8\times10^{-6}\cdot 45\ \mathrm{mm} = 0.58\ \mathrm{\mu m}</span>. Fused silica: <span class="tex">M = (0.54 - 2.6)\cdot 2 = -4.1\ \mathrm{ppm}</span>, 0.19 µm in the opposite direction, because fused silica expands less than silicon. Borosilicate glass (3.25) would leave 0.06 µm.</details></li>
         <li>The marks can be set to ±0.5 µm each. Which rotation can remain unnoticed with the marks 60 mm apart, and which with 20 mm? What does each mean at the edge of a 100 mm wafer?
           <details><summary>Answer</summary>60 mm: <span class="tex">2\cdot0.5/60 = 17\ \mathrm{\mu rad}</span>, 0.83 µm at the edge. 20 mm: 50 µrad, 2.5 µm at the edge.</details></li>
         <li>An overlay budget has three independent random contributions of 0.5, 0.5 and 0.65 µm and one systematic run-out of 1.0 µm at the wafer edge. What enclosure covers them?
@@ -76,7 +76,7 @@
       <ul>
         <li>The overlay model is the standard linear one: shift, a small rotation about the wafer centre and one scale factor. It leaves out different scales in x and y, skew, distortion of the mask or of the wafer (for example bow after film deposition) and every higher-order term. The formula for the largest error follows from the model; it was derived for this page and not taken from a textbook.</li>
         <li>Thermal run-out assumes that mask and wafer are at the same temperature, both ΔT away from the temperature at which the first layer was printed, and that both expand freely. A mask heated by the lamp or a wafer clamped on a chuck behaves differently.</li>
-        <li>The expansion coefficients of the glasses are mean values for 20–300 °C from manufacturer data; near room temperature they are slightly lower. The value for soda-lime glass varies with its composition, and its source document was not re-opened for this page. For borosilicate glass the MicroChemicals table gives a rounded 3 where the SCHOTT data sheet gives 3.25.</li>
+        <li>The expansion coefficients of the glasses are mean values for 20–300 °C from manufacturer data; near room temperature they are slightly lower. The value for soda-lime glass is that of a certified standard flat glass, (9.00 ± 0.1) × 10⁻⁶ K⁻¹; it varies with the composition (9.1 and 9.4 in the data sheets of two other soda-lime glasses), and for 20–100 °C the same standard glass gave 8.24. For borosilicate glass the MicroChemicals table gives a rounded 3 where the SCHOTT data sheet gives 3.25.</li>
         <li>Typical figures for a manual contact aligner, not modelled as random numbers here: alignment accuracy below 0.5 µm in the specification table of one mask aligner (SUSS MJB4), while its brochure text says 1 µm; verniers are read to about ±0.5 µm.</li>
         <li>The pad covers the window when the window lies fully under it. Whether a partly covered window still gives a good contact depends on the process and is not judged.</li>
         <li>The dies are evaluated at their centres on a 10 mm grid out to 45 mm from the wafer centre.</li>
@@ -89,18 +89,19 @@
       <h2>References</h2>
       <ul>
         <li>Y. Okada, Y. Tokumaru, “Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K”, <i>J. Appl. Phys.</i> 56 (1984) 314.</li>
-        <li>SCHOTT AG, technical data of BOROFLOAT 33 and of soda-lime glass (mean linear thermal expansion, 20–300 °C).</li>
+        <li>SCHOTT AG, technical data of BOROFLOAT 33, AR-GLAS and B 270 (mean linear thermal expansion, 20–300 °C).</li>
+        <li>Deutsche Glastechnische Gesellschaft, “Standard Glass 1 of the DGG – soda-lime-silica glass”, round-robin results, section 4 (thermal expansion after DIN 52328), <a href="https://hvg-dgg.de/fileadmin/Standard_Glass_1_DGG.pdf">hvg-dgg.de</a>.</li>
         <li>MicroChemicals GmbH, application note “Glass wafers: borosilicate”, Table 2 (thermal expansion of fused silica 0.54, borosilicate glass 3 × 10⁻⁶ K⁻¹), <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a>.</li>
         <li>SÜSS MicroTec, <i>MJB4 Mask Aligner</i>, product brochure 02/2010 (alignment accuracy, printing modes).</li>
-        <li>R. F. Lyon, “Simplified design rules for VLSI layouts”, <i>Lambda</i> magazine, first quarter 1981, <a href="http://dicklyon.com/tech/Scans/DesignRules-Lyon.pdf">scan at dicklyon.com</a> (contact 2λ with 1λ surround).</li>
-        <li>University of Washington, EE 527 Microfabrication, notes on photolithography and alignment (alignment marks, verniers read to ±0.5 µm).</li>
+        <li>R. F. Lyon, “Simplified design rules for VLSI layouts”, <i>1981 Southcon Professional Program</i> (Atlanta, 13–15 January 1981), session 3, paper 3/4, <a href="http://dicklyon.com/tech/Scans/DesignRules-Lyon.pdf">scan at dicklyon.com</a> (contact cut 2λ square with 1λ of surround).</li>
+        <li>T.-C. Chen, lecture notes “EE 527 Microfabrication”, lecture 14, University of Washington, winter 2014, <a href="https://faculty.washington.edu/tcchen/EE527Wi/Notes/EE%20527%2002-07%202014.pdf">faculty.washington.edu</a> (alignment targets and cross hairs, contact alignment within ±1 µm, verniers read to ±0.5 µm).</li>
       </ul>
     </article>
   </section>
 </main>
 
 <script src="../../assets/mfw.js?v=bed35777b0"></script>
-<script src="model.js?v=b3a2e34d48"></script>
-<script src="widget.js?v=238f53d3a1"></script>
+<script src="model.js?v=fadbe4dc0f"></script>
+<script src="widget.js?v=993e41698f"></script>
 </body>
 </html>

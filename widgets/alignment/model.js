@@ -19,16 +19,22 @@
      fused silica  0.54 × 10⁻⁶ /K  (MicroChemicals GmbH, application note "Glass wafers: borosilicate", Table 2)
      borosilicate  3.25 × 10⁻⁶ /K  (SCHOTT BOROFLOAT 33, technical data, mean value 20–300 °C; the MicroChemicals
                                    table gives a rounded 3)
-     soda-lime     9.06 × 10⁻⁶ /K  (SCHOTT technical glass data, mean value 20–300 °C)
+     soda-lime     9.0 × 10⁻⁶ /K   (Deutsche Glastechnische Gesellschaft, "Standard Glass 1 of the DGG", a soda-lime-
+                                   silica flat glass: round robin after DIN 52328, α(20 °C, 300 °C) = (9.00 ± 0.1) × 10⁻⁶ /K;
+                                   one laboratory measured 8.24 for 20–100 °C. Manufacturer values for other soda-lime
+                                   glasses: 9.1 (SCHOTT AR-GLAS), 9.4 (SCHOTT B 270), both 20–300 °C)
      silicon       2.6 × 10⁻⁶ /K   (Y. Okada, Y. Tokumaru, J. Appl. Phys. 56 (1984) 314, at room temperature)
 
    Vernier: a main scale of pitch p on one layer and a scale of pitch p − r on the other. With the offset n·r the
    n-th pair of bars lines up, so the offset is read in steps of r (geometry). Verniers on contact aligners are
-   typically read to ±0.5 µm (University of Washington, EE 527 Microfabrication, notes on photolithography).
+   typically read to ±0.5 µm (T.-C. Chen, lecture notes "EE 527 Microfabrication", lecture 14, University of
+   Washington, winter 2014: fine alignment with 10 µm targets and 20 µm cross hairs is "usually adequate for contact
+   alignment to within ±1 µm"; verniers determine the alignment error to ±0.5 µm).
 
    Design rule: a pad that overlaps a contact window by the enclosure e on every side still covers the window while
    |Δx| ≤ e and |Δy| ≤ e. Scalable λ rules use a contact of 2λ with a surround of 1λ (R. F. Lyon, "Simplified design
-   rules for VLSI layouts", Lambda magazine, first quarter 1981).
+   rules for VLSI layouts", 1981 Southcon Professional Program, session 3, paper 3/4: contacts "a minimum of 2λ square",
+   "1λ of DIF or POL surrounding a CUT").
 
    Independent random contributions σ_i add as variances: σ = √(Σ σ_i²) (root sum of squares). */
 (function (root, factory) {
@@ -38,7 +44,7 @@
   'use strict';
   const ALPHA_SI = 2.6;                                                     // ppm/K (Okada & Tokumaru 1984)
   const MASKS = {                                                           // ppm/K
-    soda: { name: 'Soda-lime glass', alpha: 9.06 },
+    soda: { name: 'Soda-lime glass', alpha: 9.0 },
     boro: { name: 'Borosilicate glass', alpha: 3.25 },
     fs: { name: 'Fused silica', alpha: 0.54 },
   };

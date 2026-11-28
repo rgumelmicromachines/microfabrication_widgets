@@ -918,8 +918,23 @@
     { id: 'game-docs', title: 'By the book', text: 'Enter all nine document values of the lithography run correctly.' },
     { id: 'game-scrap', title: 'Scrap bin', text: 'Use three new wafers in one lithography run.' },
   ];
+  // rank by total points: a cleanroom career. A finished tour is worth roughly 60–100 points.
+  const RANKS = [[0, 'Visitor'], [100, 'Trainee'], [300, 'Operator'], [600, 'Technician'], [1000, 'Process engineer'], [1400, 'Senior process engineer']];
+  // what stands on each badge (letters and digits only) and which colour family it takes
+  const MARK = { 'first-answer': '?', 'first-tour': '1', 'clean-tour': '0×', 'own-hands': '10', 'five-tours': '5', 'all-tours': 'all', 'fine-print': 'i',
+    'game-done': 'run', 'game-90': '90', 'game-first': '1st', 'game-docs': '9/9', 'game-scrap': '×3' };
+  ACHIEVEMENTS.forEach(a => { a.mark = a.module ? String(a.module.no) : MARK[a.id]; a.family = a.module ? a.module.id : a.id.startsWith('game-') ? 'game' : 'all'; });
   const progress = {
-    POINTS, ACHIEVEMENTS,
+    POINTS, ACHIEVEMENTS, RANKS,
+    /** Rank for a number of points: { name, from, next (points of the next rank or null), nextName, frac (0…1 towards it) }. */
+    rank(total) {
+      let i = 0;
+      while (i < RANKS.length - 1 && total >= RANKS[i + 1][0]) i++;
+      const nx = RANKS[i + 1];
+      return { index: i, name: RANKS[i][1], from: RANKS[i][0], next: nx ? nx[0] : null, nextName: nx ? nx[1] : null, frac: nx ? (total - RANKS[i][0]) / (nx[0] - RANKS[i][0]) : 1 };
+    },
+    /** Most points a lesson with the given tour steps can give. */
+    lessonMax: steps => steps.reduce((a, st) => a + (st.ask ? POINTS.right : st.goal ? POINTS.solved : 0), 0) + (steps.some(st => st.ask || st.goal) ? POINTS.tour : 0),
     empty: () => ({ v: 1, off: false, steps: {}, need: {}, src: {}, game: { best: 0, runs: 0, first: false, docs: false, scrap: false }, ach: {} }),
     /** Apply one event to the state (in place). Returns the points gained by it.
         { type: 'need', slug, n } – the lesson has n scoring steps;
@@ -979,55 +994,73 @@
     progress.save(st);
     progress.refresh();
     if (ev.slug && !wasDone && progress.lessonDone(st, ev.slug)) toast('Guided tour finished', `+${POINTS.tour} points`);
-    fresh.forEach(a => toast(`Achievement: ${a.title}`, a.text));
+    fresh.forEach(a => toast(`Achievement: ${a.title}`, a.text, a));
+    const r0 = progress.rank(progress.total(st) - gained), r1 = progress.rank(progress.total(st));
+    if (r1.index > r0.index) toast(`New rank: ${r1.name}`, r1.next ? `${r1.next - progress.total(st)} points to ${r1.nextName}` : 'The highest rank.');
     return gained;
   };
   let toastBox = null;
-  function toast(title, text) {
+  const badge = (a, on = true) => `<span class="badge${on ? ' is-on' : ''}" data-family="${a.family}" aria-hidden="true"><span>${escH(a.mark)}</span></span>`;
+  function toast(title, text, a) {
     if (!toastBox) { toastBox = document.createElement('div'); toastBox.className = 'mfw-toasts'; toastBox.setAttribute('role', 'status'); toastBox.setAttribute('aria-live', 'polite'); document.body.appendChild(toastBox); }
     const t = document.createElement('div'); t.className = 'mfw-toast';
-    t.innerHTML = `<b>${escH(title)}</b><span>${escH(text)}</span>`;
+    t.innerHTML = `${a ? badge(a) : ''}<div><b>${escH(title)}</b><span>${escH(text)}</span></div>`;
     toastBox.appendChild(t);
     setTimeout(() => t.remove(), 6000);
   }
   /** Header chip, hub section and tile marks – redrawn after every change. */
   progress.refresh = () => {
     if (!isBrowser) return;
-    const st = progress.load(), total = progress.total(st), got = Object.keys(st.ach).length;
+    const st = progress.load(), total = progress.total(st), got = Object.keys(st.ach).length, rk = progress.rank(total);
     const inWidgets = /\/widgets\/[^/]+\/(?:index\.html)?$/.test(location.pathname.replace(/\\/g, '/')), root = inWidgets ? '../../' : '';
     const header = document.querySelector('.site-header');
     let chip = header && header.querySelector('.progress-chip');
     if (header && !chip) { chip = document.createElement('a'); chip.className = 'progress-chip'; header.insertBefore(chip, header.querySelector('.theme-toggle')); }
     if (chip) {
       chip.hidden = !!st.off; chip.href = `${root}index.html#progress`;
-      chip.innerHTML = `<b>${total}</b> pts<span class="chip-ach"> · ${got}/${ACHIEVEMENTS.length}</span>`;
-      chip.setAttribute('aria-label', `Your progress: ${total} points, ${got} of ${ACHIEVEMENTS.length} achievements`); chip.title = chip.getAttribute('aria-label');
+      chip.innerHTML = `<span class="chip-rank">${escH(rk.name)}</span><b>${total}</b><span class="chip-pts">pts</span><span class="chip-bar"><i style="width:${Math.round(100 * rk.frac)}%"></i></span>`;
+      chip.setAttribute('aria-label', `Your progress: ${rk.name}, ${total} points, ${got} of ${ACHIEVEMENTS.length} badges`); chip.title = chip.getAttribute('aria-label');
     }
     document.querySelectorAll('a.tile').forEach(t => {
       const slug = (t.getAttribute('href') || '').replace(/\/index\.html$/, '').split('/').pop();
       let m = t.querySelector('.tile-prog');
       if (!m) { m = document.createElement('span'); m.className = 'tile-prog'; t.appendChild(m); }
-      const pts = slug === GAME_SLUG ? st.game.best : progress.lessonPoints(st, slug);
+      const game = slug === GAME_SLUG, pts = game ? st.game.best : progress.lessonPoints(st, slug), done = game ? st.game.runs > 0 : progress.lessonDone(st, slug);
+      const frac = game ? st.game.best / 100 : st.need[slug] ? progress.stepsDone(st, slug) / st.need[slug] : 0;
       m.hidden = !!st.off || !(pts > 0 || progress.stepsDone(st, slug));
-      m.textContent = slug === GAME_SLUG ? `Best run ${st.game.best} of 100` : `${progress.lessonDone(st, slug) ? 'Tour finished' : `Tour ${progress.stepsDone(st, slug)} of ${st.need[slug] || '?'}`} · ${pts} pts`;
+      m.classList.toggle('is-done', done);
+      m.innerHTML = `<span class="tile-bar"><i style="width:${Math.round(100 * Math.min(1, frac))}%"></i></span><span>${game ? `Best run ${st.game.best} of 100` : `${done ? 'Tour finished' : `Tour ${progress.stepsDone(st, slug)} of ${st.need[slug] || '?'}`} · ${pts} pts`}</span>`;
     });
     const sec = document.getElementById('progress');
     if (!sec) return;
     if (st.off) {
-      sec.innerHTML = '<h2 class="contents-h" id="progress-h">Your progress <span>hidden</span></h2><p class="progress-sum">Points and achievements are switched off. What you collected before is kept.</p><p class="progress-actions"><button type="button" data-act="show">Show points and achievements</button></p>';
+      sec.innerHTML = '<h2 class="contents-h" id="progress-h">Your progress <span>hidden</span></h2><p class="progress-how">Points, ranks and badges are switched off. What you collected before is kept.</p><p class="progress-actions"><button type="button" data-act="show">Show points and badges</button></p>';
     } else {
+      const tours = progress.toursDone(st);
       sec.innerHTML = `<h2 class="contents-h" id="progress-h">Your progress <span>stored only in this browser</span></h2>
-        <p class="progress-sum"><b>${total}</b> points · ${progress.toursDone(st)} of ${LESSONS.length} guided tours finished · ${got} of ${ACHIEVEMENTS.length} achievements${st.game.runs ? ` · best lithography run ${st.game.best} of 100` : ''}</p>
+        <div class="rank-card">
+          <div class="rank-now"><small>Rank</small><b>${escH(rk.name)}</b></div>
+          <div class="rank-bar" role="img" aria-label="${rk.next ? `${total} of ${rk.next} points to ${rk.nextName}` : `${total} points, highest rank`}"><i style="width:${Math.round(100 * rk.frac)}%"></i></div>
+          <div class="rank-next">${rk.next ? `<b>${total}</b> / ${rk.next} points · next: ${escH(rk.nextName)}` : `<b>${total}</b> points · highest rank`}</div>
+          <ol class="rank-steps">${RANKS.map(([n, name], i) => `<li class="${i <= rk.index ? 'is-on' : ''}"><span>${n}</span>${escH(name)}</li>`).join('')}</ol>
+        </div>
+        <ul class="stat-row">
+          <li><b>${tours}</b><span>of ${LESSONS.length} guided tours finished</span></li>
+          <li><b>${got}</b><span>of ${ACHIEVEMENTS.length} badges</span></li>
+          <li><b>${st.game.runs ? st.game.best : '–'}</b><span>best lithography run, of 100</span></li>
+        </ul>
+        <ul class="ach-grid">${ACHIEVEMENTS.map(a => `<li class="ach${st.ach[a.id] ? ' is-on' : ''}">${badge(a, !!st.ach[a.id])}<div><b>${escH(a.title)}</b><span>${escH(a.text)}</span><small>${st.ach[a.id] ? 'earned ' + st.ach[a.id] : 'not yet'}</small></div></li>`).join('')}</ul>
         <p class="progress-how">A prediction in a guided tour gives ${POINTS.right} points if it is right and ${POINTS.wrong} if not; a task solved with the sliders gives ${POINTS.solved}, with “Show me” ${POINTS.hint}; a finished tour adds ${POINTS.tour}. The lithography run counts with its best score.</p>
-        <ul class="ach-grid">${ACHIEVEMENTS.map(a => `<li class="ach${st.ach[a.id] ? ' is-on' : ''}"><b>${escH(a.title)}</b><span>${escH(a.text)}</span><small>${st.ach[a.id] ? 'earned ' + st.ach[a.id] : 'not yet'}</small></li>`).join('')}</ul>
-        <p class="progress-actions"><button type="button" data-act="hide">Hide points and achievements</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
+        <p class="progress-actions"><button type="button" data-act="hide">Hide points and badges</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
     }
     sec.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
       const s2 = progress.load(), act = b.getAttribute('data-act');
-      if (act === 'reset') { if (!window.confirm('Delete all points and achievements stored in this browser?')) return; progress.save(progress.empty()); }
+      if (act === 'reset') { if (!window.confirm('Delete all points and badges stored in this browser?')) return; progress.save(progress.empty()); }
       else { s2.off = act === 'hide'; progress.save(s2); }
       progress.refresh();
+      widgets.forEach(w => w._tourPoints && w._tourPoints());
     }));
+    widgets.forEach(w => w._tourPoints && w._tourPoints());
   };
   /** Lesson menu in the header, previous / next links under the widget and the page footer – inserted on every page. */
   function buildNav() {
@@ -1039,6 +1072,31 @@
     const href = p => `${root}widgets/${p.slug}/index.html`;
     const idx = PAGES.findIndex(p => p.slug === slug);
     const cur = PAGES[idx];
+    if (cur) document.body.setAttribute('data-module', cur.module.id);
+    // lesson pages: equations, exercises and limitations fold away under their headings; the reader's choice is
+    // remembered per kind of card, so equations opened once are open on every lesson
+    if (cur) {
+      let open = {};
+      try { open = JSON.parse(store.get('mfw-cards') || '{}') || {}; } catch (e) { open = {}; }
+      document.querySelectorAll('.article > .card:not(.refs):not(#report)').forEach((card, i) => {
+        const h = card.querySelector(':scope > h2');
+        if (!h || card.querySelector(':scope > .card-body')) return;
+        const kind = card.classList.contains('tasks') ? 'tasks' : /limit/i.test(h.textContent) ? 'limits' : 'card' + i;
+        const body = el('div', 'card-body');
+        while (h.nextSibling) body.appendChild(h.nextSibling);
+        card.appendChild(body);
+        const btn = el('button', 'card-toggle'); btn.type = 'button';
+        btn.innerHTML = `<span>${h.innerHTML}</span>${icon('down')}`;
+        h.textContent = ''; h.appendChild(btn);
+        body.id = `card-body-${i}`; btn.setAttribute('aria-controls', body.id);
+        const set = on => {
+          card.classList.toggle('is-collapsed', !on); body.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+          if (on) { renderMath(body); body.querySelectorAll('.tex-display[data-done]').forEach(fitDisplay); }
+        };
+        set(!!open[kind]);
+        btn.addEventListener('click', () => { open[kind] = body.hidden; store.set('mfw-cards', JSON.stringify(open)); set(open[kind]); });
+      });
+    }
     const menu = el('div', 'lesson-menu');
     const btn = el('button', 'lesson-btn', menu);
     btn.type = 'button'; btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-haspopup', 'true');
@@ -1094,7 +1152,7 @@
       const frag = document.createDocumentFragment();
       MODULES.forEach(md => {
         const sec = el('section', 'module', frag);
-        sec.setAttribute('aria-labelledby', 'module-' + md.id);
+        sec.setAttribute('aria-labelledby', 'module-' + md.id); sec.setAttribute('data-module', md.id);
         sec.innerHTML = `<h3 class="module-title" id="module-${md.id}"><span class="module-no">Module ${md.no}</span>${escH(md.title)}</h3>`;
         const g = el('div', 'grid', sec);
         md.pages.forEach(p => {
@@ -1249,6 +1307,7 @@
         if (document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; if (this.readoutEl) { this.readoutEl._mfwH = 0; this.readoutEl.style.minHeight = ''; } this._primeReadout(); });
       }
       if (this.interactive && this.slug) progress.emit({ type: 'need', slug: this.slug, n: steps.filter(s => s.ask || s.goal).length });
+      this._tourPoints();
       this._keys();
       this._applyMode();
       this._primeReadout();
@@ -1575,6 +1634,7 @@
             b.addEventListener('click', () => this.goStep(i));
             return b;
           });
+          this.tourPtsEl = el('div', 'mfw-tourpts', this.tourBox);
           this.taskEl = el('div', 'mfw-task', this.tourBox);
           this.taskEl.setAttribute('aria-live', 'polite');
         } else {
@@ -1718,6 +1778,15 @@
     _themeChanged() {
       this.texEls.forEach(it => { it.d.style.color = col(it.t.color || 'text'); });
       this.dirty = true;
+    }
+    /** Points collected in this lesson's tour, as a bar under the step dots. */
+    _tourPoints() {
+      const e = this.tourPtsEl;
+      if (!e || !this.slug) return;
+      const st = progress.load(), max = progress.lessonMax(this.cfg.steps || []), pts = progress.lessonPoints(st, this.slug);
+      e.hidden = !!st.off || !max;
+      const html = `<span class="tp-bar"><i style="width:${Math.round(100 * Math.min(1, pts / (max || 1)))}%"></i></span><span class="tp-txt"><b>${pts}</b> of ${max} points in this tour</span>`;
+      if (e._html !== html) { e.innerHTML = html; e._html = html; }
     }
     _setExplain(html) { if (this._explain === html) return; this._explain = html; this.explainEl.innerHTML = richToHTML(html); this._holdHeight(this.explainEl); }
     /** Grow-only min-height: live numbers in a text may change its line count, but must not push the controls around. */

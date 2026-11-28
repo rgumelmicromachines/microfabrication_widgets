@@ -389,31 +389,115 @@ body.mfw-noscroll { overflow: hidden; }
   .module { grid-template-columns: 1fr; }
 }
 
-/* ---------------------------------------------------------------- progress: points and achievements (this browser only) */
-.progress-chip { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 10px; border: 1px solid var(--band-line); color: var(--band-text); text-decoration: none; font-size: 14.5px; font-stretch: 88%; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.progress-chip:hover { border-color: var(--band-text); }
+/* ---------------------------------------------------------------- module colours
+   One hue per module, taken from the figure palette (each ≥ 4.5:1 on its ground). It marks where a lesson belongs:
+   the stripe under the header band, lesson and figure numbers, card rules, progress bars and badges. Body text,
+   links and controls stay ink and oxide blue; the figures keep the material colours. */
+:root, :root[data-theme="light"] {
+  --m-base: #7446a0; --m-substrate: #99335c; --m-litho: #8f6500; --m-doping: #c2372b; --m-films: #00846a;
+  --m-etch: #3b8526; --m-metal: #b35a00; --m-char: #0072b2; --m-game: #b02f9c; --m-all: #1d3f73;
+  --on-mod: #ffffff;
+}
+:root[data-theme="dark"] {
+  --m-base: #b189c6; --m-substrate: #ec92ab; --m-litho: #f7d96f; --m-doping: #ff8080; --m-films: #5cd0b3;
+  --m-etch: #83c167; --m-metal: #f0ac5f; --m-char: #58c4dd; --m-game: #dc75cd; --m-all: #a8c3ee;
+  --on-mod: #0d1116;
+}
+:root { --mod: var(--accent); }
+[data-module="base"], [data-family="base"] { --mod: var(--m-base); }
+[data-module="substrate"], [data-family="substrate"] { --mod: var(--m-substrate); }
+[data-module="litho"], [data-family="litho"] { --mod: var(--m-litho); }
+[data-module="doping"], [data-family="doping"] { --mod: var(--m-doping); }
+[data-module="films"], [data-family="films"] { --mod: var(--m-films); }
+[data-module="etch"], [data-family="etch"] { --mod: var(--m-etch); }
+[data-module="metal"], [data-family="metal"] { --mod: var(--m-metal); }
+[data-module="char"], [data-family="char"] { --mod: var(--m-char); }
+[data-module="game"], [data-family="game"] { --mod: var(--m-game); }
+[data-family="all"] { --mod: var(--m-all); }
+/* lesson pages */
+body[data-module] .site-header { box-shadow: inset 0 -4px 0 var(--mod); }
+body[data-module] .lesson-btn .lesson-no { background: var(--mod); color: var(--on-mod); }
+body[data-module] .page-head h1 { padding-left: 14px; border-left: 6px solid var(--mod); }
+body[data-module] .card { border-top-color: var(--mod); }
+body[data-module] .mfw-figno { color: var(--mod); }
+body[data-module] .mfw .mfw-dot.is-done { border-color: var(--mod); background: color-mix(in srgb, var(--mod) 14%, transparent); color: var(--text); }
+body[data-module] .mfw .mfw-dot[aria-current="step"] { border-color: var(--mod); background: var(--mod); color: var(--on-mod); }
+body[data-module] .mfw-tab[aria-selected="true"] { border-bottom-color: var(--mod); }
+/* contents page */
+.module[data-module] { border-left: 6px solid var(--mod); padding-left: 18px; }
+.module[data-module] .module-no, .module[data-module] .tile-no { color: var(--mod); }
+.module[data-module] .tile:hover .tile-thumb { border-color: var(--mod); }
+.module[data-module] .tile-thumb { border-bottom: 3px solid var(--mod); }
+
+/* ---------------------------------------------------------------- cards that fold away under their heading (lesson pages) */
+.card-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 2px 0; margin: 0; font: inherit; color: inherit; text-align: left; background: none; border: 0; cursor: pointer; }
+.card-toggle .icon { flex: none; width: 22px; height: 22px; color: var(--mod); transition: transform .15s ease-out; }
+.card-toggle[aria-expanded="true"] .icon { transform: rotate(180deg); }
+.card-toggle:hover span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.card-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.card.is-collapsed { padding-bottom: 12px; }
+.card.is-collapsed h2 { margin-bottom: 0; }
+@media (prefers-reduced-motion: reduce) { .card-toggle .icon { transition: none; } }
+@media print { .card-body[hidden] { display: block !important; } .card-toggle .icon { display: none; } }
+
+/* ---------------------------------------------------------------- progress: points, ranks and badges (this browser only) */
+.progress-chip { display: inline-grid; grid-template-columns: auto auto auto; align-items: baseline; gap: 0 5px; padding: 4px 10px 3px; border: 1px solid var(--band-line); color: var(--band-text); text-decoration: none; font-size: 14.5px; font-stretch: 88%; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.progress-chip:hover { border-color: var(--band-text); text-decoration: none; }
 .progress-chip b { font-weight: 700; }
-.progress-chip .chip-ach { color: var(--band-muted); }
-.mfw-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 90; display: grid; gap: 8px; max-width: min(360px, calc(100vw - 32px)); pointer-events: none; }
-.mfw-toast { display: grid; gap: 2px; padding: 10px 14px; background: var(--surface); color: var(--text); border: 1px solid var(--text); border-left: 6px solid var(--accent); font-size: 15px; line-height: 1.35; }
+.progress-chip .chip-rank { color: var(--band-muted); margin-right: 3px; }
+.progress-chip .chip-pts { color: var(--band-muted); }
+.chip-bar { grid-column: 1 / -1; height: 3px; margin-top: 2px; background: var(--band-line); }
+.chip-bar i { display: block; height: 100%; background: #f7d96f; }
+.badge { flex: none; position: relative; display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px dashed var(--line-strong); color: var(--muted); font-size: 14px; font-weight: 700; font-stretch: 80%; font-variant-numeric: tabular-nums; line-height: 1; }
+.badge.is-on { border: 2px solid var(--mod); background: var(--mod); color: var(--on-mod); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--on-mod) 35%, transparent); }
+.mfw-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 90; display: grid; gap: 8px; max-width: min(380px, calc(100vw - 32px)); pointer-events: none; }
+.mfw-toast { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface); color: var(--text); border: 1px solid var(--text); border-left: 6px solid var(--m-all); font-size: 15px; line-height: 1.35; animation: mfw-toast-in .25s ease-out; }
+.mfw-toast > div { display: grid; gap: 2px; }
 .mfw-toast b { font-weight: 700; font-stretch: 92%; }
 .mfw-toast span { color: var(--text-2); }
-.progress { margin: 34px 0 34px; scroll-margin-top: 64px; }
-.progress-sum { margin: 12px 0 4px; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
-.progress-sum b { font-size: 22px; color: var(--accent); }
-.progress-how { margin: 0 0 12px; max-width: 86ch; font-size: 15px; color: var(--muted); }
-.ach-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 24px; border-top: 1px solid var(--line-strong); }
-.ach { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 1px 10px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 14.5px; line-height: 1.35; }
-.ach::before { content: ""; grid-row: 1 / span 3; width: 12px; height: 12px; margin-top: 4px; border: 1.5px dashed var(--line-strong); }
+.mfw-toast .badge span { color: inherit; }
+@keyframes mfw-toast-in { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .mfw-toast { animation: none; } }
+.progress { margin: 34px 0; scroll-margin-top: 64px; }
+.rank-card { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 6px 24px; align-items: end; margin: 14px 0 6px; }
+.rank-now { display: grid; }
+.rank-now small { font-size: 13.5px; font-weight: 650; font-stretch: 82%; color: var(--muted); }
+.rank-now b { font-size: clamp(24px, 2.4vw, 32px); line-height: 1.1; font-weight: 700; font-stretch: 90%; color: var(--m-all); }
+.rank-bar { height: 14px; background: var(--surface-2); border: 1px solid var(--line-strong); }
+.rank-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--m-base), var(--m-substrate), var(--m-doping), var(--m-metal), var(--m-litho), var(--m-etch), var(--m-films), var(--m-char)); background-size: 100vw 100%; }
+.rank-next { grid-column: 2; font-size: 15px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.rank-next b { color: var(--text); }
+.rank-steps { grid-column: 1 / -1; list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; font-stretch: 85%; color: var(--muted); }
+.rank-steps li span { margin-right: 5px; font-variant-numeric: tabular-nums; }
+.rank-steps li.is-on { color: var(--text); font-weight: 650; }
+.stat-row { list-style: none; margin: 16px 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 24px; }
+.stat-row li { display: flex; align-items: baseline; gap: 10px; padding: 8px 0 8px 12px; border-left: 6px solid var(--m-films); font-size: 15px; color: var(--text-2); }
+.stat-row li:nth-child(2) { border-left-color: var(--m-doping); }
+.stat-row li:nth-child(3) { border-left-color: var(--m-game); }
+.stat-row b { font-size: 26px; line-height: 1; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.progress-how { margin: 14px 0 0; max-width: 86ch; font-size: 15px; color: var(--muted); }
+.ach-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0 28px; border-top: 1px solid var(--line-strong); }
+.ach { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 14.5px; line-height: 1.35; }
+.ach > div { display: grid; gap: 1px; min-width: 0; }
 .ach b { font-size: 15.5px; font-weight: 650; font-stretch: 90%; color: var(--text-2); }
 .ach small { font-size: 13px; font-stretch: 85%; }
 .ach.is-on { color: var(--text-2); }
-.ach.is-on::before { border: 1.5px solid var(--accent); background: var(--accent); }
 .ach.is-on b { color: var(--text); }
-.ach.is-on small { color: var(--accent); font-weight: 650; }
+.ach.is-on small { font-weight: 650; color: var(--text); }
 .progress-actions { margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .progress-actions button { font: inherit; font-size: 14.5px; padding: 6px 12px; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 0; cursor: pointer; }
 .progress-actions button:hover { border-color: var(--text); }
-.tile-prog { font-size: 13.5px; font-weight: 650; font-stretch: 85%; color: var(--accent); font-variant-numeric: tabular-nums; }
-@media (max-width: 640px) { .progress-chip .chip-ach { display: none; } .progress-chip { padding: 4px 8px; font-size: 13.5px; } }
+.tile-prog { display: grid; gap: 4px; font-size: 13.5px; font-weight: 650; font-stretch: 85%; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.tile-bar, .tp-bar { display: block; height: 5px; background: var(--surface-2); border: 1px solid var(--line); }
+.tile-bar i, .tp-bar i { display: block; height: 100%; background: var(--mod); }
+.mfw-tourpts { display: grid; gap: 3px; font-size: 13.5px; font-stretch: 88%; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mfw-tourpts b { color: var(--text); }
+.mfw-verdict, .mfw-status.is-done { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .progress-chip .chip-rank, .progress-chip .chip-pts { display: none; }
+  .progress-chip { padding: 4px 8px 3px; font-size: 13.5px; }
+  .rank-card { grid-template-columns: 1fr; } .rank-next { grid-column: 1; }
+  .module[data-module] { padding-left: 12px; }
+  body[data-module] .page-head h1 { padding-left: 10px; border-left-width: 5px; }
+}
 @media print { .progress-chip, .mfw-toasts { display: none !important; } }

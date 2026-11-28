@@ -146,7 +146,7 @@ components:
 
 **Creative North Star: "The Component Datasheet"**
 
-Each lesson reads like a page of a component datasheet: a numbered figure plate, its characteristics table and the controls that drive it. The system is flat, square and ruled. Structure comes from hairlines and two-pixel ink rules, not from boxes, cards or shadows. One deep oxide blue carries the shell band, links, focus and selected values; every other hue on the page belongs to the figure's materials. The figure is the product and the page stays out of its way.
+Each lesson reads like a page of a component datasheet: a numbered figure plate, its characteristics table and the controls that drive it. The system is flat, square and ruled. Structure comes from hairlines and two-pixel ink rules, not from boxes, cards or shadows. One deep oxide blue carries the shell band, links, focus and selected values. Each module has one further hue, taken from the figure palette, that marks where a lesson belongs (see Module colours); every other hue on the page belongs to the figure's materials. The figure is the product and the page stays out of its way.
 
 Density is that of a reference document: 17px body text, tabular figures everywhere numbers appear, condensed Archivo for numbers, labels and table heads. Navigation and controls stay ordinary web controls (buttons, tabs, a select, range sliders) dressed in the datasheet's type, rules and palette. Light theme is the default; a dark theme maps the same roles onto a blue-black ground.
 
@@ -271,6 +271,18 @@ Built by `MFW.chars(rows)`: columns Parameter · Symbol · Value · Unit under a
 ### Lesson tiles (overview)
 A 16:9 miniature of the lesson's real figure (light and dark versions, swapped by theme) in a strong-rule frame, then number and title, then one sentence in ink-2. Hover darkens the frame to ink and underlines the title.
 
+## Module colours
+
+Added 2026-11-28 at the owner's request, to give the pages more colour without touching the figures. One hue per module (`--m-base`, `--m-substrate`, `--m-litho`, `--m-doping`, `--m-films`, `--m-etch`, `--m-metal`, `--m-char`, `--m-game` in `assets/mfw.css`, light and dark values from the figure palette, each at least 4.5:1 on its ground). `data-module` on `<body>` (lesson pages) or on a module section (contents page) sets `--mod`.
+
+It is used for: the 4 px stripe under the header band, the lesson-number chip, the bar beside the page title, the top rule of the cards, the figure number, the step dots and the selected tab of a tour, the bar beside a module and under its thumbnails on the contents page, progress bars, and the badges. Text set on a module colour uses `--on-mod`.
+
+It is not used for body text, links, sliders, buttons or anything inside a figure.
+
+## Progress panel
+
+Points, ranks and badges are a layer the reader can switch off. Badges are round medallions filled with the colour of their family (a module, the process game, or oxide blue for the general ones) and carry a mark of letters or digits; a badge not yet earned is a dashed outline. No emoji, no glyph icons.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -285,7 +297,8 @@ A 16:9 miniature of the lesson's real figure (light and dark versions, swapped b
 ### Don't:
 - **Don't** round corners, use pills or add shadows to page chrome.
 - **Don't** add uppercase kickers, eyebrows or a marketing hero; the overview opens with a factual title.
-- **Don't** introduce a second chrome accent; other hues belong to the figure.
+- **Don't** introduce a second chrome accent beyond the module colours; other hues belong to the figure. Module colours never carry body text, links or controls.
+- **Don't** round corners – with two exceptions that are round by nature: the numbered step dots of a tour and the badges of the progress panel.
 - **Don't** put the caption or panel controls on top of the drawing; they go below the plate or in the panel. The only on-plate controls are the small corner stage-bar toggles a figure may need.
 - **Don't** use glyph or emoji icons; use the line-icon set.
 

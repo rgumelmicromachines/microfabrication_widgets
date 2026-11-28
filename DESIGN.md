@@ -219,7 +219,7 @@ The canvas does not read CSS. It draws through palette roles `C.*` (LIGHT and DA
 - **Lesson, below 1180px with at least 560px of height:** one column; the figure sticks under the band (top 48px) at 42svh height with a hairline under it, and the panel scrolls beneath it.
 - **Article below the figure:** auto-fit columns of at least 460px, column gap 48px; sections are separated by their 2px ink top rule, not by boxes. A section can span the full width.
 - **Pager:** two halves between hairlines, the right half divided by a vertical hairline; stacks to one column at 640px.
-- **Overview:** a factual H1 and one sentence (no hero), then "Contents" with a count of lessons and modules ("23 lessons in 9 modules" on 2026-11-28) over a 2px ink rule, then one row per module: module heading in a 150-220px left column, a grid of lesson tiles (auto-fill, min 280px, gap 22px 26px) on the right; the heading goes above the grid at 720px and below.
+- **Overview:** a factual H1 and one sentence (no hero), then "Contents" with a count of lessons and modules ("24 lessons in 9 modules" on 2026-11-28) over a 2px ink rule, then one row per module: module heading in a 150-220px left column, a grid of lesson tiles (auto-fill, min 280px, gap 22px 26px) on the right; the heading goes above the grid at 720px and below.
 - **Breakpoints:** 1180px (two-column lesson), 1100px (band drops the "Interactive" subtitle), 720px (module rows stack), 640px (phone: smaller body, crumb hidden, wordmark replaced by the µ mark, pager stacks), height 560px (sticky figure on narrow screens).
 - **Spacing rhythm:** 4 / 8 / 12 / 16 / 28 / 48px, with 18-22px for page head and module padding.
 

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Negative resist · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png?v=3">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png?v=3">
+<meta name="description" content="Interactive negative photoresist: exposure without bleaching, cross-linking in the post-exposure bake, depth of cross-linking against dose and thickness, undercut profiles for lift-off.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=dd1dab85f7">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Lithography</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Negative resist: what the light hits, stays</h1>
+    <p class="lede">Exposure and a bake cross-link the resin, and the developer removes the rest. The resist does not bleach, so the light fades with depth: thick films need far more dose, and the weakly exposed resist near the substrate gives an undercut.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Without bleaching the absorption stays constant during the exposure, and the dose at depth <span class="tex">z</span> follows the Beer–Lambert law with the penetration depth <span class="tex">\delta = 1/\alpha</span>:</p>
+      <div class="tex-display">E(z) = E\,e^{-z/\delta}</div>
+      <p>Model of this page: after a bake of completeness <span class="tex">\kappa</span> the resist is cross-linked, and insoluble, where <span class="tex">\kappa E(z) \ge E_{gel}</span>. Under a large exposed area that holds down to</p>
+      <div class="tex-display">z_x = \delta\,\ln\frac{\kappa E}{E_{gel}}, \qquad \text{so a film of thickness } d \text{ needs } E \ge \frac{E_{gel}}{\kappa}\,e^{d/\delta}</div>
+      <p>Each additional penetration depth of thickness multiplies the dose by <span class="tex">e \approx 2.7</span>.</p>
+      <table>
+        <tr><th></th><th>Positive (DNQ)</th><th>Image reversal</th><th>Negative (cross-linking)</th></tr>
+        <tr><td>stays after development</td><td>unexposed resist</td><td>resist of the first exposure</td><td>exposed resist</td></tr>
+        <tr><td>steps after coating</td><td>exposure, development</td><td>exposure, reversal bake, flood exposure, development</td><td>exposure, post-exposure bake, development</td></tr>
+        <tr><td>bleaching</td><td>yes</td><td>yes</td><td>no</td></tr>
+        <tr><td>sidewalls</td><td>positive slope</td><td>undercut, set by dose and development time</td><td>undercut, set by dose and thickness</td></tr>
+        <tr><td>heat</td><td>softens and rounds</td><td>softens and rounds</td><td>keeps its shape; hard to strip</td></tr>
+      </table>
+      <p class="note">After the MicroChemicals application notes on negative resists, image reversal resists and the post-exposure bake.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>The penetration depth is 1.5 µm. Which share of the surface dose reaches the bottom of a 3 µm film, and of a 6 µm film?
+          <details><summary>Answer</summary><span class="tex">e^{-3/1.5} = 14\ \%</span> and <span class="tex">e^{-6/1.5} = 1.8\ \%</span>.</details></li>
+        <li>How many gel doses cross-link a 3 µm film down to the substrate (δ = 1.5 µm, complete bake), and how many a 5 µm film?
+          <details><summary>Answer</summary><span class="tex">e^{3/1.5} = 7.4</span> and <span class="tex">e^{5/1.5} = 28</span>. Two more micrometres cost almost four times the dose.</details></li>
+        <li>A film is exposed with 8 gel doses, but the bake only reaches κ = 0.5. How deep is it cross-linked (δ = 1.5 µm)?
+          <details><summary>Answer</summary><span class="tex">z_x = 1.5\ \mathrm{\mu m}\cdot\ln(0.5\cdot 8) = 2.1\ \mathrm{\mu m}</span>. A 3 µm film then stands on soluble resist.</details></li>
+        <li>In Explore mode, expose a 3 µm film with 8 and with 60 gel doses. Why is the undercut similar although the lines are much wider at the higher dose?
+          <details><summary>Answer</summary>The dose shifts the whole boundary of the cross-linked region outwards. The undercut comes mainly from the ratio of the dose at the top to the dose at the bottom, <span class="tex">e^{d/\delta}</span>, which does not depend on the dose; the shape of the image at the line edge changes it a little.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>One sharp threshold, the gel dose, separates soluble from cross-linked resist, and the developer does not attack cross-linked resist at all. A real resist passes through weakly cross-linked states that erode in the developer, so real edges are less sharp and thin lines lose some height after a low dose or a cool bake.</li>
+        <li>Doses are given in gel doses and development times in units of the time that clears an unexposed film. No gel dose in mJ/cm² and no development rate were found for a specific resist; take both from the data sheet of the resist you use.</li>
+        <li>The bake is one number, the completeness κ of the cross-linking. The application notes give the trend (hotter or longer: more cross-linking; typically 110–125 °C for 1–2 minutes) but no kinetics. Thermal cross-linking of unexposed resist in a bake that is too hot, which slows the development, is not modelled.</li>
+        <li>The penetration depth of 1–2 µm is the range given for the AZ nLOF 2000 series at the i-line. Chemically amplified resists for very thick films absorb far less and are not described by this range.</li>
+        <li>The mask image is that of equal lines and spaces in hard contact, with diffraction calculated for one plane in the middle of the resist; it does not change with depth. The small ripples at the bottom of the cross-linked region are the diffraction ripples of that image. Scattering in the resist and reflection from the substrate are left out.</li>
+        <li>The development front moves at one rate through soluble resist (eikonal equation) on a grid of 41 × 33 points. The cross-section is to scale; the mask and the light arrows are schematic.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>MicroChemicals GmbH, application notes “Processing of AZ negative resists”, “Post exposure bake”, “Composition and properties of AZ and TI photoresists” and “Optical parameters of photoresists”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (chemistry, no bleaching, penetration depth, bake, dose effects, stripping).</li>
+        <li>H. Zhao, “A fast sweeping method for eikonal equations”, <i>Math. Comp.</i> 74 (2005) 603.</li>
+        <li>The lessons <a href="../lithography/index.html">Lithography resolution</a> (mask image), <a href="../development/index.html">Development</a> (development front), <a href="../imagereversal/index.html">Image reversal</a> and <a href="../liftoff/index.html">Lift-off</a>.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=8b1c9716ef"></script>
+<script src="../lithography/model.js?v=694ee77c66"></script>
+<script src="../development/model.js?v=f245ea6660"></script>
+<script src="../imagereversal/model.js?v=15879c65e9"></script>
+<script src="model.js?v=5dd220a70f"></script>
+<script src="widget.js?v=3a4a547c96"></script>
+</body>
+</html>

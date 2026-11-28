@@ -88,7 +88,7 @@
 
   /** Numbers that describe the profile after the development time t. */
   function measure(R, t, positive = false) {
-    const e = edges(R, t), nz = R.nz;
+    const e = R.edges ? R.edges(t) : edges(R, t), nz = R.nz;                 // a model with a sharp boundary brings its own edge finder
     let jTip = -1, tip = 0;
     for (let j = 0; j <= nz; j++) if (e[j] > tip) { tip = e[j]; jTip = j; }
     const foot = e[nz];

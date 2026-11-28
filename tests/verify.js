@@ -314,6 +314,33 @@ section('Image reversal (Dill exposure, bake bookkeeping, flood exposure, Mack d
   check('page task 2: time for 30 % over-development (s)', 61 / 0.7, 87, 0.005);
 }
 
+// ------------------------------------------------------------------ negative resist
+section('Negative resist (Beer–Lambert dose, gel threshold, development front)');
+{ const NG = W('negative'), LIm = W('lithography');
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const NX = 41, NZ = 32;
+  const go = (o, tau = 1.5) => { const q = { hp: 4, d: 3, E: 8, kappa: 1, delta: 1.5, ...o }, xs = Array.from({ length: NX }, (_, i) => q.hp * i / (NX - 1));
+    const I = LIm.aerialImage({ mode: 'proximity', lambda: 0.365, hp: q.hp, xs, gap: 0, resist: q.d, collimation: 2 });
+    const R = NG.process({ I, X: q.hp, d: q.d, E: q.E, kappa: q.kappa, delta: q.delta, nz: NZ }); return { R, I, m: NG.measure(R, tau) }; };
+  check('depth of cross-linking: δ·ln(κE)', NG.depthX(8, 0.5, 1.5), 1.5 * Math.log(4), 1e-12);
+  check('dose for a depth inverts it', NG.depthX(NG.doseFor(4.2, 0.7, 1.3), 0.7, 1.3), 4.2, 1e-12);
+  truth('below the gel dose nothing is cross-linked', NG.depthX(0.9, 1, 1.5) === 0 && NG.depthX(8, 0.1, 1.5) === 0);
+  { const { R, I } = go({}); let bad = 0;
+    for (let j = 0; j <= NZ; j++) for (let i = 0; i < NX; i++) { const k = j * NX + i, e = 8 * Math.max(0, I[i]) * Math.exp(-j * 3 / NZ / 1.5); if (Math.abs(R.e[k] - e) > 1e-12 || R.g[k] !== (e >= 1 ? 1 : 0)) bad++; }
+    truth('dose field follows the Beer–Lambert law, threshold at one gel dose', bad === 0);
+    check('unexposed film is cleared after the time 1 (in units of d)', R.T[NZ * NX + NX - 1] / 3, 1, 0.01);
+    truth('cross-linked resist is never reached by the developer', Array.from(R.g).every((gk, k) => !gk || R.T[k] === Infinity)); }
+  truth('undercut: the line is wider at the top than at the substrate', go({}).m.under > 0.3 && !go({}).m.lifted);
+  truth('development time does not change a profile that is cross-linked to the substrate', Math.abs(go({}, 1.5).m.under - go({}, 3).m.under) < 1e-9);
+  truth('no bake: nothing stays', go({ kappa: 0 }).m.gone);
+  truth('5 µm film: 8 gel doses do not reach the substrate and the lines lift, 32 do', go({ d: 5 }, 2).m.lifted && !go({ d: 5, E: 32 }, 2).m.lifted && NG.doseFor(5, 1, 1.5) > 8 && NG.doseFor(5, 1, 1.5) < 32);
+  truth('more dose: wider lines, narrower openings (2 µm lines, 8 → 100 gel doses)', go({ hp: 2, E: 100 }).m.tip > go({ hp: 2 }).m.tip + 0.4 && go({ hp: 2, E: 100 }).m.wTop < 1);
+  truth('a weaker bake undercuts more and finally lifts the line', go({ kappa: 0.7 }).m.under > go({}).m.under && go({ kappa: 0.3 }).m.lifted);
+  check('page task 1: share at the bottom of 3 µm', Math.exp(-2), 0.14, 0.04); check('page task 1: of 6 µm', Math.exp(-4), 0.018, 0.02);
+  check('page task 2: gel doses for 3 µm', NG.doseFor(3, 1, 1.5), 7.4, 0.005); check('page task 2: for 5 µm', NG.doseFor(5, 1, 1.5), 28, 0.005);
+  check('page task 3: depth at κ = 0.5 (µm)', NG.depthX(8, 0.5, 1.5), 2.1, 0.01);
+}
+
 // ------------------------------------------------------------------ lift-off
 section('Lift-off (line-of-sight deposition into a resist opening)');
 { const LO = W('liftoff'), d2r = Math.PI / 180;
@@ -704,7 +731,7 @@ section('Progress: points and achievements (engine, kept in the browser)');
   { const s3 = P.empty(), lessons = MFWn.PAGES.filter(p => p.slug !== 'processgame');
     lessons.forEach(p => { P.record(s3, { type: 'need', slug: p.slug, n: 1 }); P.record(s3, { type: 'step', slug: p.slug, i: 1, kind: 'solved' }); });
     const e = P.earned(s3);
-    check('number of lessons with a tour', lessons.length, 22, 0, 0);
+    check('number of lessons with a tour', lessons.length, 23, 0, 0);
     truth('all tours → full process flow, five lessons, every module mark, own hands', e.includes('all-tours') && e.includes('five-tours') && e.includes('own-hands') && P.ACHIEVEMENTS.filter(a => a.module).every(a => e.includes(a.id)));
     check('one module mark per lesson module', P.ACHIEVEMENTS.filter(a => a.module).length, 8, 0, 0);
     truth('no game achievement without a run', !e.some(id => id.startsWith('game-'))); }

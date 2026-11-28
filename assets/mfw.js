@@ -896,7 +896,139 @@
   ].filter(m => m.pages.length);
   const PAGES = [];
   MODULES.forEach((m, i) => { m.no = i + 1; m.pages.forEach((p, j) => { p.topic = m.title; p.module = m; p.no = `${m.no}.${j + 1}`; PAGES.push(p); }); });
+
+  // ================================================================ progress: points and achievements
+  // Kept in this browser only (localStorage), never sent anywhere. Points come from the interactive tours – a
+  // prediction answered, a task solved with the sliders – and from the process game. The reader can hide all of it.
+  const POINTS = { right: 10, wrong: 3, solved: 15, hint: 5, tour: 20 };
+  const GAME_SLUG = 'processgame';
+  const LESSONS = PAGES.filter(p => p.slug !== GAME_SLUG);
+  const ACHIEVEMENTS = [
+    { id: 'first-answer', title: 'First prediction', text: 'Answer a prediction in any guided tour.' },
+    { id: 'first-tour', title: 'First wafer out', text: 'Finish every question and task of one guided tour.' },
+    { id: 'clean-tour', title: 'Clean run', text: 'Finish one tour with every prediction right and no “Show me”.' },
+    { id: 'own-hands', title: 'Own hands', text: 'Solve ten tasks with the sliders, without “Show me”.' },
+    { id: 'five-tours', title: 'Five lessons', text: 'Finish five guided tours.' },
+    { id: 'all-tours', title: 'Full process flow', text: 'Finish the guided tour of every lesson.' },
+    { id: 'fine-print', title: 'Fine print', text: 'Open “Sources & model notes” in five lessons.' },
+    ...MODULES.filter(m => m.pages.some(p => p.slug !== GAME_SLUG)).map(m => ({ id: 'mod-' + m.id, title: `${m.title}: module done`, text: `Finish every guided tour of module ${m.no}.`, module: m })),
+    { id: 'game-done', title: 'Lot released', text: 'Take a wafer through the lithography run to the electrical test.' },
+    { id: 'game-90', title: 'On target', text: 'Score 90 or more in the lithography run.' },
+    { id: 'game-first', title: 'First-pass yield', text: 'Score 80 or more with the first wafer, without strip and recoat.' },
+    { id: 'game-docs', title: 'By the book', text: 'Enter all nine document values of the lithography run correctly.' },
+    { id: 'game-scrap', title: 'Scrap bin', text: 'Use three new wafers in one lithography run.' },
+  ];
+  const progress = {
+    POINTS, ACHIEVEMENTS,
+    empty: () => ({ v: 1, off: false, steps: {}, need: {}, src: {}, game: { best: 0, runs: 0, first: false, docs: false, scrap: false }, ach: {} }),
+    /** Apply one event to the state (in place). Returns the points gained by it.
+        { type: 'need', slug, n } – the lesson has n scoring steps;
+        { type: 'step', slug, i, kind: 'right' | 'wrong' | 'solved' | 'hint' } – the better result of a step is kept;
+        { type: 'source', slug }; { type: 'game', score, reworks, scraps, docs (all document values right) }. */
+    record(st, ev) {
+      const before = progress.total(st);
+      if (ev.type === 'need') st.need[ev.slug] = ev.n;
+      else if (ev.type === 'step') {
+        const l = st.steps[ev.slug] || (st.steps[ev.slug] = {}), old = l[ev.i];
+        if (!old || POINTS[ev.kind] > POINTS[old]) l[ev.i] = ev.kind;
+      } else if (ev.type === 'source') st.src[ev.slug] = 1;
+      else if (ev.type === 'game') {
+        const g = st.game;
+        g.runs++; g.best = Math.max(g.best, ev.score);
+        if (ev.score >= 80 && !ev.reworks && !ev.scraps) g.first = true;
+        if (ev.docs) g.docs = true;
+        if (ev.scraps >= 3) g.scrap = true;
+      }
+      return progress.total(st) - before;
+    },
+    stepsDone: (st, slug) => Object.keys(st.steps[slug] || {}).length,
+    lessonDone: (st, slug) => st.need[slug] > 0 && progress.stepsDone(st, slug) >= st.need[slug],
+    lessonPoints: (st, slug) => Object.values(st.steps[slug] || {}).reduce((a, k) => a + POINTS[k], 0) + (progress.lessonDone(st, slug) ? POINTS.tour : 0),
+    total: st => Object.keys(st.steps).reduce((a, slug) => a + progress.lessonPoints(st, slug), 0) + st.game.best,
+    toursDone: st => LESSONS.filter(p => progress.lessonDone(st, p.slug)).length,
+    /** Ids of the achievements the state has earned. */
+    earned(st) {
+      const done = slug => progress.lessonDone(st, slug), kinds = Object.values(st.steps).flatMap(l => Object.values(l)), n = progress.toursDone(st), g = st.game;
+      const clean = Object.keys(st.steps).some(slug => done(slug) && Object.values(st.steps[slug]).every(k => k === 'right' || k === 'solved'));
+      const is = {
+        'first-answer': kinds.some(k => k === 'right' || k === 'wrong'), 'first-tour': n >= 1, 'clean-tour': clean,
+        'own-hands': kinds.filter(k => k === 'solved').length >= 10, 'five-tours': n >= 5, 'all-tours': n >= LESSONS.length,
+        'fine-print': Object.keys(st.src).length >= 5,
+        'game-done': g.runs >= 1, 'game-90': g.best >= 90, 'game-first': g.first, 'game-docs': g.docs, 'game-scrap': g.scrap,
+      };
+      return ACHIEVEMENTS.filter(a => (a.module ? a.module.pages.filter(p => p.slug !== GAME_SLUG).every(p => done(p.slug)) : is[a.id])).map(a => a.id);
+    },
+  };
   const escH = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const PKEY = 'mfw-progress';
+  progress.load = () => {
+    const st = progress.empty();
+    try { const raw = JSON.parse(store.get(PKEY) || 'null'); if (raw && raw.v === 1) { Object.assign(st, raw); st.game = { ...progress.empty().game, ...(raw.game || {}) }; } } catch (e) { /* damaged entry: start again */ }
+    return st;
+  };
+  progress.save = st => store.set(PKEY, JSON.stringify(st));
+  progress.on = () => !progress.load().off;
+  /** Record an event, save, refresh what the page shows and announce new achievements. Returns the points gained. */
+  progress.emit = ev => {
+    if (!isBrowser) return 0;
+    const st = progress.load();
+    if (st.off) return 0;
+    const wasDone = ev.slug ? progress.lessonDone(st, ev.slug) : true;
+    const gained = progress.record(st, ev), today = new Date().toISOString().slice(0, 10), fresh = [];
+    for (const id of progress.earned(st)) if (!st.ach[id]) { st.ach[id] = today; fresh.push(ACHIEVEMENTS.find(a => a.id === id)); }
+    progress.save(st);
+    progress.refresh();
+    if (ev.slug && !wasDone && progress.lessonDone(st, ev.slug)) toast('Guided tour finished', `+${POINTS.tour} points`);
+    fresh.forEach(a => toast(`Achievement: ${a.title}`, a.text));
+    return gained;
+  };
+  let toastBox = null;
+  function toast(title, text) {
+    if (!toastBox) { toastBox = document.createElement('div'); toastBox.className = 'mfw-toasts'; toastBox.setAttribute('role', 'status'); toastBox.setAttribute('aria-live', 'polite'); document.body.appendChild(toastBox); }
+    const t = document.createElement('div'); t.className = 'mfw-toast';
+    t.innerHTML = `<b>${escH(title)}</b><span>${escH(text)}</span>`;
+    toastBox.appendChild(t);
+    setTimeout(() => t.remove(), 6000);
+  }
+  /** Header chip, hub section and tile marks – redrawn after every change. */
+  progress.refresh = () => {
+    if (!isBrowser) return;
+    const st = progress.load(), total = progress.total(st), got = Object.keys(st.ach).length;
+    const inWidgets = /\/widgets\/[^/]+\/(?:index\.html)?$/.test(location.pathname.replace(/\\/g, '/')), root = inWidgets ? '../../' : '';
+    const header = document.querySelector('.site-header');
+    let chip = header && header.querySelector('.progress-chip');
+    if (header && !chip) { chip = document.createElement('a'); chip.className = 'progress-chip'; header.insertBefore(chip, header.querySelector('.theme-toggle')); }
+    if (chip) {
+      chip.hidden = !!st.off; chip.href = `${root}index.html#progress`;
+      chip.innerHTML = `<b>${total}</b> pts<span class="chip-ach"> · ${got}/${ACHIEVEMENTS.length}</span>`;
+      chip.setAttribute('aria-label', `Your progress: ${total} points, ${got} of ${ACHIEVEMENTS.length} achievements`); chip.title = chip.getAttribute('aria-label');
+    }
+    document.querySelectorAll('a.tile').forEach(t => {
+      const slug = (t.getAttribute('href') || '').replace(/\/index\.html$/, '').split('/').pop();
+      let m = t.querySelector('.tile-prog');
+      if (!m) { m = document.createElement('span'); m.className = 'tile-prog'; t.appendChild(m); }
+      const pts = slug === GAME_SLUG ? st.game.best : progress.lessonPoints(st, slug);
+      m.hidden = !!st.off || !(pts > 0 || progress.stepsDone(st, slug));
+      m.textContent = slug === GAME_SLUG ? `Best run ${st.game.best} of 100` : `${progress.lessonDone(st, slug) ? 'Tour finished' : `Tour ${progress.stepsDone(st, slug)} of ${st.need[slug] || '?'}`} · ${pts} pts`;
+    });
+    const sec = document.getElementById('progress');
+    if (!sec) return;
+    if (st.off) {
+      sec.innerHTML = '<h2 class="contents-h" id="progress-h">Your progress <span>hidden</span></h2><p class="progress-sum">Points and achievements are switched off. What you collected before is kept.</p><p class="progress-actions"><button type="button" data-act="show">Show points and achievements</button></p>';
+    } else {
+      sec.innerHTML = `<h2 class="contents-h" id="progress-h">Your progress <span>stored only in this browser</span></h2>
+        <p class="progress-sum"><b>${total}</b> points · ${progress.toursDone(st)} of ${LESSONS.length} guided tours finished · ${got} of ${ACHIEVEMENTS.length} achievements${st.game.runs ? ` · best lithography run ${st.game.best} of 100` : ''}</p>
+        <p class="progress-how">A prediction in a guided tour gives ${POINTS.right} points if it is right and ${POINTS.wrong} if not; a task solved with the sliders gives ${POINTS.solved}, with “Show me” ${POINTS.hint}; a finished tour adds ${POINTS.tour}. The lithography run counts with its best score.</p>
+        <ul class="ach-grid">${ACHIEVEMENTS.map(a => `<li class="ach${st.ach[a.id] ? ' is-on' : ''}"><b>${escH(a.title)}</b><span>${escH(a.text)}</span><small>${st.ach[a.id] ? 'earned ' + st.ach[a.id] : 'not yet'}</small></li>`).join('')}</ul>
+        <p class="progress-actions"><button type="button" data-act="hide">Hide points and achievements</button> <button type="button" data-act="reset">Reset my progress</button></p>`;
+    }
+    sec.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
+      const s2 = progress.load(), act = b.getAttribute('data-act');
+      if (act === 'reset') { if (!window.confirm('Delete all points and achievements stored in this browser?')) return; progress.save(progress.empty()); }
+      else { s2.off = act === 'hide'; progress.save(s2); }
+      progress.refresh();
+    }));
+  };
   /** Lesson menu in the header, previous / next links under the widget and the page footer – inserted on every page. */
   function buildNav() {
     const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (parent) parent.appendChild(e); return e; };
@@ -975,6 +1107,9 @@
       });
       grid.replaceWith(frag);
     }
+    const ch = !cur && document.querySelector('.contents-h');
+    if (ch && !document.getElementById('progress')) { const sec = el('section', 'progress'); sec.id = 'progress'; sec.setAttribute('aria-labelledby', 'progress-h'); const after = document.querySelector('main .article') || document.querySelector('.footer'); (after ? after.parentNode : ch.parentNode).insertBefore(sec, after); }
+    progress.refresh();
   }
 
   if (isBrowser) {
@@ -1083,7 +1218,7 @@
       // interactive tour: steps with a question to answer first (`ask`) or a task to do on the sliders (`goal`).
       // Then nothing is locked, there is no autoplay, and the steps are reached through numbered dots.
       this.interactive = steps.some(s => s.ask || s.goal);
-      this._solved = new Set();
+      this._solved = new Set(); this._hinted = new Set();
       this._stepKeys = new Set(); this._stepLayers = new Set();
       steps.forEach(s => { Object.keys(s.set || {}).forEach(k => this._stepKeys.add(k));
         (s.show || []).concat(s.hide || []).forEach(n => this._stepLayers.add(n)); });
@@ -1113,6 +1248,7 @@
         if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { this.dirty = true; });
         if (document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; if (this.readoutEl) { this.readoutEl._mfwH = 0; this.readoutEl.style.minHeight = ''; } this._primeReadout(); });
       }
+      if (this.interactive && this.slug) progress.emit({ type: 'need', slug: this.slug, n: steps.filter(s => s.ask || s.goal).length });
       this._keys();
       this._applyMode();
       this._primeReadout();
@@ -1242,6 +1378,12 @@
       const explain = () => { this._resetHeights(); this._textSrc = st.text; this._setExplain(resolveText(st.text, this.values)); };
       const hush = () => { this._textSrc = null; this._setExplain(''); };
       const solved = () => { this._solved.add(i); this._markStep(i); };
+      const award = kind => {                                              // text for the step's own points (the tour bonus is announced apart)
+        if (!this.slug || !progress.on()) return '';
+        const old = (progress.load().steps[this.slug] || {})[i], g = POINTS[kind] - (old ? POINTS[old] : 0);
+        progress.emit({ type: 'step', slug: this.slug, i, kind });
+        return g > 0 ? ` +${g} points` : '';
+      };
       this._goalFn = null; this._goalReached = null; box.innerHTML = '';
       if (st.ask) {
         const q = st.ask, was = this._answers && this._answers[i], answered = opt.instant || was !== undefined;
@@ -1261,7 +1403,7 @@
         const pr = this.animate({ ...start, ...(st.from || {}) }, 0.8);
         btns.forEach((b, k) => b.addEventListener('click', () => {
           (this._answers || (this._answers = {}))[i] = k;
-          mark(k); caption(true); explain(); solved(); reveal(false);
+          mark(k); verdict.textContent += award(k === q.correct ? 'right' : 'wrong'); caption(true); explain(); solved(); reveal(false);
           if (st.enter) st.enter(this);
         }));
         return pr;
@@ -1274,12 +1416,12 @@
         const reached = () => { this._goalFn = null; status.textContent = S.reached; status.classList.add('is-done'); if (show) show.hidden = true; explain(); solved(); };
         if (st.solution) {
           show = el('button', 'mfw-showme', row, S.showMe); show.type = 'button';
-          show.addEventListener('click', () => this.animate(st.solution, 2));
+          show.addEventListener('click', () => { this._hinted.add(i); this.animate(st.solution, 2); });
         }
         if (opt.instant) { const pr = reveal(true, st.solution); reached(); return pr; }
         hush();
         const pr = reveal(false);
-        pr.then(() => { if (this.step === i && this.mode === 'tour') { this._goalReached = reached; this._goalFn = st.goal; } });
+        pr.then(() => { if (this.step === i && this.mode === 'tour') { this._goalReached = () => { reached(); status.textContent += award(this._hinted.has(i) ? 'hint' : 'solved'); }; this._goalFn = st.goal; } });
         if (st.enter) st.enter(this);
         return pr;
       }
@@ -1387,6 +1529,7 @@
       const path = location.pathname.replace(/\\/g, '/');
       const page = PAGES.find(p => path.includes(`/widgets/${p.slug}/`));
       if (page) el('span', 'mfw-figno', cap, `Fig. ${page.no}`);
+      this.slug = page ? page.slug : null;
       this.captionEl = el('span', 'mfw-captext', cap);
       cap.setAttribute('aria-live', 'polite');
       if (this.hasTour) {
@@ -1531,6 +1674,7 @@
       if (!this.readoutEl) this.readoutEl = el('div', 'mfw-readout', this.panel);
       if (cfg.source) {
         const det = el('details', 'mfw-source', this.panel);
+        det.addEventListener('toggle', () => { if (det.open && this.slug) progress.emit({ type: 'source', slug: this.slug }); });
         el('summary', null, det, S.source);
         el('div', null, det).innerHTML = cfg.source;
       }
@@ -1794,5 +1938,5 @@
   function widget(target, cfg) { return new Widget(target, cfg); }
 
   return { VERSION, config, C, MAT, DARK, LIGHT, M, K, ease, fmt, mix, rgba, col, texToText, richToHTML, renderMath, chars,
-    Painter, Axes, Widget, widget, renderStill, stepState, fillTemplate, setTheme, currentTheme, instances: widgets, PAGES };
+    Painter, Axes, Widget, widget, renderStill, stepState, fillTemplate, setTheme, currentTheme, instances: widgets, PAGES, MODULES, progress };
 }));

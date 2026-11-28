@@ -388,3 +388,32 @@ body.mfw-noscroll { overflow: hidden; }
 @media (max-width: 720px) {
   .module { grid-template-columns: 1fr; }
 }
+
+/* ---------------------------------------------------------------- progress: points and achievements (this browser only) */
+.progress-chip { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 10px; border: 1px solid var(--band-line); color: var(--band-text); text-decoration: none; font-size: 14.5px; font-stretch: 88%; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.progress-chip:hover { border-color: var(--band-text); }
+.progress-chip b { font-weight: 700; }
+.progress-chip .chip-ach { color: var(--band-muted); }
+.mfw-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 90; display: grid; gap: 8px; max-width: min(360px, calc(100vw - 32px)); pointer-events: none; }
+.mfw-toast { display: grid; gap: 2px; padding: 10px 14px; background: var(--surface); color: var(--text); border: 1px solid var(--text); border-left: 6px solid var(--accent); font-size: 15px; line-height: 1.35; }
+.mfw-toast b { font-weight: 700; font-stretch: 92%; }
+.mfw-toast span { color: var(--text-2); }
+.progress { margin: 34px 0 34px; scroll-margin-top: 64px; }
+.progress-sum { margin: 12px 0 4px; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+.progress-sum b { font-size: 22px; color: var(--accent); }
+.progress-how { margin: 0 0 12px; max-width: 86ch; font-size: 15px; color: var(--muted); }
+.ach-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 24px; border-top: 1px solid var(--line-strong); }
+.ach { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 1px 10px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 14.5px; line-height: 1.35; }
+.ach::before { content: ""; grid-row: 1 / span 3; width: 12px; height: 12px; margin-top: 4px; border: 1.5px dashed var(--line-strong); }
+.ach b { font-size: 15.5px; font-weight: 650; font-stretch: 90%; color: var(--text-2); }
+.ach small { font-size: 13px; font-stretch: 85%; }
+.ach.is-on { color: var(--text-2); }
+.ach.is-on::before { border: 1.5px solid var(--accent); background: var(--accent); }
+.ach.is-on b { color: var(--text); }
+.ach.is-on small { color: var(--accent); font-weight: 650; }
+.progress-actions { margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.progress-actions button { font: inherit; font-size: 14.5px; padding: 6px 12px; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 0; cursor: pointer; }
+.progress-actions button:hover { border-color: var(--text); }
+.tile-prog { font-size: 13.5px; font-weight: 650; font-stretch: 85%; color: var(--accent); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .progress-chip .chip-ach { display: none; } .progress-chip { padding: 4px 8px; font-size: 13.5px; } }
+@media print { .progress-chip, .mfw-toasts { display: none !important; } }

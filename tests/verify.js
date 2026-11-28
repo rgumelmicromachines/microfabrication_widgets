@@ -617,5 +617,41 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   { const w = G.newWafer(0, 1, 0.5); truth('new wafer: misalignment within ±3 µm and ±120 µrad', w.ox === -3 && w.oy === 3 && w.oth === 0); }
 }
 
+section('Progress: points and achievements (engine, kept in the browser)');
+{
+  const MFWn = require(path.join(__dirname, '..', 'assets', 'mfw.js')), P = MFWn.progress, PT = P.POINTS;
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const st = P.empty();
+  check('an empty record has no points', P.total(st), 0, 0, 0);
+  truth('and no achievements', P.earned(st).length === 0);
+  P.record(st, { type: 'need', slug: 'dryetch', n: 2 });
+  check('a wrong prediction still counts a little', P.record(st, { type: 'step', slug: 'dryetch', i: 1, kind: 'wrong' }), PT.wrong, 0, 0);
+  check('answering it right later adds only the difference', P.record(st, { type: 'step', slug: 'dryetch', i: 1, kind: 'right' }), PT.right - PT.wrong, 0, 0);
+  check('a worse repeat takes nothing away', P.record(st, { type: 'step', slug: 'dryetch', i: 1, kind: 'wrong' }), 0, 0, 0);
+  truth('one step of two: tour not finished', !P.lessonDone(st, 'dryetch'));
+  check('the last task gives its points plus the tour bonus', P.record(st, { type: 'step', slug: 'dryetch', i: 2, kind: 'solved' }), PT.solved + PT.tour, 0, 0);
+  check('lesson total', P.lessonPoints(st, 'dryetch'), PT.right + PT.solved + PT.tour, 0, 0);
+  truth('first answer, first tour and clean run are earned', ['first-answer', 'first-tour', 'clean-tour'].every(id => P.earned(st).includes(id)) && !P.earned(st).includes('five-tours'));
+  { const s2 = P.empty(); P.record(s2, { type: 'need', slug: 'etching', n: 1 }); P.record(s2, { type: 'step', slug: 'etching', i: 3, kind: 'hint' });
+    truth('a tour finished with “Show me” is finished but not a clean run', P.lessonDone(s2, 'etching') && !P.earned(s2).includes('clean-tour') && P.earned(s2).includes('first-tour')); }
+  // every lesson finished → module marks and the full flow
+  { const s3 = P.empty(), lessons = MFWn.PAGES.filter(p => p.slug !== 'processgame');
+    lessons.forEach(p => { P.record(s3, { type: 'need', slug: p.slug, n: 1 }); P.record(s3, { type: 'step', slug: p.slug, i: 1, kind: 'solved' }); });
+    const e = P.earned(s3);
+    check('number of lessons with a tour', lessons.length, 20, 0, 0);
+    truth('all tours → full process flow, five lessons, every module mark, own hands', e.includes('all-tours') && e.includes('five-tours') && e.includes('own-hands') && P.ACHIEVEMENTS.filter(a => a.module).every(a => e.includes(a.id)));
+    check('one module mark per lesson module', P.ACHIEVEMENTS.filter(a => a.module).length, 8, 0, 0);
+    truth('no game achievement without a run', !e.some(id => id.startsWith('game-'))); }
+  // game
+  check('the game counts with its score', P.record(st, { type: 'game', score: 72, reworks: 1, scraps: 0, docs: false }), 72, 0, 0);
+  check('a better run adds the difference', P.record(st, { type: 'game', score: 95, reworks: 0, scraps: 0, docs: true }), 23, 0, 0);
+  check('a worse run changes nothing', P.record(st, { type: 'game', score: 40, reworks: 0, scraps: 3, docs: false }), 0, 0, 0);
+  truth('game achievements', ['game-done', 'game-90', 'game-first', 'game-docs', 'game-scrap'].every(id => P.earned(st).includes(id)));
+  { const s4 = P.empty(); P.record(s4, { type: 'game', score: 85, reworks: 1, scraps: 0, docs: false }); truth('80 points after a rework is not first-pass yield', !P.earned(s4).includes('game-first') && P.earned(s4).includes('game-done')); }
+  for (let i = 0; i < 5; i++) P.record(st, { type: 'source', slug: 'p' + i });
+  truth('five source notes opened → fine print', P.earned(st).includes('fine-print'));
+  truth('achievement ids are unique', new Set(P.ACHIEVEMENTS.map(a => a.id)).size === P.ACHIEVEMENTS.length);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

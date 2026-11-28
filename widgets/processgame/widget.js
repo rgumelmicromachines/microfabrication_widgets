@@ -251,6 +251,10 @@
     state.log.push(`<b>${STATIONS[st].name}:</b> ${STATIONS[st].done(v)}`);
     widget.set({ stage: st + 1 });
     const after = widget.values, L = after.res.L;
+    if (st === 7) {                                                           // tested: the run counts for the reader's progress
+      const gr = grades(), sc = G.score(after.res, gr, state.reworks, state.scraps);
+      MFW.progress.emit({ type: 'game', score: sc.total, reworks: state.reworks, scraps: state.scraps, docs: gr.every(g => g.ok) });
+    }
     msg.textContent = st === 0 ? `Coated: ${um(L.d)} of resist.` : st === 4 ? `Developed. Inspection: ${cdText(L)}.` : st === 7 ? '' : `${STATIONS[st].name} done.`;
     sync();
   });

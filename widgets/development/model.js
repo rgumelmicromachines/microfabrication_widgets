@@ -23,12 +23,14 @@
    solved on a grid with the fast sweeping method (H. Zhao, Math. Comp. 74 (2005) 603).
 
    Attack of aqueous-alkaline developers on aluminium (nm/min):
-     AZ Developer (metasilicate/phosphate based): no attack ("AZ Developer", Merck technical data sheet; MicroChemicals,
-       application note "Development of photoresists")
-     0.26 N TMAH (AZ 726 MIF, AZ 300 MIF): about 10 nm/min (Merck, "AZ MIF Developers" technical data sheet) against
-       about 70 nm/min (MicroChemicals product information) – the two sources disagree
-     AZ 351B (NaOH based), AZ 400K (KOH based): "several 10 to over 100 nm/min" (MicroChemicals) – no single number;
-       only the quoted 100 nm/min is used, as a reference rate. */
+     AZ Developer (sodium metasilicate and phosphate): "optimised for minimal aluminium erosion" (MicroChemicals,
+       application note "Development of photoresists"), called Al-compatible on the product page. No rate is given;
+       the model takes it as zero.
+     0.26 N TMAH (AZ 326 / 726 MIF): about 10 nm/min (Merck, "AZ MIF Developers" technical data sheet) against
+       "approx. 70 nm/min" (MicroChemicals, product page Developers, https://www.microchemicals.com/products/developers.html)
+       – the two sources disagree.
+     AZ 351B (NaOH based), AZ 400K (KOH based): "several 10 nm/min to over 100 nm/min", depending on the dilution
+       (same product page) – no single number; only the quoted 100 nm/min is used, as a reference rate. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.MFW_DEV = factory();

@@ -74,7 +74,7 @@
       <ul>
         <li>The overlay model is the standard linear one: shift, a small rotation about the wafer centre and one scale factor. It leaves out different scales in x and y, skew, distortion of the mask or of the wafer (for example bow after film deposition) and every higher-order term. The formula for the largest error follows from the model; it was derived for this page and not taken from a textbook.</li>
         <li>Thermal run-out assumes that mask and wafer are at the same temperature, both ΔT away from the temperature at which the first layer was printed, and that both expand freely. A mask heated by the lamp or a wafer clamped on a chuck behaves differently.</li>
-        <li>The expansion coefficients of the glasses are mean values for 20–300 °C from manufacturer data; near room temperature they are slightly lower. The value for soda-lime glass varies with its composition.</li>
+        <li>The expansion coefficients of the glasses are mean values for 20–300 °C from manufacturer data; near room temperature they are slightly lower. The value for soda-lime glass varies with its composition, and its source document was not re-opened for this page. For borosilicate glass the MicroChemicals table gives a rounded 3 where the SCHOTT data sheet gives 3.25.</li>
         <li>Typical figures for a manual contact aligner, not modelled as random numbers here: alignment accuracy below 0.5 µm in the specification table of one mask aligner (SUSS MJB4), while its brochure text says 1 µm; verniers are read to about ±0.5 µm.</li>
         <li>The pad covers the window when the window lies fully under it. Whether a partly covered window still gives a good contact depends on the process and is not judged.</li>
         <li>The dies are evaluated at their centres on a 10 mm grid out to 45 mm from the wafer centre.</li>
@@ -88,7 +88,7 @@
       <ul>
         <li>Y. Okada, Y. Tokumaru, “Precise determination of lattice parameter and thermal expansion coefficient of silicon between 300 and 1500 K”, <i>J. Appl. Phys.</i> 56 (1984) 314.</li>
         <li>SCHOTT AG, technical data of BOROFLOAT 33 and of soda-lime glass (mean linear thermal expansion, 20–300 °C).</li>
-        <li>MicroChemicals GmbH, product information on photomask substrates (fused silica), <a href="https://www.microchemicals.com">microchemicals.com</a>.</li>
+        <li>MicroChemicals GmbH, application note “Glass wafers: borosilicate”, Table 2 (thermal expansion of fused silica 0.54, borosilicate glass 3 × 10⁻⁶ K⁻¹), <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a>.</li>
         <li>SÜSS MicroTec, <i>MJB4 Mask Aligner</i>, product brochure 02/2010 (alignment accuracy, printing modes).</li>
         <li>R. F. Lyon, “Simplified design rules for VLSI layouts”, <i>Lambda</i> magazine, first quarter 1981, <a href="http://dicklyon.com/tech/Scans/DesignRules-Lyon.pdf">scan at dicklyon.com</a> (contact 2λ with 1λ surround).</li>
         <li>University of Washington, EE 527 Microfabrication, notes on photolithography and alignment (alignment marks, verniers read to ±0.5 µm).</li>
@@ -98,7 +98,7 @@
 </main>
 
 <script src="../../assets/mfw.js?v=22734c134e"></script>
-<script src="model.js?v=04477050df"></script>
+<script src="model.js?v=b3a2e34d48"></script>
 <script src="widget.js?v=ab4662db22"></script>
 </body>
 </html>

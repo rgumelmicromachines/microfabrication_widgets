@@ -23,7 +23,7 @@
     { name: 'Development', done: v => `${MFW_DEV.DEVELOPERS[v.dev].name}, ${fmt.num(v.tdev, 0)} s`,
       text: 'There is aluminium under the resist, and alkaline developers attack aluminium. Choose the developer and the time. The data sheet states a development time.' },
     { name: 'Hard bake', done: v => (v.hbt > 0 ? `${fmt.num(v.hbT, 0)} °C, ${fmt.num(v.hbt, 0)} s` : 'skipped'),
-      text: 'A bake after development stabilises the resist for the etch. Too hot, and the resist cross-links and can no longer be stripped in a solvent. Set the time to 0 s to skip the bake.' },
+      text: 'A bake after development stabilises the resist for the etch. Too hot, and the resist cross-links so far that a solvent no longer strips it. Set the time to 0 s to skip the bake.' },
     { name: 'Aluminium etch', done: v => `${G.ETCH[v.etT].T} °C, ${fmt.num(v.tet, 1)} s`,
       text: `The etchant (phosphoric, nitric and acetic acid) removes aluminium in all directions at the same rate, so it also etches sideways under the resist. Look up the etch rate in the <a href="${G.ETCH_URL}" target="_blank" rel="noopener">data of the etchant</a> (Type A). The film is ${O.h0} nm thick at the wafer centre and about 5 % thinner at the edge. The mask designer expects ${fmt.num(O.wTarget, 1)} µm of electrical line width after the etch.` },
     { name: 'Strip and test', done: () => 'resist stripped, 69 dies probed',

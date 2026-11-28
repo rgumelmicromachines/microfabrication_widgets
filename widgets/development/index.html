@@ -76,7 +76,7 @@
         <li><b>Two resists in one model.</b> The Dill parameters are those of the AZ 1500 series at 365 nm. The development-rate parameters were measured by Mack for a different, older resist, AZ 1350J, in AZ Developer diluted 1:1. No published Mack parameter set for an AZ 1500 resist was found, so the doses and times of this page show the behaviour of a DNQ/novolak resist and are not a process recipe for AZ 1500.</li>
         <li><b>No dark-erosion value for AZ 1500</b> was found in the manufacturer documents. The page uses <span class="tex">r_{min}</span> of the AZ 1350J sets.</li>
         <li>The choice of developer changes only the attack on aluminium. Its effect on the development rate (normality, dilution, temperature, agitation, an inhibited surface layer) is not modelled, because no rate parameters are published for the other developers.</li>
-        <li>Attack on aluminium: about 10 nm/min for 0.26 N TMAH in one manufacturer document and about 70 nm/min in another; both bounds are shown. For NaOH- and KOH-based developers only “several 10 to over 100 nm/min” is quoted; the page uses 100 nm/min as a reference rate. The recess is drawn for the higher rate.</li>
+        <li>Attack on aluminium: about 10 nm/min for 0.26 N TMAH in the Merck data sheet and about 70 nm/min on the MicroChemicals product page; both bounds are shown. For NaOH- and KOH-based developers only “several 10 nm/min to over 100 nm/min, depending on the dilution” is quoted; the page uses 100 nm/min as a reference rate. AZ Developer is described as optimised for minimal attack on aluminium, without a number; the page takes it as zero. The recess is drawn for the higher rate.</li>
         <li>The substrate reflects nothing: no standing waves and no extra dose from the reflection. Silicon reflects roughly 30 % and a metal film more than 90 % of the exposure light (MicroChemicals), so real profiles on aluminium show standing waves and need less dose.</li>
         <li>The dose is the dose at 365 nm. A mercury lamp also exposes the resist at 405 and 436 nm, where the Dill parameters differ.</li>
         <li>The image at the mask edge is the scalar contact/proximity image of the lithography lesson, evaluated in the middle of the resist and taken as constant through its thickness apart from absorption.</li>
@@ -92,7 +92,7 @@
         <li>S. V. Babu, E. Barouch, “Exact solution of Dill's model equations for positive photoresist kinetics”, <i>IEEE Electron Device Lett.</i> EDL-7 (1986) 252.</li>
         <li>C. A. Mack, “Development of positive photoresists”, <i>J. Electrochem. Soc.</i> 134 (1987) 148 (rate model; Table I: AZ 1350J in AZ Developer 1:1).</li>
         <li>H. Zhao, “A fast sweeping method for eikonal equations”, <i>Math. Comp.</i> 74 (2005) 603.</li>
-        <li>MicroChemicals GmbH, application notes “Optical parameters of photoresists”, “Exposure of photoresists” and “Development of photoresists”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (Dill parameters of AZ 1500, contrast, developer compatibility with aluminium).</li>
+        <li>MicroChemicals GmbH, application notes “Optical parameters of photoresists”, “Exposure of photoresists” and “Development of photoresists”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (Dill parameters of AZ 1500, contrast, developer compatibility with aluminium); product page “Developers”, <a href="https://www.microchemicals.com/products/developers.html">microchemicals.com/products/developers.html</a> (attack of the developers on aluminium).</li>
         <li>Merck Performance Materials, technical data sheets “AZ 1500 Series”, “AZ Developer” and “AZ MIF Developers”, available from <a href="https://www.microchemicals.com/dokumente/datenblaetter/tds/merck/en/tds_az_1500_series.pdf">microchemicals.com</a>.</li>
       </ul>
     </article>
@@ -101,7 +101,7 @@
 
 <script src="../../assets/mfw.js?v=22734c134e"></script>
 <script src="../lithography/model.js?v=694ee77c66"></script>
-<script src="model.js?v=244e0d0905"></script>
-<script src="widget.js?v=7c081bfe8f"></script>
+<script src="model.js?v=3acd0e850c"></script>
+<script src="widget.js?v=492d6362a0"></script>
 </body>
 </html>

@@ -282,6 +282,33 @@ section('PVD (cosine law, mean free path, shadowing)');
   check('page task 3: angle (deg)', PV.incidence(10, 50), 11.31, 0.001); check('page task 3: shadow (µm)', PV.shadow(1.5, 10, 50), 0.3, 1e-12);
 }
 
+// ------------------------------------------------------------------ lift-off
+section('Lift-off (line-of-sight deposition into a resist opening)');
+{ const LO = W('liftoff'), d2r = Math.PI / 180;
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const g0 = { h: 1.5, w: 4, gamma: 12, t: 0.3, psi: 2, th0: 0 };
+  check('open flat surface collects the full thickness', LO.flux(-90, 90, 0, 7, 20), 1, 1e-12);
+  // the closed form against a brute-force integral over the arrival directions (cosine law of incidence)
+  { const a = -35, b = 50, phin = 60, th0 = 10, psi = 55; let num = 0, den = 0; const N = 200000;
+    for (let i = 0; i < N; i++) { const phi = th0 - psi + (i + 0.5) / N * 2 * psi; den += Math.cos(phi * d2r); if (phi > a && phi < b) num += Math.max(0, Math.cos((phi - phin) * d2r)); }
+    check('flux formula vs numerical integration (tilted surface, partly hidden)', LO.flux(a, b, phin, th0, psi), num / den, 1e-4); }
+  check('whole half-space, vertical wall: top of the sidewall gets t/2', LO.onWall(-1, 1e-9, { ...g0, gamma: 0, psi: 90 }), 0.5, 1e-6);
+  check('whole half-space: middle of the opening gets (w/2)/√((w/2)² + h²)', LO.onSubstrate(2, { ...g0, gamma: 0, psi: 90 }), 2 / Math.hypot(2, 1.5), 1e-12);
+  check('parallel beam along the normal on a 10° positive slope: t·sin 10°', LO.onWall(-1, 0.5, { ...g0, gamma: -10, psi: 0.01 }), Math.sin(10 * d2r), 1e-3);
+  check('parallel beam at θ₀ on a vertical wall: tan θ₀', LO.onWall(-1, 0.5, { ...g0, gamma: 0, psi: 0.01, th0: 15 }), Math.tan(15 * d2r), 1e-3);
+  { const s = LO.state({ ...g0, th0: 10 }); check('shift of the line = −h·tan θ₀ (µm)', s.centre, -1.5 * Math.tan(10 * d2r), 2e-3); check('line keeps the width of the top opening (µm)', s.cd, 4, 1e-3); }
+  truth('bare sidewalls exactly from γ = ψ + |θ₀|', LO.state({ ...g0, gamma: 12, psi: 2, th0: 10 }).nCoated === 0 && LO.state({ ...g0, gamma: 11, psi: 2, th0: 10 }).nCoated === 1 && LO.state({ ...g0, gamma: 1, psi: 2, th0: 0 }).nCoated === 2);
+  truth('the exact condition agrees with the sampled sidewall profile', [-15, -3, 0, 2, 5, 12, 25].every(gm => [0, 6, 14].every(th => [1, 8, 40, 90].every(ps => { const g = { ...g0, gamma: gm, psi: ps, th0: th }; return [-1, 1].every(sd => { let mx = 0; for (let i = 1; i < 60; i++) mx = Math.max(mx, LO.onWall(sd, i / 60, g)); return (mx < 1e-9) === LO.wallBare(sd, g); }); }))));
+  truth('whole half-space: sidewalls coated under any undercut', LO.state({ ...g0, gamma: 30, psi: 90 }).nCoated === 2);
+  truth('symmetric at normal incidence', Math.abs(LO.state(g0).centre) < 1e-9);
+  check('page task 1: arrival angle at the edge (deg)', Math.atan(5 / 40) / d2r, 7.1, 0.005); check('page task 1: shift (µm)', -LO.state({ ...g0, h: 2, gamma: 9, psi: 1.4, th0: Math.atan(5 / 40) / d2r }).shift, 0.25, 1e-9);
+  check('page task 1: undercut for γ = 8.6° (µm)', LO.undercut(2, 8.6), 0.30, 0.01);
+  check('page task 2: sidewall film (nm)', 300 * Math.sin(10 * d2r), 52, 0.005);
+  truth('tour “Undercut”: solution clean, start coated', LO.state({ ...g0, gamma: 5 }).nCoated === 0 && LO.state({ ...g0, gamma: -8 }).nCoated === 2);
+  truth('tour “Away from the wafer centre”: one wall coated at 12°', LO.state({ ...g0, gamma: 5, th0: 12 }).nCoated === 1 && !LO.state({ ...g0, gamma: 5, th0: 12 }).walls[0].bare);
+  truth('tour “Thick films”: buried at h = 1.5, free at h = 3', LO.state({ ...g0, t: 1.6 }).buried && !LO.state({ ...g0, t: 1.6, h: 3 }).buried);
+}
+
 // ------------------------------------------------------------------ film stress
 section('Film stress (Stoney, thermal mismatch)');
 { const ST = W('stress');
@@ -645,7 +672,7 @@ section('Progress: points and achievements (engine, kept in the browser)');
   { const s3 = P.empty(), lessons = MFWn.PAGES.filter(p => p.slug !== 'processgame');
     lessons.forEach(p => { P.record(s3, { type: 'need', slug: p.slug, n: 1 }); P.record(s3, { type: 'step', slug: p.slug, i: 1, kind: 'solved' }); });
     const e = P.earned(s3);
-    check('number of lessons with a tour', lessons.length, 20, 0, 0);
+    check('number of lessons with a tour', lessons.length, 21, 0, 0);
     truth('all tours → full process flow, five lessons, every module mark, own hands', e.includes('all-tours') && e.includes('five-tours') && e.includes('own-hands') && P.ACHIEVEMENTS.filter(a => a.module).every(a => e.includes(a.id)));
     check('one module mark per lesson module', P.ACHIEVEMENTS.filter(a => a.module).length, 8, 0, 0);
     truth('no game achievement without a run', !e.some(id => id.startsWith('game-'))); }

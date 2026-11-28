@@ -893,6 +893,7 @@
       { slug: 'oxidation', title: 'Thermal oxidation' },
       { slug: 'cvd', title: 'CVD growth rate' },
       { slug: 'pvd', title: 'Evaporation & sputtering' },
+      { slug: 'liftoff', title: 'Lift-off' },
       { slug: 'stress', title: 'Film stress & wafer bow' }] },
     { id: 'etch', title: 'Etching', pages: [
       { slug: 'etching', title: 'Etching silicon' },

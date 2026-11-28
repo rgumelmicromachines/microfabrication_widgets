@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lift-off · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png?v=3">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png?v=3">
+<meta name="description" content="Interactive lift-off: deposition into a resist opening, undercut and positive resist profiles, sidewall coverage in evaporation and sputtering, shift of the line at the wafer edge.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=dd1dab85f7">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Thin-film deposition</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Lift-off: patterning without etching</h1>
+    <p class="lede">The film is deposited over a patterned resist and the resist is then dissolved. The line comes out clean only if the film breaks at the resist edge, which depends on the resist profile and on the directions from which the atoms arrive.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>Resist of thickness <span class="tex">h</span> with sidewalls tilted by <span class="tex">\gamma</span> from the vertical (<span class="tex">\gamma &gt; 0</span>: undercut). Atoms arrive along straight lines from the directions <span class="tex">\theta_0 \pm \psi</span> and stick where they land. A sidewall stays bare, and the film breaks there, when</p>
+      <div class="tex-display">\gamma \ge \psi + |\theta_0|, \qquad \tan\theta_0 = r/H</div>
+      <p>for wafer radius <span class="tex">r</span> under a source at distance <span class="tex">H</span>. The line on the substrate is shifted and the resist foot is set back by</p>
+      <div class="tex-display">\Delta x = -h\tan\theta_0, \qquad u = h\tan\gamma</div>
+      <p>A surface tilted by <span class="tex">\chi</span> against a parallel beam collects <span class="tex">t\cos\chi/\cos\theta_0</span>, so a sidewall with a positive slope <span class="tex">|\gamma|</span> under a beam along the normal gets <span class="tex">t\sin|\gamma|</span>. With arrival from the whole half-space (<span class="tex">\psi = 90^\circ</span>) the top of a vertical sidewall gets <span class="tex">t/2</span> and the middle of an opening of width <span class="tex">w</span> gets <span class="tex">t\,(w/2)/\sqrt{(w/2)^2 + h^2}</span>.</p>
+      <table>
+        <tr><th></th><th>Evaporation</th><th>Sputtering</th></tr>
+        <tr><td>arrival</td><td>directed, small <span class="tex">\psi</span></td><td>more or less from all directions</td></tr>
+        <tr><td>sidewalls</td><td>bare under an undercut, slightly coated on a steep positive resist</td><td>always coated, also under an overhang</td></tr>
+        <tr><td>lift-off</td><td>clean, also for thicker films</td><td>reproducible only up to a few hundred nanometres</td></tr>
+      </table>
+      <p class="note">Table after the MicroChemicals application note “Lift-off”.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>A 100 mm wafer sits 40 cm above an evaporation source of 1 cm radius and carries 2 µm of resist. At the wafer edge, at which angle do the atoms arrive, how far is the line shifted, and how much undercut does a clean lift-off need?
+          <details><summary>Answer</summary><span class="tex">\theta_0 = \arctan(5/40) = 7.1^\circ</span>, shift <span class="tex">2\ \mathrm{\mu m}\cdot 0.125 = 0.25\ \mathrm{\mu m}</span>. The source is seen under <span class="tex">\psi = \arctan(1/40) = 1.4^\circ</span>, so <span class="tex">\gamma \ge 8.6^\circ</span>, an undercut of <span class="tex">u = 2\ \mathrm{\mu m}\cdot\tan 8.6^\circ = 0.30\ \mathrm{\mu m}</span> at the substrate.</details></li>
+        <li>A positive resist has sidewalls with a 10° positive slope. 300 nm of metal are evaporated along the wafer normal. How thick is the film on the sidewalls?
+          <details><summary>Answer</summary><span class="tex">t\sin|\gamma| = 300\ \mathrm{nm}\cdot\sin 10^\circ = 52\ \mathrm{nm}</span>, a continuous film from the line to the top of the resist.</details></li>
+        <li>A film is sputtered into a 4 µm opening in 1.5 µm of resist with vertical sidewalls. Assume arrival from the whole half-space. Which fraction of the nominal thickness reaches the middle of the opening and the top of the sidewall?
+          <details><summary>Answer</summary>Middle: <span class="tex">2/\sqrt{2^2 + 1.5^2} = 0.80</span>. Top of the sidewall: one half. The film is continuous over the resist edge.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Two-dimensional cross-section of a long line with straight sidewalls. Atoms travel in straight lines and every atom sticks where it lands; re-emission and surface diffusion are left out. The cross-section and the film thicknesses are drawn to scale.</li>
+        <li>The arrival directions are spread evenly over ±ψ around θ₀. A small distant source is a narrow spread. ψ = 90° stands for sputtering as the limit without any preferred direction; real sputter tools lie between, depending on pressure, target distance and bias, and no measured angular distribution is used here.</li>
+        <li>The geometry does not change while the film grows. In reality the deposit on the resist edges grows sideways and narrows the opening, so thick films come out tapered. The page only reports when the film in the opening reaches the resist surface.</li>
+        <li>How thin a sidewall film must be for the solvent to get through is not modelled, and neither is the tearing of the film. The view after lift-off is schematic: it leaves every sidewall film standing as a fence.</li>
+        <li>Heating of the resist during deposition (softening and rounding of the profile, cross-linking, nitrogen bubbles in positive resists) is not modelled; it can spoil a profile that looks safe here.</li>
+        <li>No resist chemistry: the sidewall tilt is an input. Which exposure, bake and development give a certain undercut depends on the resist and is found in its data sheet.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>MicroChemicals GmbH, application notes “Lift-off” and “Image reversal resists and their processing”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (process sequence, sputtering against evaporation, fences, lift-off media, resist thickness against film thickness).</li>
+        <li>M. Ohring, <i>The Materials Science of Thin Films</i>, Academic Press 1992, ch. 3 (§3.3.3, line-of-sight shadowing; cosine law of incidence).</li>
+        <li>R. Glang, “Vacuum evaporation”, ch. 1 in L. I. Maissel, R. Glang (eds.), <i>Handbook of Thin Film Technology</i>, McGraw-Hill 1970 (directional deposition from small sources).</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=9a9b844c73"></script>
+<script src="model.js?v=057ea0cb18"></script>
+<script src="widget.js?v=be397d2199"></script>
+</body>
+</html>

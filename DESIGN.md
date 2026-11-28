@@ -275,7 +275,11 @@ A 16:9 miniature of the lesson's real figure (light and dark versions, swapped b
 
 Under the header band sits the course map: one row with the nine modules (number in the module colour, the current one underlined in it) and, on a lesson page, a second row with the lessons of that module (the current one filled with the module colour). Both rows scroll sideways on a phone and bring the current item into view. The band keeps the lesson menu and stays sticky; the course map scrolls away with the page.
 
-A lesson opens in its tour, the tab “Challenges”; “Explore” is the second tab.
+A lesson opens in “Explore”; the tour is the second tab, “Challenges”.
+
+## Mark
+
+`assets/logo.svg`: the letter µ drawn as an etched trench (white) in a substrate (oxide blue) under the opening of a mask (yellow), on a 32-unit grid with every edge on a whole or half unit, so it stays sharp at 16 px. It is the favicon; in the header band it appears as a light tile with a blue µ. The wordmark stays “Microfabrication” (bold) “Interactive” (regular) in Archivo.
 
 ## Page order
 

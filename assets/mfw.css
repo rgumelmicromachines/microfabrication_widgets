@@ -350,7 +350,7 @@ body.mfw-noscroll { overflow: hidden; }
   .crumb { display: none; }
   .site-header { gap: 10px; }
   .brand-name { display: none; }
-  .brand::before { content: "µ"; font-size: 20px; font-weight: 700; }
+  .brand-sub { display: none; }
   .lesson-btn { font-size: 14.5px; }
   .lesson-pager { grid-template-columns: 1fr; }
   .lesson-pager .pager-next { text-align: left; padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
@@ -534,3 +534,7 @@ body[data-module] .lesson-pager { margin-top: 36px; }
 @media print { .course-map { display: none; } }
 /* a replay button under an answered prediction */
 .mfw .mfw-replay { justify-self: start; padding: 5px 12px; font-size: 14.5px; }
+
+.brand { align-items: center; gap: 10px; }
+.brand-mark { flex: none; width: 26px; height: 26px; display: block; }
+.brand-name + .brand-sub { margin-left: -4px; }

@@ -446,5 +446,21 @@ section('Soft bake (residual solvent, PAC decomposition)');
   check('as-spun film: relative thickness 1', SB.thickness(SB.W0), 1, 1e-12);
 }
 
+section('Stress migration (McPherson–Dunn creep model)');
+{
+  const SM = W('stressmigration'), cu = SM.PRESETS.cu, al = SM.PRESETS.alsi;
+  check('Cu: maximum rate at ≈ 190 °C (Ogawa et al. 2002)', SM.peak(cu.T0, cu.N, cu.Ea), 190, 0, 1);
+  check('McPherson 2019, example: Q = n·k·T²/(T0 − T) = 0.74 eV for 3.2, 190 °C, 270 °C', 3.2 * SM.K_EV * 463.15 ** 2 / 80, 0.74, 5e-3);
+  check('E_eff is zero at the maximum', SM.eaEff(SM.peak(cu.T0, cu.N, cu.Ea), cu.T0, cu.N, cu.Ea), 0, 0, 1e-9);
+  { const Tp = SM.peak(cu.T0, cu.N, cu.Ea); n++; const ok = SM.rate(Tp, 270, 3.2, 0.74) > SM.rate(Tp - 2, 270, 3.2, 0.74) && SM.rate(Tp, 270, 3.2, 0.74) > SM.rate(Tp + 2, 270, 3.2, 0.74); if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  the analytic maximum is a maximum of R(T)`); }
+  // McPherson 2019, ch. 12 problem: n = 3, Q = 0.75 eV, T0 = 270 °C → apparent activation energy 0.37 eV between 190 and 105 °C
+  check('apparent E_a between 190 and 105 °C (textbook problem: 0.37 eV)', Math.log(SM.rate(190, 270, 3, 0.75) / SM.rate(105, 270, 3, 0.75)) * SM.K_EV / (1 / 378.15 - 1 / 463.15), 0.37, 0.02);
+  check('no voiding at or above T0', SM.rate(270, 270, 3.2, 0.74), 0, 0, 0);
+  check('page: Al–Si maximum (°C)', SM.peak(al.T0, al.N, al.Ea), 165, 0, 1);
+  check('page task 2: AF of a 190 °C bake against 105 °C', SM.lifeRatio(105, 190, 270, 3.2, 0.74), 6.4, 0.01);
+  check('page task 3: AF of a 250 °C bake', SM.lifeRatio(105, 250, 270, 3.2, 0.74), 0.63, 0.01);
+  check('page task 4: E_eff of Al–Si at 105 °C (eV)', SM.eaEff(105, al.T0, al.N, al.Ea), 0.35, 0.02);
+}
+
 console.log(`\n${n - fails}/${n} checks passed${fails ? `, ${fails} FAILED` : ''}.`);
 process.exit(fails ? 1 : 0);

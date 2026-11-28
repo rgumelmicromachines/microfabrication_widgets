@@ -883,7 +883,8 @@
       { slug: 'etching', title: 'Etching silicon' },
       { slug: 'dryetch', title: 'Dry etching' }] },
     { id: 'metal', title: 'Interconnects', pages: [
-      { slug: 'electromigration', title: 'Electromigration' }] },
+      { slug: 'electromigration', title: 'Electromigration' },
+      { slug: 'stressmigration', title: 'Stress migration' }] },
     { id: 'char', title: 'Characterization', pages: [
       { slug: 'fourpoint', title: 'Four-point probe' },
       { slug: 'interference', title: 'Film colour & reflectometry' }] },

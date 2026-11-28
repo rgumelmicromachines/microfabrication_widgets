@@ -886,6 +886,7 @@
       { slug: 'lithography', title: 'Lithography resolution' },
       { slug: 'development', title: 'Development' },
       { slug: 'imagereversal', title: 'Image reversal' },
+      { slug: 'negative', title: 'Negative resist' },
       { slug: 'alignment', title: 'Alignment & overlay' }] },
     { id: 'doping', title: 'Doping', pages: [
       { slug: 'diffusion', title: 'Diffusion & junction depth' },

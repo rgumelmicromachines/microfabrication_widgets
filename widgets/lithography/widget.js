@@ -22,7 +22,7 @@
     const k1 = v.hp * v.NA / memo.lamUm;
     return { ...memo, thr, cd, k1, hpMin: L.minPitch(memo.lamUm, v.NA, v.sigma) / 2, dofv: L.dof(memo.lamUm, v.NA),
       bmin: L.proximityLimit(memo.lamUm, v.gap, v.resist),
-      printed: cd > 0 && isFinite(cd) && memo.Imin < thr };
+      printed: !memo.reversed && cd > 0 && isFinite(cd) && memo.Imin < thr };
   }
   const verdict = v => (v.reversed ? 'contrast-reversed image (Talbot effect) – wrong pattern' : !isFinite(v.cd) ? 'over-exposed: everything cleared' : v.cd === 0 ? (v.Imax < v.thr ? 'not resolved: nothing clears' : 'nothing clears')
     : v.printed ? `printed, space width ${um(v.cd)} (target ${um(v.hp)})` : 'not resolved');

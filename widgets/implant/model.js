@@ -84,7 +84,8 @@
     const pass = 0.5 * erfc((d - rm.Rp) / (Math.SQRT2 * rm.dRp));
     const atInterface = gauss(d, Q, rm.Rp, rm.dRp);
     const Np = peak(Q, rm.dRp);
-    const need = Np > NB ? rm.Rp + rm.dRp * Math.sqrt(2 * Math.log(Np / NB)) : rm.Rp;
+    // peak already below NB: nothing can exceed NB in the Si, no mask is needed
+    const need = Np > NB ? rm.Rp + rm.dRp * Math.sqrt(2 * Math.log(Np / NB)) : 0;
     // highest concentration that reaches the Si: at the interface when the peak lies inside the mask, otherwise the
     // peak itself (the ions overshoot the mask)
     const inSi = d >= rm.Rp ? atInterface : Np;

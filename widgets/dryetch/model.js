@@ -3,8 +3,13 @@
    and in Node tests. Units: nm and minutes.
 
    Etch front: a directional (ion-driven) vertical rate R_v and an isotropic (radical-driven) lateral rate R_l ≤ R_v.
-   The etched region of the film after time t is the opening (width W) swept down by (R_v − R_l)·t and grown in all
-   directions by R_l·t (Minkowski sum of a rectangle and a disc), cut off by the film/substrate interface.
+   The ions travel in straight lines and only reach the open area, so the floor moves down at R_v. A point of the
+   sidewall at depth y is uncovered at the time y/R_v and is etched sideways by the radicals from then on, for the
+   time t − y/R_v. The wall is the envelope of circles of radius R_l·(t − y₁/R_v) centred on the mask-edge line at
+   every depth y₁ ≤ R_v·t (Huygens construction). With a = R_l/R_v and r = R_l·t the half-width of the opening is
+     W/2 + √(r² − y²)                      for y ≤ a·r        (quarter circle below the mask edge)
+     W/2 + (R_v·t − y)·a/√(1 − a²)         for a·r < y ≤ R_v·t (straight, tapered wall)
+   cut off by the film/substrate interface: a = 0 gives a vertical wall, a = 1 the isotropic quarter circle.
    → floor depth R_v·t, undercut U = R_l·t at the top of the film, bias B = d_f − d_m = 2U, anisotropy A = 1 − R_l/R_v.
    Complete isotropic etching (R_l = R_v) gives B = 2·h_f at the end point, complete anisotropic etching B = 0.
    Definitions: J. D. Plummer, M. D. Deal, P. B. Griffin, Silicon VLSI Technology (2000), ch. 10.
@@ -30,10 +35,10 @@
     const resist = o.hr - o.Rv * o.t / o.Sr;                       // resist left (negative: mask gone)
     // half-width of the etched opening in the film at depth y (0 = top of the film); null below the etch front
     const edge = y => {
-      if (y < 0 || y > o.hf) return null;
-      if (y <= dDir) return o.W / 2 + r;
-      const dy = y - dDir;
-      return dy <= r ? o.W / 2 + Math.sqrt(r * r - dy * dy) : null;
+      const D = o.Rv * o.t, a = Rl / o.Rv;
+      if (y < 0 || y > o.hf || y > D + 1e-9) return null;
+      if (y <= a * r) return o.W / 2 + Math.sqrt(Math.max(0, r * r - y * y));
+      return o.W / 2 + Math.max(0, D - y) * a / Math.sqrt(1 - a * a);        // a < 1 here (for a = 1: a·r = D)
     };
     const U = r, B = 2 * r;
     return {

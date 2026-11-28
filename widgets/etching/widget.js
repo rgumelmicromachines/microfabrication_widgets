@@ -155,7 +155,7 @@
       ['depth', 'd', um(v.depth), undefined, { hl: true }],
       ['undercut under the mask edge', '', um(v.undercut)],
       v.kind === 'aniso' && ['bottom width', '', v.closed ? 'V-groove closed' : um(2 * v.bottom), undefined, { f: 'W′ − √2·d' }],
-      v.kind === 'aniso' && ['V-groove closes at the depth', '', um(v.dClose), undefined, { f: '≈ W/√2', note: `after ${mins(v.tClose)}` }],
+      v.kind === 'aniso' && (v.dClose > E.WAFER ? ['V-groove', '', 'does not close: the wafer is etched through first', ''] : ['V-groove closes at the depth', '', um(v.dClose), undefined, { f: '≈ W/√2', note: `after ${mins(v.tClose)}` }]),
       v.kind === 'drie' && ['aspect ratio depth : width', '', `${fmt.sig(v.depth / v.W, 2)} : 1`, ''],
       ['selectivity Si : mask', '', v.mr === null ? 'mask dissolves' : v.mr === undefined ? 'no data' : isFinite(v.sel) ? fmt.sig(v.sel, 2) + ' : 1' : 'very high', ''],
       ['mask remaining', '', v.mr === undefined ? '–' : `${fmt.sig(v.maskLeft, 3)} nm`],

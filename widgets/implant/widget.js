@@ -194,7 +194,7 @@
         [`range in ${MASKN[v.mask]}`, 'R<sub>p</sub><sup>*</sup>', nm(v.Rpm)],
         [`straggle in ${MASKN[v.mask]}`, 'ΔR<sub>p</sub><sup>*</sup>', nm(v.dRpm)],
         ['dose through the mask', 'T', passS(mk.pass)],
-        ['mask needed', '', nm(mk.need), undefined, { f: 'N at the Si surface ≤ N<sub>B</sub>' }],
+        ['mask needed', '', mk.need > 0 ? nm(mk.need) : 'none (peak below N<sub>B</sub>)', undefined, { f: 'N at the Si surface ≤ N<sub>B</sub>' }],
         ['this mask', '', mk.ok ? 'thick enough' : 'too thin', '', { warn: !mk.ok }],
         ['implant time, 200 mm wafer', 't', secs(v.tBeam), undefined, { f: 'Q·q·A/I' }]]);
     },

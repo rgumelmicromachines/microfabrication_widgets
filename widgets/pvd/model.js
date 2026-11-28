@@ -31,7 +31,7 @@
   /** Distance h needed for a given edge-to-centre ratio q = t(R)/t(0). */
   const distanceFor = (R, n, q) => R / Math.sqrt(q ** (-2 / (n + 3)) - 1);
   /** Mean free path in cm for pressure p (Pa), temperature T (K), molecular diameter d (m). */
-  const meanFreePath = (p, d, T = 293.15) => K_B * T / (Math.SQRT2 * Math.PI * d * d * p) * 100;
+  const meanFreePath = (p, d, T = 295.15) => K_B * T / (Math.SQRT2 * Math.PI * d * d * p) * 100;
   /** Fraction travelling a distance h (cm) without a collision. */
   const unscattered = (h, lam) => Math.exp(-h / lam);
   /** Angle of incidence (deg) at wafer radius r and the shadow offset (same unit as s) behind a step of height s. */

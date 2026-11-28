@@ -65,7 +65,7 @@
         <li>Figure: the chamber (a cube) and the pipe are drawn to scale; the high-vacuum pump is a schematic turbomolecular pump of fixed size, whatever its speed.</li>
         <li>High-vacuum stage only: pumping starts at 1 Pa after 5 min of roughing; the pump speed is constant (real pumps lose speed near their ultimate pressure and at their upper pressure limit). Air-like gas at room temperature.</li>
         <li>Pipe conductance from Knudsen's interpolation formula (viscous to molecular), with Dushman's series combination as an approximate entrance correction for short pipes (it can be off by 10–15 % for intermediate l/d). Chamber treated as a cube; its own conductance and that of valves and traps are ignored.</li>
-        <li>Outgassing: one value per material after 1 h, falling as 1/t for unbaked metals and constant for baked steel. Published outgassing rates differ by more than an order of magnitude between sources, so the times are indicative. Elastomer seals, permeation and leaks are not included.</li>
+        <li>Outgassing: one value per material after 1 h, falling as 1/t for unbaked metals and constant for baked steel. Published outgassing rates differ by more than an order of magnitude between sources, so the times are indicative. With a very small effective speed the 1/t law, extrapolated back to the first minutes, gives more gas than the pump removes, and the computed pressure first rises above the 1 Pa start: such a system would not have reached 1 Pa in 5 min of roughing. Elastomer seals, permeation and leaks are not included.</li>
         <li>Flow-regime boundaries follow O’Hanlon (molecular for Kn &gt; 1); other references put the molecular boundary at Kn &gt; 0.5.</li>
         <li>The molecules drawn in the chamber are schematic (their number falls with the logarithm of the pressure).</li>
       </ul>
@@ -86,6 +86,6 @@
 
 <script src="../../assets/mfw.js?v=51881ba967"></script>
 <script src="model.js?v=25cf0de25d"></script>
-<script src="widget.js?v=aa7b52503b"></script>
+<script src="widget.js?v=31b8bf2e71"></script>
 </body>
 </html>

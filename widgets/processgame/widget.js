@@ -325,13 +325,13 @@
   const textBox = el('p', 'pg-text'); scoreBox.after(textBox);
   // values from the documents
   const qSec = el('section', 'pg-box'); panel.insertBefore(qSec, pbox);
-  el('h4', null, qSec, 'Look up in the documents');
+  el('h3', null, qSec, 'Look up in the documents');
   el('p', 'mfw-need', qSec, '<b>Your input</b><span>20 points for all nine values of the run</span>');
   el('p', 'pg-hint', qSec, 'Type the value you find. It is checked when you run the station; the first answer counts. A field may stay empty.');
   const qBox = el('div', 'pg-qs', qSec);
   // tool settings (the engine's sliders live here)
   const setSec = el('section', 'pg-box'); panel.insertBefore(setSec, pbox);
-  el('h4', null, setSec, 'Set the tool');
+  el('h3', null, setSec, 'Set the tool');
   el('p', 'mfw-need', setSec, '<b>Your input</b><span>decides resistance (35 points) and yield (30)</span>');
   const nudge = el('div', 'pg-nudge', setSec);
   setSec.appendChild(pbox);

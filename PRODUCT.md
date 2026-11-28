@@ -8,7 +8,7 @@ web
 
 ## Users
 - University students of microfabrication / semiconductor process technology courses, at several institutions (the site is shared teaching material of a European project; no single course is named). They use it on their own laptops and phones to understand a process step before an exam or a cleanroom lab.
-- Lecturers, who project a lesson in a lecture hall and drive the guided tour or change parameters live in front of the class.
+- Lecturers, who project a lesson in a lecture hall and drive the tour (the tab “Challenges”) or change parameters live in front of the class.
 Both situations are equally important.
 
 ## Product Purpose
@@ -19,7 +19,7 @@ Every number is traced to the original literature and every model states its lim
 
 ## Operating Context
 - Projected at 1280×720 or similar in lecture halls, often on washed-out projectors; used at desktop widths and on phones (≈390 px) by students.
-- Lessons are grouped into modules that follow a process flow (Fundamentals, Substrate, Lithography, Doping, Thin films, Etching, Characterization), numbered module.page.
+- Lessons are grouped into modules that follow a process flow (Fundamentals, Substrate, Lithography, Doping, Thin films, Etching, Interconnects, Characterization, and a process game at the end), numbered module.page.
 - Content is in English, course-neutral, with no slide references; lecture slides are used locally only for cross-checking.
 
 ## Capabilities and Constraints
@@ -29,7 +29,7 @@ Every number is traced to the original literature and every model states its lim
 - Open decision: the site name ("Microfabrication Interactive") and the µ mark may change later; nothing about the name or mark is fixed.
 
 ## Evidence on Hand
-- 14 lessons with source-verified models and 261 automated physics checks (`tests/verify.js`).
+- 20 lessons and one process game with source-verified models and 481 automated physics checks (`tests/verify.js`), as of 2026-11-28.
 - No testimonials, usage numbers or institutional endorsements exist; none may be invented.
 
 ## Product Principles

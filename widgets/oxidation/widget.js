@@ -48,7 +48,7 @@
       const af = Math.asin(0.45 / R), wafer = [];                          // wafer outline with the primary flat at the bottom
       for (let i = 0; i <= 90; i++) { const a = -Math.PI / 2 + af + (2 * Math.PI - 2 * af) * i / 90; wafer.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]); }
       p.polygon(wafer, { fill: wc, stroke: C.greyB, width: 2 });
-      p.text(`${thk(v.x)} SiO₂`, cx, cy, { size: 0.3, align: 'center', color: (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? '#111' : '#f4f4f4' });
+      p.text(`${thk(v.x)} SiO₂`, cx, cy, { size: 0.3, align: 'center', color: (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? MFW.DARK.bg : MFW.DARK.white });   // on the colour of the film itself: the darkest and the lightest palette entry
       p.text('colour seen at normal incidence', cx, cy - R - 0.25, { size: 0.21, align: 'center', color: C.muted });
 
       // ---------------------------------------------------------- cross-section (auto zoom in 1–2–5 steps: the oxide

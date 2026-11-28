@@ -1,6 +1,6 @@
 # Microfabrication Interactive
 
-Interactive simulations for teaching microfabrication and semiconductor process technology: each page combines a guided tour, a free Explore mode, key equations, exercises with answers, the model's limitations and references for every number used.
+Interactive simulations for teaching microfabrication and semiconductor process technology: each page combines a free Explore mode, a tour of questions and tasks (the tab “Challenges”), key equations, exercises with answers, the model's limitations and references for every number used.
 Live: https://rgumelmicromachines.github.io/microfabrication_widgets/ (GitHub Pages, branch `main`).
 
 Static site: plain HTML, CSS and JavaScript, no build step. Works from any static web host (e.g. GitHub Pages or a university web server) and also when opened straight from disk.
@@ -42,7 +42,7 @@ After editing any `.js` or `.css` file run `python tools/cache-bust.py`: it stam
 3. Describe the figure in `widget.js` with `MFW.widget('#app', { params, derived, draw, readout, steps, ... })`.
    - `params`: number → slider (`log: true` for a log slider), `options` → select, boolean → checkbox; `when: v => …` shows a control conditionally.
    - A lesson opens in **Explore**; the tour is the second tab, **Challenges** (`startMode: 'tour'` in the config, or `#tour` at the end of the address, opens it directly).
-   - `steps`: the guided tour. Parameters a step `set`s are locked while the tour is active; everything else stays under the student's control. `text`/`caption` may be functions of the live values.
+   - `steps`: the tour (tab “Challenges”). Parameters a step `set`s are locked while the tour is active; everything else stays under the student's control. `text`/`caption` may be functions of the live values.
    - Interactive tour (all pages): keep the first step a plain introduction, then mix predict and try steps. A step with `ask: { q, options, correct }` asks a question first and moves the figure only after the answer (`from` sets the state the question is about); a step with `goal: v => …`, `task` and `solution` lets the student work the sliders until the goal holds, with a “Show me” button. As soon as one step has `ask` or `goal`, the tour locks nothing, has no autoplay and is navigated by numbered dots.  In a try step the text must use live values, because the student's solution differs from yours. Run `MFWTour.run()` from `tests/tour-check.js` – expect an empty list.
    - Use palette roles (`C.yellow`, `C.text`, `MFW.MAT.sio2` …), never literal colours – that is what makes light/dark mode work.
    - Labels whose position depends on the data: use `p.place(text, candidates)` / `ax.place`, `ax.labelCurve`, or `ax.legend` – they

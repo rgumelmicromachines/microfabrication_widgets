@@ -291,7 +291,7 @@ body.mfw-noscroll { overflow: hidden; }
 .mfw-lock { display: none; font-size: 13px; font-stretch: 85%; color: var(--muted); }
 .mfw-param.is-locked .mfw-lock { display: inline-flex; align-items: center; gap: 4px; }
 .mfw-param.is-locked input, .mfw-param.is-locked select { opacity: 0.45; cursor: not-allowed; }
-.mfw-param input[type=range] { width: 100%; accent-color: var(--accent); margin: 2px 0; height: 22px; }
+.mfw-param input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; height: 28px; }
 .mfw-param select { width: 100%; }
 .mfw-check { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--text-2); }
 .mfw-check input { accent-color: var(--accent); width: 17px; height: 17px; }
@@ -391,12 +391,12 @@ body.mfw-noscroll { overflow: hidden; }
 }
 
 /* ---------------------------------------------------------------- module colours
-   One hue per module, taken from the figure palette (each ≥ 4.5:1 on its ground). It marks where a lesson belongs:
+   One hue per module, close to the figure palette; each reaches 4.5:1 on the page ground and on the grey of the course map. It marks where a lesson belongs:
    the stripe under the header band, lesson and figure numbers, card rules, progress bars and badges. Body text,
    links and controls stay ink and oxide blue; the figures keep the material colours. */
 :root, :root[data-theme="light"] {
-  --m-base: #7446a0; --m-substrate: #99335c; --m-litho: #8f6500; --m-doping: #c2372b; --m-films: #00846a;
-  --m-etch: #3b8526; --m-metal: #b35a00; --m-char: #0072b2; --m-game: #b02f9c; --m-all: #1d3f73;
+  --m-base: #7446a0; --m-substrate: #99335c; --m-litho: #8f6500; --m-doping: #c2372b; --m-films: #007860;
+  --m-etch: #337720; --m-metal: #a55200; --m-char: #0072b2; --m-game: #b02f9c; --m-all: #1d3f73;
   --on-mod: #ffffff;
 }
 :root[data-theme="dark"] {
@@ -538,3 +538,23 @@ body[data-module] .lesson-pager { margin-top: 36px; }
 .brand { align-items: center; gap: 10px; }
 .brand-mark { flex: none; width: 26px; height: 26px; display: block; }
 .brand-name + .brand-sub { margin-left: -4px; }
+
+/* ---------------------------------------------------------------- audit fixes: touch targets, narrowest phones, print */
+.mfw-group > summary, .mfw-source summary, .mfw-stepsbox > summary, .tasks summary { min-height: 28px; display: list-item; padding: 3px 0; }
+.mfw-panel, .mfw-param, .mfw-param-head, .mfw-params { min-width: 0; }
+.mfw select { width: 100%; max-width: 100%; min-width: 0; }
+.mfw-param-head > span:first-child { overflow-wrap: anywhere; }
+.footer .suggest-link { display: inline-block; padding: 3px 0; }
+@media print {
+  .site-header, .lesson-pager, .mfw-stagebar, .mfw-full, .mfw-tabs, .footer .suggest-link { display: none !important; }
+  body[data-module] .card { break-inside: avoid; }
+}
+/* the characteristics table must never widen the page: on the narrowest phones its cells may wrap, and as a last resort the table scrolls inside its own box */
+.mfw-chars, .mfw-readout { min-width: 0; max-width: 100%; }
+.mfw-readout { overflow-x: auto; }
+@media (max-width: 360px) {
+  .mfw-readout .unit, .mfw-readout .num { white-space: normal; }
+  .mfw-readout th + th, .mfw-readout td + td { padding-left: 8px; }
+  .mfw-readout .par { width: 44%; }
+}
+.card a, .card code { overflow-wrap: anywhere; }

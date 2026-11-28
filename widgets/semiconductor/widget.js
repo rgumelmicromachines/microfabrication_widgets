@@ -92,6 +92,7 @@
       // ---------------------------------------------------------- electric field in the depletion region
       const fmax = w.smooth('fmax', w.nice('fmax', [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000], v.Emax / 1000 * 1.15), { log: true });
       const ax = p.axes({ x: 1.0, y: 0.55, w: 5.6, h: 2.15, xr: [-span, span], yr: [0, fmax], grid: true, size: 0.19, nticks: 4,
+        xticks: [-span, -span / 2, 0, span / 2, span], xfmt: x => (Math.abs(x) < 1e-12 ? '0' : fmt.sig(x, 2)),
         xlabel: 'position x (µm)', ylabel: '|E| (kV/cm)', ylabelOffset: 0.75 }).draw();
       p.layer('field', () => {
         p.clip(ax.x, ax.y, ax.x + ax.w, ax.y + ax.h, () => {

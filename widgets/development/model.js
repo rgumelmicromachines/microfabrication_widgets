@@ -114,15 +114,19 @@
 
   /**
    * Cross-section of a feature. o: { I: relative intensity at nx equally spaced columns across the width X (µm),
-   * E (open-frame dose), d (thickness), S (Mack set), nz }. The whole resist surface touches the developer at t = 0.
+   * E (open-frame dose), d (thickness), S (Mack set), nz, pac }. The whole resist surface touches the developer at t = 0.
+   * pac (optional, default 1) is the fraction of the PAC that survived the bakes before exposure: the bleachable
+   * absorption is A·pac, and the destroyed PAC counted in r(m) is pac·(1 − m) – thermally decomposed PAC is taken as
+   * lost for the photoreaction (an assumption of the process game; the lesson page always uses pac = 1).
    * Returns { T: arrival time at node (i, j) = T[j·nx + i], m, nx, nz, hx, hz, rounds }.
    */
   function develop2D(o) {
     const nx = o.I.length, nz = o.nz || 32, hx = o.X / (nx - 1), hz = o.d / nz, S = o.S;
+    const pac = o.pac === undefined ? 1 : o.pac, D = pac === 1 ? DILL : { ...DILL, A: DILL.A * pac };
     const N = nx * (nz + 1), T = new Float64Array(N).fill(Infinity), f = new Float64Array(N), m = new Float64Array(N);
     for (let i = 0; i < nx; i++) {
-      const col = pacProfile(o.E * Math.max(0, o.I[i]), o.d, nz);
-      for (let j = 0; j <= nz; j++) { m[j * nx + i] = col[j]; f[j * nx + i] = 1 / rate(col[j], S); }
+      const col = pacProfile(o.E * Math.max(0, o.I[i]), o.d, nz, D);
+      for (let j = 0; j <= nz; j++) { const me = 1 - pac * (1 - col[j]); m[j * nx + i] = me; f[j * nx + i] = 1 / rate(me, S); }
       T[i] = 0;
     }
     const ax = 1 / (hx * hx), az = 1 / (hz * hz);

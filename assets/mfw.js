@@ -891,6 +891,8 @@
     { id: 'char', title: 'Characterization', pages: [
       { slug: 'fourpoint', title: 'Four-point probe' },
       { slug: 'interference', title: 'Film colour & reflectometry' }] },
+    { id: 'game', title: 'Process game', pages: [
+      { slug: 'processgame', title: 'Lithography run' }] },
   ].filter(m => m.pages.length);
   const PAGES = [];
   MODULES.forEach((m, i) => { m.no = i + 1; m.pages.forEach((p, j) => { p.topic = m.title; p.module = m; p.no = `${m.no}.${j + 1}`; PAGES.push(p); }); });

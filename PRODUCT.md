@@ -29,7 +29,7 @@ Every number is traced to the original literature and every model states its lim
 - Open decision: the site name ("Microfabrication Interactive") and the µ mark may change later; nothing about the name or mark is fixed.
 
 ## Evidence on Hand
-- 21 lessons and one process game with source-verified models and 500 automated physics checks (`tests/verify.js`), as of 2026-11-28.
+- 22 lessons and one process game with source-verified models and 521 automated physics checks (`tests/verify.js`), as of 2026-11-28.
 - No testimonials, usage numbers or institutional endorsements exist; none may be invented.
 
 ## Product Principles

@@ -58,7 +58,7 @@
   const widget = MFW.widget('#app', {
     title: 'Lithography run: aluminium meander resistor',
     alt: v => `Process game, ${v.st} of 8 stations done: ${STATE[v.st]}.${v.st >= 1 ? ` Resist ${um(v.res.L.d)}.` : ''}${v.st >= 5 ? ` Resist line ${cdText(v.res.L)}.` : ''}${v.st >= 7 ? ` After the etch: ${etchText(v.res, v.st)}.` : ''}${v.st >= 8 ? ` Test: ${v.res.count.pass} of ${v.res.n} dies pass, mean resistance ${ohm(v.res.Rmean)}, target ${ohm(G.R_TARGET)}.` : ''}`,
-    source: 'Every station uses the model of its lesson: soft bake (residual solvent, decomposition of the photoactive compound), contact and proximity image, exposure and development (Dill; Mack with the rate parameters of AZ 1350J in AZ Developer 1:1 as a stand-in for AZ 1500), linear overlay with thermal run-out, cosine law for the thickness of the evaporated film, isotropic etch front, four-point probe factor π/ln 2. Product data: Merck data sheet of the AZ 1500 series (spin curve read from the graph), MicroChemicals application notes, Transene data of aluminium etchant Type A, Williams et al. 2003. Resistances use the bulk resistivity of aluminium (Desai et al. 1984) and are lower bounds for a thin film. The top view shows a simplified layout with a few turns; its detail, the pad offset and the alignment marks are to scale. The cross-section has an enlarged vertical scale.',
+    source: 'Every station uses the model of its lesson: soft bake (residual solvent, decomposition of the photoactive compound), contact and proximity image, exposure and development (Dill; Mack with the rate parameters of AZ 1350J in AZ Developer 1:1 as a stand-in for AZ 1500), linear overlay with thermal run-out, cosine law for the thickness of the evaporated film, isotropic etch front, four-point probe factor π/ln 2. Product data: Merck data sheet of the AZ 1500 series (spin curve read from the graph), MicroChemicals application notes, Transene data of aluminium etchant Type A, Williams et al. 2003. Resistances use the resistivity measured on a 430 nm sputtered aluminium film, 4.8 µΩ·cm (Corrêa et al. 2024); bulk aluminium has 2.65 µΩ·cm. The top view shows a simplified layout with a few turns; its detail, the pad offset and the alignment marks are to scale. The cross-section has an enlarged vertical scale.',
     freeText: v => (v.st === 5 && v.insp > 0.5 ? '<b>Inspection after development</b>' : v.st < 8 ? `<b>Station ${v.st + 1} of 8: ${STATIONS[v.st].name}</b>` : '<b>The wafer is tested</b>'),
 
     params: {
@@ -300,7 +300,7 @@
     readout: v => {
       const r = v.res, L = r.L, st = v.st;
       return MFW.chars([
-        ['target resistance', 'R', ohm(G.R_TARGET), undefined, { f: 'ρ·L/(w·h), bulk ρ: lower bound', note: 'test limit ±10 %' }],
+        ['target resistance', 'R', ohm(G.R_TARGET), undefined, { f: 'ρ·L/(w·h), ρ of a thin film', note: 'test limit ±10 %' }],
         st >= 1 && ['resist thickness', 'd', um(L.d), undefined, { note: `order: ${O.thick[0]}–${O.thick[1]} µm`, warn: L.d < O.thick[0] - 1e-9 || L.d > O.thick[1] + 1e-9 }],
         st >= 4 && ['exposure', 'E', `${fmt.num(L.E, 0)} mJ/cm²`, undefined, { note: `${fmt.num(L.tExp, 1)} s at ${G.LAMP} mW/cm²` }],
         st >= 5 && ['microscope after development: resist line', '', cdText(L), undefined, { note: `mask ${O.line} µm`, warn: L.stick || L.notOpen || L.gone }],
@@ -568,7 +568,7 @@
       <table><tr><th>Value from the documents</th><th>Your answer</th><th>Document</th></tr>
         ${gr.map(g => row(g.text, g.given === undefined ? '–' : `${g.given} ${g.unit}`, `${g.ok ? '✓' : '✗'} ${num3(g.want)} ${g.unit}`)).join('')}
       </table>
-      <p class="note">Development uses rate parameters of AZ 1350J as a stand-in for AZ 1500; resistances use the bulk resistivity of aluminium and are lower bounds. ${new Date().toISOString().slice(0, 10)}</p>
+      <p class="note">Development uses rate parameters of AZ 1350J as a stand-in for AZ 1500; resistances use a resistivity of 4.8 µΩ·cm measured on a sputtered aluminium film. ${new Date().toISOString().slice(0, 10)}</p>
       <p class="pg-noprint"><button type="button" id="pg-print">Print or save as PDF</button> <button type="button" id="pg-save">Download as text</button></p>`;
     const nameEl = report.querySelector('#pg-name'), printName = report.querySelector('.pg-printname');
     const setName = () => { printName.textContent = nameEl.value ? `Name: ${nameEl.value}` : ''; };

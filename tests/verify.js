@@ -668,8 +668,8 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   check('digitised curve follows the ω^(−1/2) law of the spin-coating lesson (1000 → 4000 rpm, AZ 1512 HS)', G.thickness('az1512', 1000) / G.thickness('az1512', 4000), SP.thickness(1000, 20) / SP.thickness(4000, 20), 0.02);
   truth('only AZ 1512 HS reaches the 1.3–1.6 µm of the work order between 1000 and 4000 rpm', ['az1505', 'az1518', 'az1529'].every(k => [1000, 2000, 3000, 4000].every(r => { const t = G.thickness(k, r); return t < 1.3 || t > 1.6; })) && G.thickness('az1512', 3500) > 1.3 && G.thickness('az1512', 3500) < 1.6);
   // page tasks
-  check('page task 1: target resistance (Ω)', G.R_TARGET, 795, 1e-9);
-  check('page task 1: sheet resistance (mΩ/□)', 1000 * G.RHO_AL / 500e-9, 53, 1e-9);
+  check('page task 1: target resistance (Ω)', G.R_TARGET, 1440, 1e-9);
+  check('page task 1: sheet resistance (mΩ/□)', 1000 * G.RHO_AL / 500e-9, 96, 1e-9);
   check('page task 2: exposure time for 128 mJ/cm² (s)', run({ dose: 128 }).L.tExp, 15, 0.005);
   check('page task 3: 80 Å/s in nm/min', G.etchRate('t40'), 480, 1e-12);
   check('page task 3: time to clear the centre (s)', run({}).tc0, 62.5, 1e-12);
@@ -678,7 +678,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   check('page task 4: after 20 % more etch (µm)', G.lineSection(5, 500, 600).wEff, 3.96, 0.005);
   truth('before the film clears the lines are still connected', !G.lineSection(5, 500, 499).cleared);
   check('page task 5: run-out at 45 mm (µm)', ALm.runout('soda', 1.5) * 45e-3, 0.43, 0.01);
-  check('page task 6: four-point probe V/I (mΩ)', 1000 * run({}).VI, 11.7, 0.005);
+  check('page task 6: four-point probe V/I (mΩ)', 1000 * run({}).VI, 21.2, 0.005);
   // a careful run is on target
   { const r = run({}); check('careful run: mean resistance (Ω)', r.Rmean, G.R_TARGET, 0.02); check('careful run: all 69 dies pass', r.count.pass, 69, 0, 0);
     check('resist model = Development lesson (resist line width, µm)', r.L.cd, 2 * (5 - DVm.footEdge(DVm.develop2D({ I: r.L.I, E: r.L.E, d: r.L.d, S: DVm.MACK.pb70, X: 5, nz: 32, pac: r.L.pac }), 60)), 1e-12);

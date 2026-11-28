@@ -27,12 +27,13 @@
    Aluminium etchant (phosphoric / nitric / acetic acid): 30 Å/s at 25 °C and 80 Å/s at 40 °C, isotropic (Transene
      Company, "Aluminum Etchant Type A" product data). Photoresist is not attacked: 0 nm/min in Al Etch A
      (K. R. Williams, K. Gupta, M. Wasilik, J. Microelectromech. Syst. 12 (2003) 761, Table II).
-   Resistivity of aluminium: 2.650 × 10⁻⁸ Ω·m at 293 K, bulk (P. D. Desai, H. M. James, C. Y. Ho, J. Phys. Chem. Ref.
-     Data 13 (1984) 1131). A thin film has a higher resistivity: evaporated films on unheated glass about 60 % above
-     bulk at 296 K (A. F. Mayadas, J. Appl. Phys. 1968, doi:10.1063/1.1656954, abstract), sputtered films 7.9 to
-     4.8 µΩ·cm for 50 to 430 nm (C. A. Corrêa et al., RSC Adv. 14 (2024) 15220). Neither matches the film of the work
-     order, so the bulk value is kept as
-     a lower bound and all resistances of the game are lower bounds in the same sense.
+   Resistivity of the aluminium film: 4.8 × 10⁻⁸ Ω·m, measured at 298 K by the van der Pauw method on a 430 nm film
+     made by pulsed DC magnetron sputtering (C. A. Corrêa et al., RSC Adv. 14 (2024) 15220; their films of 50 to
+     430 nm gave 7.9 to 4.8 µΩ·cm). It is the measured thin-film value closest in thickness to the 500 nm of the work
+     order that was found in an opened source. The film of the work order is evaporated, not sputtered: no measured
+     value for an evaporated film of this thickness could be opened (evaporated films on unheated glass: about 60 %
+     above bulk at 296 K, A. F. Mayadas, J. Appl. Phys. 1968, doi:10.1063/1.1656954, abstract only). Bulk aluminium:
+     2.650 × 10⁻⁸ Ω·m at 293 K (P. D. Desai, H. M. James, C. Y. Ho, J. Phys. Chem. Ref. Data 13 (1984) 1131).
 
    SCENARIO (work order – chosen for the game, not measured data)
    100 mm wafer, 500 nm evaporated aluminium at the centre from a small planar source 30 cm away (thickness profile:
@@ -67,7 +68,7 @@
   const ETCH_URL = 'https://transene.com/aluminum/';
   const ETCH = { t25: { T: 25, As: 30 }, t40: { T: 40, As: 80 } };          // Å/s (Transene, Type A)
   const LAMP = 8.5;                                                         // mW/cm² at 365 nm (MicroChemicals)
-  const RHO_AL = 2.650e-8;                                                  // Ω·m, bulk, 293 K (Desai et al. 1984)
+  const RHO_AL = 4.8e-8;                                                    // Ω·m, 430 nm sputtered film, 298 K (Corrêa et al. 2024); bulk: 2.650e-8
   const AL_DEV = { azdev: 0, mif: 10, naoh: 100 };                          // nm/min used in the game (see above)
   const T_STRIP = 150;                                                      // °C: solvents no longer strip the resist (MicroChemicals)
   const ORDER = {                                                           // scenario

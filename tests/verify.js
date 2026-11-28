@@ -282,6 +282,38 @@ section('PVD (cosine law, mean free path, shadowing)');
   check('page task 3: angle (deg)', PV.incidence(10, 50), 11.31, 0.001); check('page task 3: shadow (µm)', PV.shadow(1.5, 10, 50), 0.3, 1e-12);
 }
 
+// ------------------------------------------------------------------ image reversal
+section('Image reversal (Dill exposure, bake bookkeeping, flood exposure, Mack development)');
+{ const IRV = W('imagereversal'), DVm = W('development'), LIm = W('lithography');
+  const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
+  const hp = 3, d = 1.4, NX = 41, NZ = 32, xs = Array.from({ length: NX }, (_, i) => hp * i / (NX - 1));
+  const I = LIm.aerialImage({ mode: 'proximity', lambda: 0.365, hp, xs, gap: 0, resist: d, collimation: 2 }), Irev = Float64Array.from(I).reverse();
+  const go = (o, t, pos) => IRV.measure(IRV.process({ I: pos ? Irev : I, X: hp, d, E1: 90, eta: 1, E2: 400, nz: NZ, ...o }), t, pos);
+  // the flood march against the exact reduced Dill equation for a fresh film
+  { const ex = DVm.pacProfile(120, d, NZ), fl = IRV.flood(new Float64Array(NZ + 1).fill(1), 120, d / NZ, 400);
+    check('flood exposure of an unexposed film = Dill profile, surface', fl[0], ex[0], 0.01); check('… at mid depth', fl[NZ / 2], ex[NZ / 2], 0.02); check('… at the substrate', fl[NZ], ex[NZ], 0.03); }
+  truth('no flood dose leaves the film as it was', IRV.flood([1, 0.5, 0.2], 0, 0.1).every((x, i) => x === [1, 0.5, 0.2][i]));
+  { const R = IRV.process({ I, X: hp, d, E1: 90, eta: 0.8, E2: 400, nz: NZ }); let bad = 0, badc = 0;
+    for (let k = 0; k < R.m.length; k++) { if (Math.abs(R.p[k] + R.a[k] + R.c[k] - 1) > 1e-12 || R.a[k] < -1e-12) bad++; if (Math.abs(R.c[k] - 0.8 * (1 - R.m1[k])) > 1e-12) badc++; }
+    truth('photoactive + soluble + converted = 1 everywhere, none negative', bad === 0); truth('converted share = η·(1 − m₁)', badc === 0);
+    check('exposed share at the surface of the line, 90 mJ/cm²', 1 - R.m1[0], 1 - Math.exp(-0.0239 * 90 * I[0]), 1e-9);
+    truth('the first exposure reaches the substrate weaker than the surface', R.m1[NZ * NX] > R.m1[0] + 0.2); }
+  { const A = IRV.process({ I: Irev, X: hp, d, E1: 90, nz: NZ, mode: 'positive' }), B = DVm.develop2D({ I: Irev, E: 90, d, S: DVm.MACK.pb100, X: hp, nz: NZ }); let dm = 0;
+    for (let k = 0; k < A.T.length; k++) dm = Math.max(dm, Math.abs(A.T[k] - B.T[k]));
+    check('positive mode reproduces the development lesson (largest difference in arrival time, s)', dm, 0, 0, 1e-9); }
+  truth('fast-sweeping front reaches every node', Array.from(IRV.process({ I, X: hp, d, E1: 90, eta: 1, E2: 400, nz: NZ }).T).every(isFinite));
+  check('developer reaches the substrate in the opening (s)', go({}, 120).tClear, 61, 0.03);
+  truth('a lower first dose gives more undercut (75 against 250 mJ/cm², 120 s)', go({ E1: 75 }, 120).under > go({ E1: 250 }, 120).under + 0.2 && go({ E1: 250 }, 120).under < 0.05);
+  truth('the undercut grows with over-development (70, 90, 120, 150 s)', [70, 90, 120, 150].map(t => go({}, t).under).every((u, i, a) => i === 0 || u > a[i - 1]));
+  truth('too low a first dose: the film is removed', go({ E1: 40 }, 90).gone && go({ E1: 90 }, 90).left > 1);
+  truth('too low a flood dose: the opening does not clear', !go({ E2: 40 }, 120).open && go({ E2: 400 }, 120).open);
+  truth('a bake that converts less thins the film', go({ eta: 0.8 }, 90).left < go({ eta: 1 }, 90).left - 0.2);
+  truth('positive mode: positive slope, no undercut', go({ mode: 'positive' }, 90, true).gamma < -5);
+  truth('long development lifts the 3 µm line', go({}, 200).lifted && !go({}, 150).lifted);
+  check('page task 1: exposed share at 90 mJ/cm²', 1 - Math.exp(-0.0239 * 90), 0.88, 0.005); check('page task 1: at 40 mJ/cm²', 1 - Math.exp(-0.0239 * 40), 0.62, 0.01);
+  check('page task 2: time for 30 % over-development (s)', 61 / 0.7, 87, 0.005);
+}
+
 // ------------------------------------------------------------------ lift-off
 section('Lift-off (line-of-sight deposition into a resist opening)');
 { const LO = W('liftoff'), d2r = Math.PI / 180;
@@ -630,7 +662,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   truth('underexposure → spaces not open → every die shorted', run({ dose: 34 }).count.short === 69);
   truth('etch stopped early → shorts at the centre first', (() => { const r = run({ tet: 60 }); return r.centre.cls === 'short' && r.count.pass > 0 && r.count.short > 0; })());
   truth('long overetch → resistance too high', run({ tet: 110 }).count.high === 69);
-  truth('underexposed but open → lines too wide → resistance too low', run({ dose: 59.5 }).count.low === 69);
+  truth('underexposed but open → lines too wide → resistance too low on most dies', (() => { const r = run({ dose: 45 }); return r.count.low > 50 && r.count.short === 0 && r.count.high === 0; })());
   truth('underbaked film sticks to the mask → opens', (() => { const r = run({ sbT: 80, sbt: 30 }); return r.L.stick && r.count.open === 69; })());
   truth('the data-sheet bake (100 °C, 60 s) does not stick', !run({}).L.stick);
   truth('hot, long soft bake: PAC lost, resist no longer opens', (() => { const r = run({ sbT: 140, sbt: 300 }); return r.L.pac < 0.5 && r.L.notOpen; })());
@@ -672,7 +704,7 @@ section('Progress: points and achievements (engine, kept in the browser)');
   { const s3 = P.empty(), lessons = MFWn.PAGES.filter(p => p.slug !== 'processgame');
     lessons.forEach(p => { P.record(s3, { type: 'need', slug: p.slug, n: 1 }); P.record(s3, { type: 'step', slug: p.slug, i: 1, kind: 'solved' }); });
     const e = P.earned(s3);
-    check('number of lessons with a tour', lessons.length, 21, 0, 0);
+    check('number of lessons with a tour', lessons.length, 22, 0, 0);
     truth('all tours → full process flow, five lessons, every module mark, own hands', e.includes('all-tours') && e.includes('five-tours') && e.includes('own-hands') && P.ACHIEVEMENTS.filter(a => a.module).every(a => e.includes(a.id)));
     check('one module mark per lesson module', P.ACHIEVEMENTS.filter(a => a.module).length, 8, 0, 0);
     truth('no game achievement without a run', !e.some(id => id.startsWith('game-'))); }

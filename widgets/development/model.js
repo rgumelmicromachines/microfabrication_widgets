@@ -131,6 +131,12 @@
       for (let j = 0; j <= nz; j++) { const me = 1 - pac * (1 - col[j]); m[j * nx + i] = me; f[j * nx + i] = 1 / rate(me, S); }
       T[i] = 0;
     }
+    const rounds = sweep(T, f, nx, nz, hx, hz);
+    return { T, m, nx, nz, hx, hz, X: o.X, d: o.d, rounds };
+  }
+  /** Fast sweeping solution of |∇T| = f on the grid; T must hold the start values (0 where the developer touches the
+      resist at t = 0, Infinity elsewhere) and is filled in place. f = 1/rate at every node. Returns the sweeps used. */
+  function sweep(T, f, nx, nz, hx, hz) {
     const ax = 1 / (hx * hx), az = 1 / (hz * hz);
     const update = (i, j) => {
       const k = j * nx + i;
@@ -144,7 +150,7 @@
         // (t − a)²/hx² + (t − b)²/hz² = f²; fall back to the one-sided update where the front comes from one side only
         const A2 = ax + az, B2 = -2 * (a * ax + b * az), C2 = a * a * ax + b * b * az - fk * fk, disc = B2 * B2 - 4 * A2 * C2;
         t = disc >= 0 ? (-B2 + Math.sqrt(disc)) / (2 * A2) : Infinity;
-        if (!(t >= Math.max(a, b))) t = Math.min(a + hx * fk, b + hz * fk);
+        if (!(t >= Math.max(a, b)) || t === Infinity) t = Math.min(a + hx * fk, b + hz * fk);   // also when the two-sided equation has no solution
       }
       if (t < T[k]) { const ch = T[k] - t; T[k] = t; return ch; }
       return 0;
@@ -160,7 +166,7 @@
       }
       if (change < 1e-6) { rounds++; break; }
     }
-    return { T, m, nx, nz, hx, hz, X: o.X, d: o.d, rounds };
+    return rounds;
   }
   /** Developed depth in every column after t seconds (first node from the top that the front has not reached). */
   function profile(R, t) {
@@ -192,5 +198,5 @@
     return [al[0] === null ? null : al[0] * s, al[1] * s];
   }
   return { DILL, MACK, DEVELOPERS, mSurface, pacProfile, pacBrute, rate, arrival, clearTime, depth, doseToClear, contrast,
-    develop2D, profile, footEdge, alLoss };
+    develop2D, sweep, profile, footEdge, alLoss };
 }));

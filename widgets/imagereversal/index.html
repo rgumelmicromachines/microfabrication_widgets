@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image reversal · Microfabrication Interactive</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png?v=3">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png?v=3">
+<meta name="description" content="Interactive image reversal of a photoresist: first exposure, reversal bake, flood exposure and development, and how dose and development time set the undercut for lift-off.">
+<script>(function(){var t=null;try{t=localStorage.getItem('mfw-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t='light'}document.documentElement.setAttribute('data-theme',t)})();</script>
+<link rel="preload" href="../../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/mfw.css?v=dd1dab85f7">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../../index.html" aria-label="Microfabrication Interactive – contents"><span class="brand-name">Microfabrication</span> <span class="brand-sub">Interactive</span></a>
+  <span class="crumb">Lithography</span>
+  <span class="header-spacer"></span>
+  <button class="theme-toggle" type="button" data-mfw-theme-toggle aria-label="Switch theme"></button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>Image reversal: a positive resist turned negative</h1>
+    <p class="lede">A bake and a second exposure without a mask reverse the tone of the resist. The resist that got the most light now stays, and the less exposed resist near the substrate dissolves faster, which gives the undercut sidewalls that lift-off needs.</p>
+  </div>
+
+  <div id="app"></div>
+
+  <section class="article">
+    <article class="card">
+      <h2>Key equations</h2>
+      <p>First exposure (Dill): the light is absorbed by the photoactive compound, of which the fraction <span class="tex">m</span> is intact, and bleaches it:</p>
+      <div class="tex-display">\frac{\partial I}{\partial z} = -(A\,m + B)\,I, \qquad \frac{\partial m}{\partial E} = -C\,I\,m, \qquad m(z{=}0) = e^{-C E_1}</div>
+      <p>with <span class="tex">A = 1.01\ \mathrm{\mu m^{-1}}</span>, <span class="tex">B = 0.22\ \mathrm{\mu m^{-1}}</span>, <span class="tex">C = 0.0239\ \mathrm{cm^2/mJ}</span> at 365 nm. Bookkeeping of this page after the reversal bake and the flood exposure, in every volume element:</p>
+      <div class="tex-display">c = \eta\,(1 - m_1), \qquad p = m_1 \cdot (\text{share that survives the flood exposure}), \qquad m_{inh} = c + p</div>
+      <p><span class="tex">c</span> is the exposed resist converted by the bake, <span class="tex">p</span> the photoactive compound still intact, and <span class="tex">m_{inh}</span> the inhibitor that enters the development rate (Mack):</p>
+      <div class="tex-display">r = r_{max}\,\frac{(a+1)(1-m_{inh})^n}{a + (1-m_{inh})^n} + r_{min}</div>
+      <table>
+        <tr><th>Step</th><th>What it does</th><th>Typical</th></tr>
+        <tr><td>First exposure</td><td>exposes the areas that stay; mask inverted</td><td>a low dose gives more undercut</td></tr>
+        <tr><td>Reversal bake</td><td>makes the exposed resist insoluble</td><td>110–130 °C, a few minutes, ±1–2 °C on a hotplate</td></tr>
+        <tr><td>Flood exposure</td><td>exposes the rest, no mask</td><td>at least 2–3 times the positive dose</td></tr>
+        <tr><td>Development</td><td>removes the flood-exposed resist</td><td>about 30 % over-development to start with</td></tr>
+      </table>
+      <p class="note">Table after the MicroChemicals application note “Image reversal resists and their processing”.</p>
+    </article>
+
+    <article class="card tasks">
+      <h2>Try it yourself</h2>
+      <ol>
+        <li>Which share of the photoactive compound at the resist surface is exposed by 90 mJ/cm², and which by 40 mJ/cm²?
+          <details><summary>Answer</summary><span class="tex">1 - e^{-0.0239\cdot 90} = 0.88</span> and <span class="tex">1 - e^{-0.0239\cdot 40} = 0.62</span>. With Mack's threshold near <span class="tex">m_{TH} = 0.61</span>, a surface with 62 % inhibitor is on the edge of dissolving, and deeper in the film there is less: the film erodes.</details></li>
+        <li>The developer reaches the substrate after 61 s. How long is the development for 30 % over-development, counted as in the application note (time after clearing divided by the whole time)?
+          <details><summary>Answer</summary><span class="tex">(t - 61)/t = 0.3 \Rightarrow t = 61/0.7 = 87\ \mathrm{s}</span>.</details></li>
+        <li>A resist needs 60 mJ/cm² to clear as a positive resist. Which flood exposure dose is recommended in the reversal process, and why can it not be too high?
+          <details><summary>Answer</summary>At least 120–180 mJ/cm². The areas converted by the bake are no longer photosensitive, so more light changes nothing there; it only makes sure that the resist near the substrate is exposed too.</details></li>
+        <li>In Explore mode, compare first doses of 75 and 250 mJ/cm² at 120 s of development. Why does the higher dose give the steeper sidewall?
+          <details><summary>Answer</summary>At 250 mJ/cm² the film is bleached and exposed almost evenly, so the bake converts it at every depth. At 75 mJ/cm² the bottom of the film is clearly less exposed than the top, less of it is converted, and it dissolves faster.</details></li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>Model &amp; limitations</h2>
+      <ul>
+        <li>Exposure follows Dill's model without reflection from the substrate, so there are no standing waves. The Dill parameters are those of the AZ 1500 series; none were found for an image reversal resist such as AZ 5214E.</li>
+        <li>The chemistry of the reversal bake is reduced to one number, the share η of the exposed resist that is converted. The application note gives the trend with temperature and time but no kinetics, so the page has no temperature slider. Thermal decomposition of the photoactive compound during the bake, which slows the later development, is left out.</li>
+        <li>The converted resist is assumed to inhibit dissolution exactly like intact photoactive compound, in Mack's rate law with the parameters measured for AZ 1350J after a 100 °C prebake. This is an assumption of the page; no development-rate model for a reversed resist was found. Doses, times and undercuts are therefore trends, not process values for a real resist.</li>
+        <li>The mask image is that of 3 µm lines and spaces in hard contact, with diffraction over the resist thickness. Scattering and reflection, which at very high doses widen the resist lines, are not modelled.</li>
+        <li>Development is the motion of a front at the local rate (eikonal equation) on a grid of 41 × 33 points; the profile is resolved to about 0.05 µm. Nitrogen bubbles, rehydration before the flood exposure and the waiting time after the first exposure are not modelled.</li>
+        <li>The cross-section is to scale; the mask and the light arrows are schematic.</li>
+      </ul>
+    </article>
+
+    <article class="card refs">
+      <h2>References</h2>
+      <ul>
+        <li>MicroChemicals GmbH, application notes “Image reversal resists and their processing” and “Optical parameters of photoresists”, <a href="https://www.microchemicals.com/downloads/application_notes.html">microchemicals.com</a> (process sequence, influence of dose, bake, flood exposure and over-development; Dill parameters).</li>
+        <li>F. H. Dill, W. P. Hornberger, P. S. Hauge, J. M. Shaw, “Characterization of positive photoresist”, <i>IEEE Trans. Electron Devices</i> ED-22 (1975) 445.</li>
+        <li>S. V. Babu, E. Barouch, “Exact solution of Dill's model equations for positive photoresist kinetics”, <i>IEEE Electron Device Lett.</i> EDL-7 (1986) 252.</li>
+        <li>C. A. Mack, “Development of positive photoresists”, <i>J. Electrochem. Soc.</i> 134 (1987) 148.</li>
+        <li>H. Zhao, “A fast sweeping method for eikonal equations”, <i>Math. Comp.</i> 74 (2005) 603.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<script src="../../assets/mfw.js?v=bff6cac2a2"></script>
+<script src="../lithography/model.js?v=694ee77c66"></script>
+<script src="../development/model.js?v=f245ea6660"></script>
+<script src="model.js?v=065d69471f"></script>
+<script src="widget.js?v=882d714eec"></script>
+</body>
+</html>

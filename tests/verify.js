@@ -573,7 +573,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
 {
   const G = W('processgame'), SP = W('spincoating'), DVm = W('development'), ALm = W('alignment');
   const truth = (name, ok) => { n++; if (!ok) fails++; console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}`); };
-  const good = { resist: 'az1512', rpm: 3500, sbT: 100, sbt: 60, ax: 0, ay: 0, ath: 0, mode: 'contact', gap: 20, texp: 15, dev: 'azdev', tdev: 60, hbT: 110, hbt: 60, etT: 't40', tet: 75 };
+  const good = { resist: 'az1512', rpm: 3500, sbT: 100, sbt: 60, ax: 0, ay: 0, ath: 0, mode: 'contact', gap: 20, dose: 127.5, dev: 'azdev', tdev: 60, hbT: 110, hbt: 60, etT: 't40', tet: 75 };
   const wf = { ox: 0, oy: 0, oth: 0 }, run = (ch, w = wf) => G.run({ ...good, ...ch }, w);
   // digitised spin curve
   check('spin curve returns the digitised point (AZ 1512 HS, 3000 rpm, µm)', G.thickness('az1512', 3000), 1.52, 1e-12);
@@ -584,7 +584,7 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
   // page tasks
   check('page task 1: target resistance (Ω)', G.R_TARGET, 795, 1e-9);
   check('page task 1: sheet resistance (mΩ/□)', 1000 * G.RHO_AL / 500e-9, 53, 1e-9);
-  check('page task 2: dose of 15 s (mJ/cm²)', G.LAMP * 15, 128, 0.005);
+  check('page task 2: exposure time for 128 mJ/cm² (s)', run({ dose: 128 }).L.tExp, 15, 0.005);
   check('page task 3: 80 Å/s in nm/min', G.etchRate('t40'), 480, 1e-12);
   check('page task 3: time to clear the centre (s)', run({}).tc0, 62.5, 1e-12);
   check('page task 3 and work order: film at the edge (nm)', G.filmAt(50), 473, 0.002);
@@ -600,10 +600,10 @@ section('Process game (data-sheet values, chained lesson models, scoring)');
     check('careful run with every document value right scores 100', sc.total, 100, 0, 0);
     check('one rework and one new wafer cost 15 points', G.score(r, [{ ok: true }], 1, 1).eco, 0, 0, 0); }
   // mistakes carry forward
-  truth('underexposure → spaces not open → every die shorted', run({ texp: 4 }).count.short === 69);
+  truth('underexposure → spaces not open → every die shorted', run({ dose: 34 }).count.short === 69);
   truth('etch stopped early → shorts at the centre first', (() => { const r = run({ tet: 60 }); return r.centre.cls === 'short' && r.count.pass > 0 && r.count.short > 0; })());
   truth('long overetch → resistance too high', run({ tet: 110 }).count.high === 69);
-  truth('underexposed but open → lines too wide → resistance too low', run({ texp: 7 }).count.low === 69);
+  truth('underexposed but open → lines too wide → resistance too low', run({ dose: 59.5 }).count.low === 69);
   truth('underbaked film sticks to the mask → opens', (() => { const r = run({ sbT: 80, sbt: 30 }); return r.L.stick && r.count.open === 69; })());
   truth('the data-sheet bake (100 °C, 60 s) does not stick', !run({}).L.stick);
   truth('hot, long soft bake: PAC lost, resist no longer opens', (() => { const r = run({ sbT: 140, sbt: 300 }); return r.L.pac < 0.5 && r.L.notOpen; })());

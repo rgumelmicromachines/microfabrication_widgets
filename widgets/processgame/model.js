@@ -11,6 +11,7 @@
      student is asked to open.
    Same data sheet: soft bake 90–110 °C, spectral sensitivity 310–450 nm, development 60 s (puddle or immersion),
      hard bake 100–110 °C.
+   The exposure is set as a dose, as on a mask aligner with a dose controller; the tool turns it into a time.
    Lamp: 8.5 mW/cm² at 365 nm in the wafer plane of a 350 W mercury mask aligner (MicroChemicals GmbH, application
      note "Exposure of photoresists"). Proximity gap of a mask aligner 10–50 µm (SÜSS MicroTec, MJB4 brochure 02/2010).
    Exposure and development: model and parameters of the lesson "Development" (Dill parameters of AZ 1500 at 365 nm;
@@ -96,7 +97,7 @@
   function questions(rc) {
     const th = thickness(rc.resist, rc.rpm);
     return [
-      { id: 'qThick', station: 0, unit: 'µm', text: `Film thickness of ${TDS.resists[rc.resist].name} at ${Math.round(rc.rpm)} rpm from the spin curve`, want: th, tol: Math.max(0.15, 0.1 * th) },
+      { id: 'qThick', station: 0, unit: 'µm', text: `Thickness the spin curve gives for your choice (${TDS.resists[rc.resist].name} at ${Math.round(rc.rpm)} rpm)`, want: th, tol: Math.max(0.15, 0.1 * th) },
       { id: 'qSbMin', station: 1, unit: '°C', text: 'Soft bake: lowest recommended temperature', want: TDS.softbake[0], tol: 0 },
       { id: 'qSbMax', station: 1, unit: '°C', text: 'Soft bake: highest recommended temperature', want: TDS.softbake[1], tol: 0 },
       { id: 'qSensMin', station: 3, unit: 'nm', text: 'Spectral sensitivity: shortest wavelength', want: TDS.sens[0], tol: 0 },
@@ -104,7 +105,7 @@
       { id: 'qDev', station: 4, unit: 's', text: 'Development time in the data sheet', want: TDS.devTime, tol: 0 },
       { id: 'qHbMin', station: 5, unit: '°C', text: 'Hard bake: lowest recommended temperature', want: TDS.hardbake[0], tol: 0 },
       { id: 'qHbMax', station: 5, unit: '°C', text: 'Hard bake: highest recommended temperature', want: TDS.hardbake[1], tol: 0 },
-      { id: 'qRate', station: 6, unit: 'Å/s', text: `Etch rate of the aluminium etchant at ${ETCH[rc.etT].T} °C`, want: ETCH[rc.etT].As, tol: 0 },
+      { id: 'qRate', station: 6, unit: 'Å/s', text: `Etch rate of the etchant at your temperature (${ETCH[rc.etT].T} °C)`, want: ETCH[rc.etT].As, tol: 0 },
     ];
   }
   /** Grade the answers ({ id: number }): [{ id, ok, want, given }]. An empty answer is wrong. */
@@ -119,13 +120,13 @@
   function litho(rc) {
     const d = thickness(rc.resist, rc.rpm);
     const w = solvent(rc.sbT, rc.sbt, d), pac = SB.pacLeft(rc.sbT, rc.sbt);
-    const gap = rc.mode === 'prox' ? rc.gap : 0, E = LAMP * rc.texp;
+    const gap = rc.mode === 'prox' ? rc.gap : 0, E = rc.dose;            // mJ/cm² at 365 nm, set on the aligner
     const xs = []; for (let i = 0; i < NX; i++) xs.push(ORDER.line * i / (NX - 1));
     const I = LI.aerialImage({ mode: 'proximity', lambda: DV.DILL.lambda, hp: ORDER.line, xs, gap, resist: d, collimation: 2 });
     const R = DV.develop2D({ I, E, d, S: S_DEV, X: ORDER.line, nz: NZ, pac });
     const foot = DV.footEdge(R, rc.tdev), cd = 2 * (ORDER.line - foot);
     const tOpen = Math.max(0, rc.tdev - R.T[NZ * NX]);                       // s the aluminium in the space sees the developer
-    return { d, w, pac, stick: w > W_STICK + 1e-9, gap, E, I, R, prof: DV.profile(R, rc.tdev), foot, cd,
+    return { d, w, pac, stick: w > W_STICK + 1e-9, gap, E, tExp: E / LAMP, I, R, prof: DV.profile(R, rc.tdev), foot, cd,
       notOpen: foot <= 0, gone: foot >= ORDER.line, dark: Math.min(d, S_DEV.rmin * rc.tdev), tOpen, alLoss: AL_DEV[rc.dev] * tOpen / 60 };
   }
   /** Cross-section area (µm²) and widths of an aluminium line of resist width cd (µm) in a film h (nm) after an
